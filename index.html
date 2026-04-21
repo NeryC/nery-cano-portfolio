@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nery Cano — Senior Full-Stack Engineer · Next.js · AI/LLM</title>
+  <meta name="description" content="Senior Full-Stack Engineer (7 yrs) shipping AI-powered web apps with Next.js 15, React Native, and custom LLM pipelines. Healthcare AI. Remote from Paraguay. Open to senior / staff roles." />
+  <meta property="og:title" content="Nery Cano — Senior Full-Stack Engineer" />
+  <meta property="og:description" content="I ship AI-powered web products. Next.js 15, React Native, LLM integration. 7 years. Remote from Paraguay." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1F3A68',
+            accent: '#2E75B6',
+            ink: '#0F172A',
+            muted: '#64748B',
+            cream: '#FAF9F7',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fade-up': 'fade-up 0.6s ease-out forwards',
+            'float': 'float 4s ease-in-out infinite',
+          },
+          keyframes: {
+            'fade-up': {
+              '0%': { opacity: 0, transform: 'translateY(12px)' },
+              '100%': { opacity: 1, transform: 'translateY(0)' },
+            },
+            'float': {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-6px)' },
+            },
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .gradient-bg {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(46,117,182,0.10), transparent 42%),
+        radial-gradient(circle at 80% 60%, rgba(31,58,104,0.08), transparent 55%),
+        linear-gradient(180deg, #FFFFFF 0%, #FAFCFE 100%);
+    }
+    .gradient-dark {
+      background:
+        radial-gradient(circle at 0% 0%, rgba(46,117,182,0.25), transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(46,117,182,0.15), transparent 50%),
+        #1F3A68;
+    }
+    .dotted-pattern {
+      background-image: radial-gradient(circle, rgba(31,58,104,0.08) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .link-underline {
+      background-image: linear-gradient(currentColor, currentColor);
+      background-size: 0% 1px;
+      background-position: 0 100%;
+      background-repeat: no-repeat;
+      transition: background-size 0.3s ease-in-out;
+    }
+    .link-underline:hover { background-size: 100% 1px; }
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgba(31, 58, 104, 0.12), 0 4px 8px -4px rgba(31, 58, 104, 0.08);
+    }
+    .marquee {
+      display: flex;
+      animation: marquee 30s linear infinite;
+    }
+    @keyframes marquee {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #0F172A;
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="bg-white text-ink antialiased">
+
+  <!-- Nav -->
+  <nav class="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="#top" class="flex items-center gap-2 font-bold text-primary tracking-tight">
+        <span class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center text-sm">NC</span>
+        <span class="hidden sm:inline">Nery Cano</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8 text-sm text-muted">
+        <a href="#about" class="hover:text-primary transition link-underline">About</a>
+        <a href="#work" class="hover:text-primary transition link-underline">Work</a>
+        <a href="#experience" class="hover:text-primary transition link-underline">Experience</a>
+        <a href="#stack" class="hover:text-primary transition link-underline">Stack</a>
+        <a href="#learning" class="hover:text-primary transition link-underline">Learning</a>
+        <a href="#open-source" class="hover:text-primary transition link-underline">Open source</a>
+        <a href="#volunteering" class="hover:text-primary transition link-underline">Community</a>
+        <a href="#contact" class="hover:text-primary transition link-underline">Contact</a>
+      </div>
+      <a href="#contact" class="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition font-medium">Hire me</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header id="top" class="gradient-bg relative overflow-hidden">
+    <div class="absolute inset-0 dotted-pattern opacity-40"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-20 md:py-32">
+      <div class="flex items-center gap-2 text-accent text-sm font-medium mb-6">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-slow"></span>
+        <span class="font-mono">available · senior / staff · remote · USD</span>
+      </div>
+      <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-ink leading-[1.05]">
+        Hi, I'm Nery.<br/>
+        I ship <span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">AI-powered web products.</span>
+      </h1>
+      <p class="mt-8 text-lg md:text-xl text-muted max-w-3xl leading-relaxed">
+        Senior Full-Stack Engineer with <strong class="text-ink">7 years</strong> of experience building production apps for US and global clients.
+        Specialized in <strong class="text-ink">Next.js 15</strong>, <strong class="text-ink">React Native</strong>,
+        and <strong class="text-ink">LLM / AI integration</strong>.
+      </p>
+      <p class="mt-4 text-base md:text-lg text-muted max-w-3xl leading-relaxed">
+        Recent impact: cut clinician documentation time by <strong class="text-primary">60%</strong> at a US healthcare platform
+        using AWS Comprehend Medical, Transcribe, and a custom LLM orchestration layer on top of Next.js 15.
+      </p>
+
+      <div class="mt-10 flex flex-wrap items-center gap-4">
+        <a href="#work" class="bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-accent transition shadow-sm">See selected work →</a>
+        <a href="/CV_Nery_Cano_Senior_Engineer.pdf" download class="border border-slate-300 text-ink px-6 py-3 rounded-lg font-medium hover:border-primary hover:text-primary transition">↓ Download CV (PDF)</a>
+      </div>
+
+      <div class="mt-8 flex items-center gap-5 text-sm text-muted">
+        <a href="https://www.linkedin.com/in/nery-cano-dev/" class="hover:text-primary transition flex items-center gap-1" target="_blank" rel="noopener">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </a>
+        <a href="https://github.com/NeryC" class="hover:text-primary transition flex items-center gap-1" target="_blank" rel="noopener">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.085 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.467-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23a11.509 11.509 0 016.003 0c2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="https://platzi.com/p/alberto-cano-ortigoza/" class="hover:text-primary transition flex items-center gap-1" target="_blank" rel="noopener">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0L1.5 6v12L12 24l10.5-6V6L12 0zm0 2.5L20.5 7 12 11.5 3.5 7 12 2.5zM3 8.5l8 4.5v8L3 16.5v-8zm10 12.5v-8l8-4.5v8L13 21z"/></svg>
+          Platzi
+        </a>
+        <button onclick="copyEmail()" class="hover:text-primary transition flex items-center gap-1" title="Click to copy">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+          nalbertoc132@gmail.com
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Stats ribbon -->
+  <section class="bg-ink text-white">
+    <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div>
+        <div class="text-3xl md:text-4xl font-extrabold text-accent">7+</div>
+        <div class="text-sm text-white/60 mt-1">years shipping to production</div>
+      </div>
+      <div>
+        <div class="text-3xl md:text-4xl font-extrabold text-accent">60%</div>
+        <div class="text-sm text-white/60 mt-1">docs time cut for US hospitals</div>
+      </div>
+      <div>
+        <div class="text-3xl md:text-4xl font-extrabold text-accent">99.9%</div>
+        <div class="text-sm text-white/60 mt-1">uptime, 8-month bootcamp platform</div>
+      </div>
+      <div>
+        <div class="text-3xl md:text-4xl font-extrabold text-accent">90+</div>
+        <div class="text-sm text-white/60 mt-1">students mentored</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trusted by (client logos as text) -->
+  <section class="border-y border-slate-100 bg-white py-10 overflow-hidden">
+    <p class="text-xs uppercase tracking-widest text-muted text-center mb-6 font-mono">Previously shipped work for</p>
+    <div class="marquee whitespace-nowrap">
+      <div class="flex items-center gap-14 text-xl md:text-2xl font-bold text-slate-400 px-7">
+        <span>Ebervetter</span><span class="text-slate-200">·</span>
+        <span>Jobsity</span><span class="text-slate-200">·</span>
+        <span>Penguin Academy</span><span class="text-slate-200">·</span>
+        <span>Hollister</span><span class="text-slate-200">·</span>
+        <span>Abercrombie &amp; Fitch</span><span class="text-slate-200">·</span>
+        <span>ZenBusiness</span><span class="text-slate-200">·</span>
+        <span>Kenility</span><span class="text-slate-200">·</span>
+        <span>Oktana</span><span class="text-slate-200">·</span>
+        <span>Salesforce ecosystem</span><span class="text-slate-200">·</span>
+      </div>
+      <div class="flex items-center gap-14 text-xl md:text-2xl font-bold text-slate-400 px-7" aria-hidden="true">
+        <span>Ebervetter</span><span class="text-slate-200">·</span>
+        <span>Jobsity</span><span class="text-slate-200">·</span>
+        <span>Penguin Academy</span><span class="text-slate-200">·</span>
+        <span>Hollister</span><span class="text-slate-200">·</span>
+        <span>Abercrombie &amp; Fitch</span><span class="text-slate-200">·</span>
+        <span>ZenBusiness</span><span class="text-slate-200">·</span>
+        <span>Kenility</span><span class="text-slate-200">·</span>
+        <span>Oktana</span><span class="text-slate-200">·</span>
+        <span>Salesforce ecosystem</span><span class="text-slate-200">·</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div class="md:col-span-1">
+        <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">01 — About</div>
+        <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">What I do, in plain words.</h2>
+        <p class="mt-4 text-sm text-muted">Based in Asunción, Paraguay. GMT-3. Fluent async in English.</p>
+      </div>
+      <div class="md:col-span-2 space-y-5 text-muted leading-relaxed text-lg">
+        <p>
+          I help teams ship <strong class="text-ink">AI-powered web products</strong> — not demos, actual production systems
+          that clinicians, students, and operators rely on every day.
+        </p>
+        <p>
+          Most of my recent work sits at the intersection of <strong class="text-ink">healthcare, LLMs, and complex
+          front-end architecture</strong>. That means entity-grounded prompting to prevent hallucinations, streaming
+          responses for real-time UX, accessibility-first UIs for users who can't afford friction, and the dozens of
+          small decisions around a model that turn a cool demo into a product people trust.
+        </p>
+        <p>
+          Before the AI chapter, I built high-performance storefronts for <strong class="text-ink">Hollister</strong> and
+          <strong class="text-ink">Abercrombie &amp; Fitch</strong>, maintained the <strong class="text-ink">ZenBusiness</strong>
+          platform, and shipped enterprise Salesforce solutions at Oktana. Different verticals, same obsession: make the
+          product fast, accessible, and pleasant to work on.
+        </p>
+        <p>
+          I care about <strong class="text-ink">accessibility (WCAG 2.1 AA)</strong>, <strong class="text-ink">performance
+          budgets</strong>, and writing code that the next engineer — probably me in six months — won't hate. I organize
+          <strong class="text-ink">GDG Asunción</strong> and mentor juniors. Runner at heart.
+        </p>
+      </div>
+    </div>
+
+    <!-- Value pillars -->
+    <div class="mt-16 grid md:grid-cols-3 gap-5">
+      <div class="p-6 border border-slate-100 rounded-2xl card-hover bg-white">
+        <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <h3 class="font-semibold text-ink">AI / LLM integration</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">Entity-grounded prompting, streaming, OCR, RAG. Claude, GPT-4, AWS Comprehend Medical, AWS Transcribe.</p>
+      </div>
+      <div class="p-6 border border-slate-100 rounded-2xl card-hover bg-white">
+        <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+        </div>
+        <h3 class="font-semibold text-ink">Product engineering</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">Next.js 15, React Native, TypeScript end-to-end. Built for 99.9% uptime, WCAG 2.1 AA, and maintainability.</p>
+      </div>
+      <div class="p-6 border border-slate-100 rounded-2xl card-hover bg-white">
+        <div class="w-12 h-12 bg-accent/10 rounded-xl flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        </div>
+        <h3 class="font-semibold text-ink">Team &amp; mentoring</h3>
+        <p class="mt-2 text-sm text-muted leading-relaxed">90+ students mentored. GDG Asunción organizer. Comfortable owning a feature or leading a squad.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Work (Selected Projects) -->
+  <section id="work" class="bg-slate-50 border-y border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 py-24">
+      <div class="flex items-end justify-between flex-wrap gap-4 mb-12">
+        <div>
+          <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">02 — Selected work</div>
+          <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Recent projects, with numbers.</h2>
+        </div>
+        <p class="text-sm text-muted max-w-md">Case-study summaries at the architectural level. Client-specific detail redacted per NDA; happy to walk through on a call.</p>
+      </div>
+
+      <div class="space-y-6">
+
+        <!-- Project 1 -->
+        <article class="bg-white rounded-2xl p-8 md:p-10 border border-slate-100 shadow-sm card-hover">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex-1 min-w-[60%]">
+              <div class="flex items-center flex-wrap gap-2 text-sm text-muted">
+                <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold">Healthcare AI</span>
+                <span>·</span>
+                <span>Jobsity · Client: Ebervetter</span>
+                <span>·</span>
+                <span>2025 — present</span>
+              </div>
+              <h3 class="mt-3 text-2xl font-bold text-ink">Clinician-facing AI documentation platform</h3>
+              <p class="mt-1 text-sm text-muted">Role: Senior Full-Stack Engineer · Lead on clinician side</p>
+            </div>
+            <div class="text-right">
+              <div class="text-4xl font-extrabold text-primary">60%</div>
+              <div class="text-xs text-muted">docs time reduced</div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid md:grid-cols-3 gap-6 text-sm">
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Problem</div>
+              <p class="text-muted leading-relaxed">Physicians spend ~2 hrs on notes for every hr of patient-facing work. Biggest burnout driver in the industry.</p>
+            </div>
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">What I built</div>
+              <p class="text-muted leading-relaxed">Next.js 15 clinician app with AWS Transcribe streaming + Comprehend Medical entity extraction + custom LLM orchestration for structured SOAP notes.</p>
+            </div>
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Outcome</div>
+              <p class="text-muted leading-relaxed">Cut physician documentation time by 60%. 99.9%+ uptime. WCAG 2.1 AA compliant. Used by US hospitals today.</p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-slate-100">
+            <div class="text-xs font-mono uppercase tracking-wider text-muted mb-3">Tech</div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Next.js 15</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">React Native (Expo)</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">TypeScript</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">AWS Transcribe Medical</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">AWS Comprehend Medical</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">LLM Orchestration</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">GraphQL</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">React Query</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">MobX State Tree</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Tailwind</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">WCAG 2.1 AA</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Project 2 -->
+        <article class="bg-white rounded-2xl p-8 md:p-10 border border-slate-100 shadow-sm card-hover">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex-1 min-w-[60%]">
+              <div class="flex items-center flex-wrap gap-2 text-sm text-muted">
+                <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold">EdTech</span>
+                <span>·</span>
+                <span>Penguin Academy · Lead Developer</span>
+                <span>·</span>
+                <span>2024 — 2025</span>
+              </div>
+              <h3 class="mt-3 text-2xl font-bold text-ink">CodePro bootcamp platform</h3>
+              <p class="mt-1 text-sm text-muted">Role: Lead Developer · Sole owner of core features</p>
+            </div>
+            <div class="text-right">
+              <div class="text-4xl font-extrabold text-primary">99.9%</div>
+              <div class="text-xs text-muted">uptime maintained</div>
+            </div>
+          </div>
+
+          <div class="mt-6 grid md:grid-cols-3 gap-6 text-sm">
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Problem</div>
+              <p class="text-muted leading-relaxed">90+ students in intensive 8-month bootcamps needed a platform that never broke during live sessions or exams.</p>
+            </div>
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">What I built</div>
+              <p class="text-muted leading-relaxed">Sole-owner architecture + delivery of core platform features, infra on Vercel, Postgres, rigorous testing coverage.</p>
+            </div>
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Outcome</div>
+              <p class="text-muted leading-relaxed">99.9% uptime through two full cohorts. Optimized infra cost while scaling student load.</p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-slate-100">
+            <div class="text-xs font-mono uppercase tracking-wider text-muted mb-3">Tech</div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Next.js</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">TypeScript</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Vercel</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">AWS</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">PostgreSQL</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Testing</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Project 3 -->
+        <article class="bg-white rounded-2xl p-8 md:p-10 border border-slate-100 shadow-sm card-hover">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex-1 min-w-[60%]">
+              <div class="flex items-center flex-wrap gap-2 text-sm text-muted">
+                <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold">Retail e-commerce</span>
+                <span>·</span>
+                <span>Jobsity · Clients: Hollister, Abercrombie &amp; Fitch</span>
+                <span>·</span>
+                <span>2023 — 2024</span>
+              </div>
+              <h3 class="mt-3 text-2xl font-bold text-ink">Global retail storefronts</h3>
+              <p class="mt-1 text-sm text-muted">Role: Senior Front-End Engineer</p>
+            </div>
+          </div>
+
+          <div class="mt-6 grid md:grid-cols-3 gap-6 text-sm">
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Problem</div>
+              <p class="text-muted leading-relaxed">Global apparel brands need fast, accessible storefronts that scale across regions and marketing campaigns.</p>
+            </div>
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">What I built</div>
+              <p class="text-muted leading-relaxed">Next.js SSR/SSG storefronts with Contentful-driven content, a11y-first components, full testing coverage.</p>
+            </div>
+            <div>
+              <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Outcome</div>
+              <p class="text-muted leading-relaxed">WCAG-compliant experience across multiple regions. Shorter release cycles with Docker-based CI.</p>
+            </div>
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-slate-100">
+            <div class="text-xs font-mono uppercase tracking-wider text-muted mb-3">Tech</div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Next.js SSR/SSG</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">React</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Contentful</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Docker</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">React Testing Library</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">a11y / WCAG</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Tailwind</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Project 4 -->
+        <article class="bg-white rounded-2xl p-8 md:p-10 border border-slate-100 shadow-sm card-hover">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex-1 min-w-[60%]">
+              <div class="flex items-center flex-wrap gap-2 text-sm text-muted">
+                <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold">SaaS / SMB platform</span>
+                <span>·</span>
+                <span>Kenility · Client: ZenBusiness</span>
+                <span>·</span>
+                <span>2022 — 2023</span>
+              </div>
+              <h3 class="mt-3 text-2xl font-bold text-ink">ZenBusiness platform maintenance &amp; growth</h3>
+              <p class="mt-1 text-sm text-muted">Role: Maintenance &amp; Testing Developer</p>
+            </div>
+          </div>
+
+          <div class="mt-6 text-sm text-muted leading-relaxed">
+            Kept ZenBusiness's core platform reliable while shipping new features — a delicate balance for a product that millions of small-business owners rely on for their legal and financial life. Cross-functional feature launches with Node.js, Docker, and Tailwind. React / Next.js across the front-end.
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-slate-100">
+            <div class="text-xs font-mono uppercase tracking-wider text-muted mb-3">Tech</div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">React</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Next.js</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Node.js</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Docker</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Tailwind</span>
+            </div>
+          </div>
+        </article>
+
+        <!-- Project 5 -->
+        <article class="bg-white rounded-2xl p-8 md:p-10 border border-slate-100 shadow-sm card-hover">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div class="flex-1 min-w-[60%]">
+              <div class="flex items-center flex-wrap gap-2 text-sm text-muted">
+                <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold">Enterprise / Salesforce</span>
+                <span>·</span>
+                <span>Oktana · Salesforce ecosystem</span>
+                <span>·</span>
+                <span>2018 — 2022</span>
+              </div>
+              <h3 class="mt-3 text-2xl font-bold text-ink">Enterprise Salesforce solutions</h3>
+              <p class="mt-1 text-sm text-muted">Role: Full-Stack Engineer (3.5 years)</p>
+            </div>
+          </div>
+
+          <div class="mt-6 text-sm text-muted leading-relaxed">
+            Built enterprise integrations and cross-platform apps for Salesforce customers worldwide. Apex on the backend, modern JS on the front, and React Native / Electron for companion apps. Foundation of my large-codebase discipline and client-facing communication.
+          </div>
+
+          <div class="mt-6 pt-6 border-t border-slate-100">
+            <div class="text-xs font-mono uppercase tracking-wider text-muted mb-3">Tech</div>
+            <div class="flex flex-wrap gap-2 text-xs">
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Salesforce Apex</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">JavaScript</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">React Native</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Electron</span>
+              <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Node.js</span>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Experience timeline -->
+  <section id="experience" class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div class="md:col-span-1">
+        <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">03 — Career</div>
+        <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Experience timeline.</h2>
+        <p class="mt-4 text-sm text-muted">7+ years across healthcare AI, edtech, retail e-commerce, SMB SaaS, and enterprise Salesforce. Remote US / LATAM clients throughout.</p>
+      </div>
+      <div class="md:col-span-2 space-y-8 relative pl-8 border-l-2 border-slate-100">
+
+        <div class="relative">
+          <span class="absolute -left-[41px] top-1 w-4 h-4 bg-accent rounded-full border-4 border-white"></span>
+          <div class="text-xs font-mono text-muted">Feb 2025 — present</div>
+          <h3 class="mt-1 font-bold text-ink text-lg">Senior Developer · Jobsity</h3>
+          <p class="text-sm text-muted">Client: Ebervetter · Clinician-facing AI documentation platform</p>
+          <p class="mt-2 text-sm text-muted leading-relaxed">Led the clinician-side architecture. Next.js 15 + React Native + LLM orchestration + AWS medical NLP stack. 60% docs time reduction, 99.9%+ uptime, WCAG 2.1 AA.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-[41px] top-1 w-4 h-4 bg-accent rounded-full border-4 border-white"></span>
+          <div class="text-xs font-mono text-muted">Feb 2024 — Jan 2025</div>
+          <h3 class="mt-1 font-bold text-ink text-lg">Lead Developer · Penguin Academy</h3>
+          <p class="text-sm text-muted">CodePro bootcamp platform · 90+ students</p>
+          <p class="mt-2 text-sm text-muted leading-relaxed">Sole developer on core features. 99.9% uptime. Infra on Vercel / AWS / Postgres. Shipped through two full bootcamp cohorts.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-[41px] top-1 w-4 h-4 bg-accent rounded-full border-4 border-white"></span>
+          <div class="text-xs font-mono text-muted">Jan 2023 — Jan 2024</div>
+          <h3 class="mt-1 font-bold text-ink text-lg">Developer · Jobsity</h3>
+          <p class="text-sm text-muted">Clients: Hollister, Abercrombie &amp; Fitch</p>
+          <p class="mt-2 text-sm text-muted leading-relaxed">Next.js SSR/SSG storefronts at retail scale, Contentful-driven content, accessibility-first, Docker CI.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-[41px] top-1 w-4 h-4 bg-accent rounded-full border-4 border-white"></span>
+          <div class="text-xs font-mono text-muted">Apr 2022 — Jan 2023</div>
+          <h3 class="mt-1 font-bold text-ink text-lg">Developer · Kenility</h3>
+          <p class="text-sm text-muted">Client: ZenBusiness · SMB legal / finance platform</p>
+          <p class="mt-2 text-sm text-muted leading-relaxed">Maintained and extended a platform used by millions of small-business owners. React + Next.js, Node, Docker, Tailwind.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-[41px] top-1 w-4 h-4 bg-accent rounded-full border-4 border-white"></span>
+          <div class="text-xs font-mono text-muted">Jan 2021 — Apr 2023</div>
+          <h3 class="mt-1 font-bold text-ink text-lg">Developer · ChiaTk (personal project)</h3>
+          <p class="text-sm text-muted">Fintech / cryptocurrency — landing pages and desktop apps</p>
+          <p class="mt-2 text-sm text-muted leading-relaxed">React, Vue.js, Electron. Real-time market visualization for crypto audiences.</p>
+        </div>
+
+        <div class="relative">
+          <span class="absolute -left-[41px] top-1 w-4 h-4 bg-accent rounded-full border-4 border-white"></span>
+          <div class="text-xs font-mono text-muted">Nov 2018 — Mar 2022</div>
+          <h3 class="mt-1 font-bold text-ink text-lg">Developer · Oktana</h3>
+          <p class="text-sm text-muted">Salesforce ecosystem — enterprise clients worldwide</p>
+          <p class="mt-2 text-sm text-muted leading-relaxed">Apex backend, modern JavaScript frameworks, cross-platform React Native / Electron apps. Foundation of my client communication discipline.</p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Stack -->
+  <section id="stack" class="bg-slate-50 border-y border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 py-24">
+      <div class="grid md:grid-cols-3 gap-12 mb-12">
+        <div class="md:col-span-1">
+          <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">04 — Stack</div>
+          <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">What I build with.</h2>
+          <p class="mt-4 text-sm text-muted">Primary: Next.js 15 + TypeScript + React Native + AWS + LLM orchestration. Secondary: Python, Vue, Salesforce Apex when the job calls for it.</p>
+        </div>
+        <div class="md:col-span-2 grid md:grid-cols-2 gap-6">
+
+          <div class="p-6 bg-white border border-slate-100 rounded-2xl">
+            <h3 class="text-sm font-semibold text-primary uppercase tracking-wide font-mono">Frontend</h3>
+            <p class="mt-3 text-muted text-sm leading-relaxed">Next.js 15 (App Router · RSC · streaming · Server Actions), React, React Native (Expo), TypeScript, Tailwind CSS, Vue.js, Refine.</p>
+          </div>
+          <div class="p-6 bg-white border border-slate-100 rounded-2xl">
+            <h3 class="text-sm font-semibold text-primary uppercase tracking-wide font-mono">Backend</h3>
+            <p class="mt-3 text-muted text-sm leading-relaxed">Node.js, Express, FastAPI, Python, GraphQL, REST, Salesforce Apex.</p>
+          </div>
+          <div class="p-6 bg-white border border-slate-100 rounded-2xl">
+            <h3 class="text-sm font-semibold text-primary uppercase tracking-wide font-mono">AI / ML</h3>
+            <p class="mt-3 text-muted text-sm leading-relaxed">LLM integration (OpenAI, Anthropic), OCR pipelines, RAG systems, AWS Transcribe, AWS Comprehend Medical. Day-to-day with AI coding agents (Cursor, Claude Code, Gemini).</p>
+          </div>
+          <div class="p-6 bg-white border border-slate-100 rounded-2xl">
+            <h3 class="text-sm font-semibold text-primary uppercase tracking-wide font-mono">State &amp; Data</h3>
+            <p class="mt-3 text-muted text-sm leading-relaxed">React Query (TanStack), MobX State Tree, Zustand, Redux. PostgreSQL, MySQL, Redis, MongoDB, Prisma, Drizzle.</p>
+          </div>
+          <div class="p-6 bg-white border border-slate-100 rounded-2xl">
+            <h3 class="text-sm font-semibold text-primary uppercase tracking-wide font-mono">Cloud &amp; DevOps</h3>
+            <p class="mt-3 text-muted text-sm leading-relaxed">AWS (Transcribe, Comprehend Medical, S3, Lambda), Vercel, GCP, Docker, GitHub Actions, EAS Build, Firebase, Sentry.</p>
+          </div>
+          <div class="p-6 bg-white border border-slate-100 rounded-2xl">
+            <h3 class="text-sm font-semibold text-primary uppercase tracking-wide font-mono">Quality &amp; a11y</h3>
+            <p class="mt-3 text-muted text-sm leading-relaxed">React Testing Library, Jest, Playwright. WCAG 2.1 AA compliance. SEO &amp; Core Web Vitals optimization.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learning / Platzi -->
+  <section id="learning" class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div class="md:col-span-1">
+        <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">05 — Learning</div>
+        <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Always shipping, always learning.</h2>
+        <p class="mt-4 text-sm text-muted">I treat learning like a muscle. Formal education, intensive online paths, and community organizing add up to the engineer you hire.</p>
+      </div>
+      <div class="md:col-span-2 space-y-6">
+
+        <!-- Platzi card -->
+        <a href="https://platzi.com/p/alberto-cano-ortigoza/" target="_blank" rel="noopener"
+           class="block p-7 md:p-8 bg-gradient-to-br from-[#98CA3F]/10 to-white border border-slate-100 rounded-2xl card-hover">
+          <div class="flex items-start justify-between flex-wrap gap-4">
+            <div>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="bg-[#98CA3F]/20 text-[#4a6b1c] px-2 py-0.5 rounded text-xs font-semibold font-mono">Platzi</span>
+                <span class="text-muted">· continuous technical education</span>
+              </div>
+              <h3 class="mt-3 text-xl font-bold text-ink">Hundreds of courses &amp; learning paths</h3>
+              <p class="mt-2 text-muted text-sm leading-relaxed max-w-2xl">
+                A public record of the technologies I've gone deep on — React, Next.js, Node, TypeScript, cloud, AI/ML,
+                system design, English fluency, leadership. Each badge is 6+ hours of curriculum plus evaluated projects.
+              </p>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-mono text-muted">View profile</div>
+              <div class="text-2xl">→</div>
+            </div>
+          </div>
+          <div class="mt-5 flex flex-wrap gap-2 text-xs">
+            <span class="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md">React / Next.js paths</span>
+            <span class="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md">AI &amp; ML foundations</span>
+            <span class="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md">Cloud &amp; DevOps</span>
+            <span class="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md">English for developers</span>
+            <span class="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md">System design</span>
+            <span class="bg-white text-slate-700 border border-slate-200 px-2.5 py-1 rounded-md">Leadership &amp; soft skills</span>
+          </div>
+        </a>
+
+        <!-- University -->
+        <div class="p-7 md:p-8 bg-white border border-slate-100 rounded-2xl card-hover">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold font-mono">University</span>
+          </div>
+          <h3 class="mt-3 text-xl font-bold text-ink">B.S. in Computer Engineering</h3>
+          <p class="mt-1 text-sm text-muted">Universidad Autónoma de Asunción · Thesis phase · Expected 2026</p>
+        </div>
+
+        <!-- GDG -->
+        <div class="p-7 md:p-8 bg-white border border-slate-100 rounded-2xl card-hover">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold font-mono">Community</span>
+          </div>
+          <h3 class="mt-3 text-xl font-bold text-ink">GDG Asunción — Organizer</h3>
+          <p class="mt-1 text-sm text-muted">Google Developer Groups — Paraguay chapter</p>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Lead organizer of developer meetups, workshops, and community mentoring programs for the Paraguayan tech community. Connect local devs with global opportunities.</p>
+        </div>
+
+        <!-- Mentoring -->
+        <div class="p-7 md:p-8 bg-white border border-slate-100 rounded-2xl card-hover">
+          <div class="flex items-center gap-2 text-sm">
+            <span class="bg-accent/10 text-accent px-2 py-0.5 rounded text-xs font-semibold font-mono">Mentoring</span>
+          </div>
+          <h3 class="mt-3 text-xl font-bold text-ink">90+ bootcamp students mentored</h3>
+          <p class="mt-1 text-sm text-muted">Penguin Academy · Coderhouse bootcamp collaboration</p>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Guided students from first commit to deployed product. Branches, PRs, code review, CI — the real-world flow, not just syntax.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Open Source -->
+  <section id="open-source" class="bg-slate-50 border-y border-slate-100">
+    <div class="max-w-6xl mx-auto px-6 py-24">
+      <div class="grid md:grid-cols-3 gap-12 mb-12">
+        <div class="md:col-span-1">
+          <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">06 — Open source</div>
+          <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Public projects.</h2>
+          <p class="mt-4 text-sm text-muted leading-relaxed">Client code is NDA. These are the side projects and civic-tech experiments I build in the open — mostly Next.js + Supabase, with one R-backed epidemiological model from the pandemic era.</p>
+          <a href="https://github.com/NeryC" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 text-sm text-accent font-medium hover:text-primary transition">
+            See full GitHub profile
+            <span>→</span>
+          </a>
+        </div>
+        <div class="md:col-span-2 space-y-5">
+          <!-- Murales Políticos — flagship -->
+          <article class="p-7 bg-white border border-slate-100 rounded-2xl card-hover">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <div class="text-xs font-mono text-accent uppercase tracking-wider">Civic tech · live</div>
+                <h3 class="mt-1 text-xl font-bold text-ink">Murales Políticos 🇵🇾</h3>
+              </div>
+              <span class="text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">● Active</span>
+            </div>
+            <p class="text-sm text-muted leading-relaxed">Collaborative map to register and document political propaganda murals across Paraguay. Public users submit sightings; an admin moderation panel approves or rejects reports before they go live on the map.</p>
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Next.js 16 (App Router)</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Supabase (Postgres + Storage + Auth)</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Leaflet.js</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Tailwind</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TypeScript</span>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3 text-sm">
+              <a href="https://murales-politicos.vercel.app" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-accent font-medium hover:text-primary transition">↗ Live site</a>
+              <a href="https://github.com/NeryC/MuralesDecorativos" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-slate-600 font-medium hover:text-primary transition">↗ GitHub</a>
+            </div>
+          </article>
+
+          <!-- EPIModel Next + Backend -->
+          <article class="p-7 bg-white border border-slate-100 rounded-2xl card-hover">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <div class="text-xs font-mono text-accent uppercase tracking-wider">Public health · pandemic-era</div>
+                <h3 class="mt-1 text-xl font-bold text-ink">EPIModel — COVID-19 simulation for Paraguay</h3>
+              </div>
+              <span class="text-xs font-mono text-slate-600 bg-slate-100 border border-slate-200 px-2 py-1 rounded">2 repos</span>
+            </div>
+            <p class="text-sm text-muted leading-relaxed">Web system to visualize and simulate COVID-19 epidemiological models for Paraguay. Two-tier architecture: a TypeScript + Next.js visualization frontend and a clean-architecture API backend that wraps an R-based modeling engine.</p>
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Next.js</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TypeScript</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">R (modeling)</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Clean architecture</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">REST API</span>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3 text-sm">
+              <a href="https://github.com/NeryC/EPYModel" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-accent font-medium hover:text-primary transition">↗ Frontend (EPYModel)</a>
+              <a href="https://github.com/NeryC/EPYModelBack" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-accent font-medium hover:text-primary transition">↗ Backend (EPYModelBack)</a>
+            </div>
+          </article>
+
+          <!-- NextStatic -->
+          <article class="p-7 bg-white border border-slate-100 rounded-2xl card-hover">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <div class="text-xs font-mono text-accent uppercase tracking-wider">Starter · JAMstack</div>
+                <h3 class="mt-1 text-xl font-bold text-ink">NextStatic — Next.js + Contentful starter</h3>
+              </div>
+            </div>
+            <p class="text-sm text-muted leading-relaxed">Minimal starter template for static marketing sites powered by Next.js and Contentful as a headless CMS. Used as the base for a couple of small-business sites.</p>
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Next.js</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Contentful</span>
+              <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TypeScript</span>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3 text-sm">
+              <a href="https://github.com/NeryC/NextStatic" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-accent font-medium hover:text-primary transition">↗ GitHub</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Community & Volunteering -->
+  <section id="volunteering" class="bg-white">
+    <div class="max-w-6xl mx-auto px-6 py-24">
+      <div class="grid md:grid-cols-3 gap-12 mb-10">
+        <div class="md:col-span-1">
+          <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">07 — Community & volunteering</div>
+          <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Off-keyboard work.</h2>
+          <p class="mt-4 text-sm text-muted leading-relaxed">Outside of shipping code, I volunteer at large international events hosted in Paraguay. These sharpen the cross-cultural, English-language, and logistics muscles I also use on remote product teams.</p>
+          <p class="mt-4 text-xs text-muted font-mono">Both certificates are attached to the original volunteering entries on LinkedIn.</p>
+        </div>
+
+        <div class="md:col-span-2 space-y-5">
+          <!-- FIFA -->
+          <article class="p-7 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl card-hover">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <span class="text-2xl">⚽</span>
+                </div>
+                <div>
+                  <div class="text-xs font-mono text-accent uppercase tracking-wider">FIFA · 75th Congress</div>
+                  <h3 class="mt-1 text-xl font-bold text-ink">Airport Reception Coordinator</h3>
+                  <div class="text-sm text-muted mt-1">May 2025 · Asunción, Paraguay</div>
+                </div>
+              </div>
+              <span class="text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded whitespace-nowrap">Certificate ✓</span>
+            </div>
+            <p class="text-sm text-muted leading-relaxed mt-3">
+              Volunteered at the <strong class="text-ink">75th FIFA Congress</strong> hosted in Paraguay — a milestone event that brought together world football leaders. Coordinated arrivals and departures of senior FIFA figures at Silvio Pettirossi International Airport, ensuring VIP delegations were received and assisted from landing through transfer.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">Airport logistics</span>
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">VIP reception</span>
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">International protocol</span>
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">Team coordination</span>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3 text-sm">
+              <a href="https://www.linkedin.com/in/nery-cano-dev/overlay/VolunteerExperience/483034208/treasury/?profileId=ACoAACz8fd4BZxjoKOPZ7AWbG-3gXQ8vWHN5fvw" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-accent font-medium hover:text-primary transition">↗ View certificate on LinkedIn</a>
+              <a href="https://www.linkedin.com/in/nery-cano-dev/details/volunteering-experiences/" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-slate-500 font-medium hover:text-primary transition">↗ Full volunteering history</a>
+            </div>
+          </article>
+
+          <!-- Panam Sports -->
+          <article class="p-7 bg-gradient-to-br from-slate-50 to-white border border-slate-200 rounded-2xl card-hover">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div class="flex items-start gap-4">
+                <div class="w-14 h-14 bg-white border border-slate-200 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <span class="text-2xl">🏅</span>
+                </div>
+                <div>
+                  <div class="text-xs font-mono text-accent uppercase tracking-wider">Panam Sports · Pan American Games</div>
+                  <h3 class="mt-1 text-xl font-bold text-ink">Attaché & Translator — Antigua & Barbuda delegation</h3>
+                  <div class="text-sm text-muted mt-1">Aug 2025 · Asunción, Paraguay</div>
+                </div>
+              </div>
+              <span class="text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded whitespace-nowrap">Certificate ✓</span>
+            </div>
+            <p class="text-sm text-muted leading-relaxed mt-3">
+              Served as the official <strong class="text-ink">attaché for the Antigua & Barbuda delegation</strong> and acted as <strong class="text-ink">English ↔ Spanish translator</strong> between the delegation and the Panam Sports organization. Provided logistical support across venues, facilitated communication, and made sure every instruction and detail was clearly understood — so their Games experience was smooth end-to-end.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-1.5">
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">EN ↔ ES translation</span>
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">Multi-venue logistics</span>
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">Cross-cultural mediation</span>
+              <span class="text-xs font-mono bg-white border border-slate-200 text-slate-700 px-2 py-0.5 rounded">Health-area support</span>
+            </div>
+            <div class="mt-4 flex flex-wrap gap-3 text-sm">
+              <a href="https://www.linkedin.com/in/nery-cano-dev/overlay/VolunteerExperience/1933765234/treasury/?profileId=ACoAACz8fd4BZxjoKOPZ7AWbG-3gXQ8vWHN5fvw" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-accent font-medium hover:text-primary transition">↗ View certificate on LinkedIn</a>
+              <a href="https://www.linkedin.com/in/nery-cano-dev/details/volunteering-experiences/" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-slate-500 font-medium hover:text-primary transition">↗ Full volunteering history</a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="max-w-6xl mx-auto px-6 py-24">
+    <div class="grid md:grid-cols-3 gap-12">
+      <div class="md:col-span-1">
+        <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">08 — FAQ</div>
+        <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Common questions.</h2>
+        <p class="mt-4 text-sm text-muted">Short answers to the things most teams ask in the first call.</p>
+      </div>
+      <div class="md:col-span-2 space-y-3">
+        <details class="group p-6 bg-white border border-slate-100 rounded-2xl">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-ink">
+            What kind of roles are you looking for?
+            <span class="text-accent group-open:rotate-180 transition-transform">↓</span>
+          </summary>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Senior / Staff Full-Stack or Front-End roles. Full-time remote (primary) or contract. Especially interested in AI-first product companies, Next.js-native tooling, and healthcare AI.</p>
+        </details>
+        <details class="group p-6 bg-white border border-slate-100 rounded-2xl">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-ink">
+            Where are you based? Timezone overlap?
+            <span class="text-accent group-open:rotate-180 transition-transform">↓</span>
+          </summary>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Asunción, Paraguay (GMT-3). Full business-hour overlap with EST / CST, strong overlap with PST / MST. Fluent async English for EU timezone teams.</p>
+        </details>
+        <details class="group p-6 bg-white border border-slate-100 rounded-2xl">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-ink">
+            When can you start?
+            <span class="text-accent group-open:rotate-180 transition-transform">↓</span>
+          </summary>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Two weeks' notice for a full-time role. Can start sooner for part-time contract or advisory engagements.</p>
+        </details>
+        <details class="group p-6 bg-white border border-slate-100 rounded-2xl">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-ink">
+            What about salary / rate?
+            <span class="text-accent group-open:rotate-180 transition-transform">↓</span>
+          </summary>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Open to discuss once the role and scope are clear. Happy to share expectations on a call — both full-time and hourly contract.</p>
+        </details>
+        <details class="group p-6 bg-white border border-slate-100 rounded-2xl">
+          <summary class="flex items-center justify-between cursor-pointer font-semibold text-ink">
+            Can I see code you've written?
+            <span class="text-accent group-open:rotate-180 transition-transform">↓</span>
+          </summary>
+          <p class="mt-3 text-sm text-muted leading-relaxed">Client code is NDA-protected. Public code on <a class="text-accent hover:underline" href="https://github.com/NeryC" target="_blank" rel="noopener">GitHub</a>. Happy to pair on a small code exercise or walk you through the architecture of past projects on a call.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="gradient-dark text-white relative overflow-hidden">
+    <div class="absolute inset-0 dotted-pattern opacity-10"></div>
+    <div class="relative max-w-6xl mx-auto px-6 py-24">
+      <div class="grid md:grid-cols-2 gap-16">
+        <div>
+          <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">09 — Let's talk</div>
+          <h2 class="mt-3 text-3xl md:text-5xl font-bold leading-tight">Let's build something useful.</h2>
+          <p class="mt-6 text-lg text-white/80 leading-relaxed max-w-xl">
+            Currently open to <strong class="text-white">senior / staff</strong> Full-Stack roles — full-time remote or
+            contract. Especially interested in AI-first product companies, healthcare AI, and Next.js ecosystem teams.
+          </p>
+
+          <div class="mt-10 space-y-3 text-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">📧</span>
+              <button onclick="copyEmail()" class="text-white/90 hover:text-white transition font-mono">nalbertoc132@gmail.com</button>
+              <span class="text-xs text-white/50">(click to copy)</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">📍</span>
+              <span class="text-white/90">Asunción, Paraguay · GMT-3</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">⏱️</span>
+              <span class="text-white/90">Usually reply within 24h</span>
+            </div>
+          </div>
+
+          <div class="mt-10 flex flex-wrap items-center gap-3">
+            <a href="https://www.linkedin.com/in/nery-cano-dev/" target="_blank" rel="noopener" class="border border-white/30 text-white px-5 py-2.5 rounded-lg font-medium hover:border-white hover:bg-white/5 transition text-sm">LinkedIn</a>
+            <a href="https://github.com/NeryC" target="_blank" rel="noopener" class="border border-white/30 text-white px-5 py-2.5 rounded-lg font-medium hover:border-white hover:bg-white/5 transition text-sm">GitHub</a>
+            <a href="https://platzi.com/p/alberto-cano-ortigoza/" target="_blank" rel="noopener" class="border border-white/30 text-white px-5 py-2.5 rounded-lg font-medium hover:border-white hover:bg-white/5 transition text-sm">Platzi</a>
+            <a href="/CV_Nery_Cano_Senior_Engineer.pdf" download class="border border-white/30 text-white px-5 py-2.5 rounded-lg font-medium hover:border-white hover:bg-white/5 transition text-sm">↓ CV (PDF)</a>
+          </div>
+        </div>
+
+        <!-- Direct contact CTAs -->
+        <div class="space-y-5">
+          <!-- Email CTA -->
+          <a href="mailto:nalbertoc132@gmail.com?subject=Hi%20Nery%20%E2%80%94%20let's%20talk&body=Hi%20Nery%2C%0A%0A" class="group block bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-7 hover:bg-white/10 hover:border-white/30 transition">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 bg-accent/20 border border-accent/30 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">📧</div>
+                <div>
+                  <div class="text-xs uppercase tracking-widest text-accent font-mono font-semibold">Email me</div>
+                  <div class="mt-1 text-xl font-semibold text-white">nalbertoc132@gmail.com</div>
+                  <p class="mt-2 text-sm text-white/60 leading-relaxed">Best for role details, contract scopes, or anything longer than a few lines. Usually reply within 24h.</p>
+                </div>
+              </div>
+              <span class="text-white/40 group-hover:text-white group-hover:translate-x-1 transition text-xl">→</span>
+            </div>
+          </a>
+
+          <!-- WhatsApp CTA -->
+          <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%20found%20you%20via%20your%20portfolio" target="_blank" rel="noopener" class="group block bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-7 hover:bg-white/10 hover:border-white/30 transition">
+            <div class="flex items-start justify-between gap-4">
+              <div class="flex items-start gap-4">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0" style="background-color: rgba(37, 211, 102, 0.15); border: 1px solid rgba(37, 211, 102, 0.35);">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="#25D366" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+                </div>
+                <div>
+                  <div class="text-xs uppercase tracking-widest font-mono font-semibold" style="color: #25D366;">WhatsApp</div>
+                  <div class="mt-1 text-xl font-semibold text-white">+595 984 292 520</div>
+                  <p class="mt-2 text-sm text-white/60 leading-relaxed">Faster for quick questions, scheduling a call, or timezone coordination. I'm in GMT-3.</p>
+                </div>
+              </div>
+              <span class="text-white/40 group-hover:text-white group-hover:translate-x-1 transition text-xl">→</span>
+            </div>
+          </a>
+
+          <!-- Secondary note -->
+          <div class="bg-white/[0.02] border border-dashed border-white/10 rounded-xl p-5 text-sm text-white/60 leading-relaxed">
+            <strong class="text-white/80">What to include:</strong> role / team / stack / timezone expectations. If it's a contract, ballpark scope & budget helps me respond faster.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-ink text-white/60 border-t border-white/5">
+    <div class="max-w-6xl mx-auto px-6 py-10 grid md:grid-cols-3 gap-8 text-sm">
+      <div>
+        <div class="font-bold text-white">Nery Alberto Cano Ortigoza</div>
+        <p class="mt-2 text-white/50">Senior Full-Stack Engineer · Next.js · AI/LLM</p>
+        <p class="mt-2 text-white/40 text-xs">Lambaré, Paraguay · GMT-3</p>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wider text-white/40 font-mono mb-3">Quick links</div>
+        <ul class="space-y-1.5">
+          <li><a href="#about" class="hover:text-white transition">About</a></li>
+          <li><a href="#work" class="hover:text-white transition">Selected work</a></li>
+          <li><a href="#experience" class="hover:text-white transition">Experience</a></li>
+          <li><a href="#learning" class="hover:text-white transition">Learning</a></li>
+          <li><a href="#open-source" class="hover:text-white transition">Open source</a></li>
+          <li><a href="#volunteering" class="hover:text-white transition">Community</a></li>
+          <li><a href="#contact" class="hover:text-white transition">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="text-xs uppercase tracking-wider text-white/40 font-mono mb-3">Elsewhere</div>
+        <ul class="space-y-1.5">
+          <li><a href="https://www.linkedin.com/in/nery-cano-dev/" target="_blank" rel="noopener" class="hover:text-white transition">LinkedIn →</a></li>
+          <li><a href="https://github.com/NeryC" target="_blank" rel="noopener" class="hover:text-white transition">GitHub →</a></li>
+          <li><a href="https://platzi.com/p/alberto-cano-ortigoza/" target="_blank" rel="noopener" class="hover:text-white transition">Platzi →</a></li>
+          <li><a href="mailto:nalbertoc132@gmail.com" class="hover:text-white transition">Email →</a></li>
+          <li><a href="https://wa.me/595984292520" target="_blank" rel="noopener" class="hover:text-white transition">WhatsApp →</a></li>
+          <li><a href="/CV_Nery_Cano_Senior_Engineer.pdf" download class="hover:text-white transition">CV (PDF) ↓</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-white/5 py-6 text-center text-xs text-white/30">
+      © 2026 Nery Alberto Cano Ortigoza · Built with Next.js in mind, shipped as plain HTML because it's 200ms faster.
+    </div>
+  </footer>
+
+  <div id="toast" class="toast">Email copied to clipboard</div>
+
+  <script>
+    // Copy email helper
+    function copyEmail() {
+      const email = 'nalbertoc132@gmail.com';
+      navigator.clipboard.writeText(email).then(() => {
+        const toast = document.getElementById('toast');
+        toast.textContent = 'Email copied: ' + email;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2500);
+      }).catch(() => {
+        window.location.href = 'mailto:' + email;
+      });
+    }
+
+  </script>
+
+</body>
+</html>
