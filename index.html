@@ -950,13 +950,95 @@
         <div class="md:col-span-1">
           <div class="text-xs font-semibold text-accent tracking-widest uppercase font-mono">06 — Open source</div>
           <h2 class="mt-3 text-3xl md:text-4xl font-bold text-ink">Public projects.</h2>
-          <p class="mt-4 text-sm text-muted leading-relaxed">Client code is NDA. These are the side projects and civic-tech experiments I build in the open — mostly Next.js + Supabase, with one R-backed epidemiological model from the pandemic era.</p>
+          <p class="mt-4 text-sm text-muted leading-relaxed">Client code is NDA. These are the side projects, personal SaaS, and civic-tech experiments I build on my own time — mostly Next.js + Supabase, with one polyglot multi-service SaaS and an R-backed epidemiological model from the pandemic era.</p>
           <a href="https://github.com/NeryC" target="_blank" rel="noopener" class="mt-5 inline-flex items-center gap-2 text-sm text-accent font-medium hover:text-primary transition">
             See full GitHub profile
             <span>→</span>
           </a>
         </div>
         <div class="md:col-span-2 space-y-5">
+          <!-- AdminRent — personal SaaS, polyglot multi-service -->
+          <article class="p-7 bg-white border border-slate-100 rounded-2xl card-hover">
+            <div class="flex items-start justify-between gap-4 mb-3">
+              <div>
+                <div class="text-xs font-mono text-accent uppercase tracking-wider">Personal SaaS · multi-service</div>
+                <h3 class="mt-1 text-xl font-bold text-ink">AdminRent — Residential property management 🇵🇾</h3>
+              </div>
+              <span class="text-xs font-mono text-slate-700 bg-slate-100 border border-slate-200 px-2 py-1 rounded whitespace-nowrap">Personal · private</span>
+            </div>
+            <p class="text-sm text-muted leading-relaxed">
+              <strong class="text-ink">Personal project</strong> built end-to-end on my own time. Multi-tenant SaaS for managing residential complexes: admins handle properties, tenants and rent collection from a web dashboard; residents pay, upload receipts and get push notifications from a mobile app; invoices are issued through Paraguay's <strong class="text-ink">SIFEN</strong> tax authority via an independent microservice.
+            </p>
+            <div class="mt-4 rounded-xl bg-slate-50 border border-slate-100 p-4 text-sm text-slate-700 leading-relaxed">
+              <div class="text-xs font-mono text-accent uppercase tracking-wider mb-2">Architecture · 4 services</div>
+              <ul class="space-y-1.5">
+                <li><span class="font-mono text-xs bg-white border border-slate-200 px-1.5 py-0.5 rounded">web</span> Next.js 16 admin dashboard — App Router, Server Components, route groups <span class="font-mono text-xs">(auth)</span> / <span class="font-mono text-xs">(dashboard)</span>, Supabase SSR with JWT refreshed inside a Next.js proxy/middleware that also auth-gates protected routes.</li>
+                <li><span class="font-mono text-xs bg-white border border-slate-200 px-1.5 py-0.5 rounded">api</span> Flask 3 REST API in a layered architecture (<span class="font-mono text-xs">api / services / models / middleware</span>) on PostgreSQL, with Alembic migrations auto-applied on each Railway release.</li>
+                <li><span class="font-mono text-xs bg-white border border-slate-200 px-1.5 py-0.5 rounded">mobile</span> Flutter app for residents with Riverpod state, Dio HTTP, Firebase Auth + FCM push, and sqflite as an offline cache for low-connectivity scenarios.</li>
+                <li><span class="font-mono text-xs bg-white border border-slate-200 px-1.5 py-0.5 rounded">sifen</span> Independent TypeScript + Express microservice that signs and submits XML invoices over SOAP to Paraguay's tax authority — own database, cron jobs, and Docker image.</li>
+              </ul>
+            </div>
+            <div class="mt-4">
+              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">Web · Admin dashboard</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Next.js 16 (App Router)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">React 19</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TypeScript</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Tailwind v4</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TanStack Query</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Supabase SSR</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Axios</span>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">API · Backend</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Python · Flask 3</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">SQLAlchemy 2 + Alembic</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PostgreSQL</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PyJWT (asymmetric)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flask-Limiter</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Resend (email)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">WeasyPrint (PDF)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">OpenPyXL (Excel)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Gunicorn</span>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">Mobile · Residents</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flutter (Dart 3)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Riverpod</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Dio</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Firebase Auth + FCM</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">sqflite (offline)</span>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">SIFEN microservice · e-invoicing</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Node.js + TypeScript</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Express</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PostgreSQL</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">SOAP</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">xml-crypto + node-forge</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Zod</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">node-cron</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Docker</span>
+              </div>
+            </div>
+            <div class="mt-3">
+              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">DevOps</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Railway (multi-service)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Docker</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Auto Alembic migrations on release</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Env-scoped config</span>
+              </div>
+            </div>
+            <p class="mt-4 text-xs text-muted leading-relaxed">Source code is private — happy to walk through the architecture, the SIFEN signing flow or the auth model on a call.</p>
+          </article>
+
           <!-- Murales Políticos — flagship -->
           <article class="p-7 bg-white border border-slate-100 rounded-2xl card-hover">
             <div class="flex items-start justify-between gap-4 mb-3">
