@@ -121,6 +121,167 @@
       transform: translateY(0);
     }
   </style>
+
+  <!-- ============================================================ -->
+  <!-- DARK THEME — matched to /blog/ palette                      -->
+  <!-- ============================================================ -->
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-deep: #06101F;
+      --bg-mid: #0E1F3A;
+      --bg-card: #122845;
+      --bg-card-hover: #16335A;
+      --accent: #2E75B6;
+      --accent-light: #4FA9E8;
+      --accent-glow: #7DD3FC;
+      --text: #E2E8F0;
+      --text-strong: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --border-subtle: rgba(148, 163, 184, 0.14);
+      --border-mid: rgba(148, 163, 184, 0.22);
+      --border-strong: rgba(46, 117, 182, 0.45);
+    }
+
+    /* Body / page background */
+    body.bg-white,
+    body {
+      background:
+        radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
+        radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
+        var(--bg-deep) !important;
+      background-attachment: fixed;
+      color: var(--text) !important;
+      min-height: 100vh;
+    }
+
+    /* Hero gradient */
+    .gradient-bg {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(46,117,182,0.22), transparent 45%),
+        radial-gradient(circle at 80% 60%, rgba(125,211,252,0.10), transparent 55%),
+        linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-mid) 100%) !important;
+    }
+    .gradient-dark {
+      background:
+        radial-gradient(circle at 0% 0%, rgba(46,117,182,0.35), transparent 40%),
+        radial-gradient(circle at 100% 100%, rgba(125,211,252,0.15), transparent 50%),
+        #0A1A33 !important;
+    }
+    .dotted-pattern {
+      background-image: radial-gradient(circle, rgba(125,211,252,0.10) 1px, transparent 1px) !important;
+      background-size: 20px 20px;
+    }
+
+    /* Nav */
+    nav.bg-white\/85,
+    nav[class*="bg-white"] {
+      background: rgba(6, 16, 31, 0.85) !important;
+      border-bottom: 1px solid var(--border-subtle) !important;
+      backdrop-filter: blur(16px);
+    }
+
+    /* Generic light backgrounds → dark slate */
+    .bg-white { background-color: var(--bg-mid) !important; }
+    .bg-slate-50 { background-color: rgba(255,255,255,0.025) !important; }
+    .bg-slate-50\/70 { background-color: rgba(255,255,255,0.04) !important; }
+    .bg-slate-100 { background-color: rgba(255,255,255,0.05) !important; }
+    .bg-cream { background-color: var(--bg-deep) !important; }
+
+    /* "Selected work" section bg */
+    section.bg-slate-50 {
+      background: var(--bg-deep) !important;
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    /* Cards / articles */
+    article.bg-white,
+    article[class*="bg-gradient-to-br"],
+    .bg-gradient-to-br.from-white,
+    article {
+      background: linear-gradient(180deg, var(--bg-card), var(--bg-mid)) !important;
+      border: 1px solid var(--border-subtle) !important;
+    }
+    article[class*="border-accent"],
+    article[class*="border-primary"] {
+      border-color: rgba(125,211,252,0.30) !important;
+      background: linear-gradient(180deg, rgba(46,117,182,0.10), var(--bg-mid)) !important;
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -6px rgba(46,117,182,0.25), 0 4px 8px -4px rgba(46,117,182,0.18) !important;
+      border-color: var(--border-strong) !important;
+    }
+
+    /* Text colors */
+    .text-ink { color: var(--text-strong) !important; }
+    .text-muted { color: var(--text-muted) !important; }
+    .text-slate-400 { color: var(--text-dim) !important; }
+    .text-slate-500 { color: var(--text-dim) !important; }
+    .text-slate-700 { color: var(--text) !important; }
+
+    .text-primary { color: var(--accent-light) !important; }
+    .text-accent { color: var(--accent-glow) !important; }
+    .text-emerald-700 { color: #6EE7B7 !important; }
+    .text-emerald-900 { color: #A7F3D0 !important; }
+
+    /* Primary / accent backgrounds */
+    .bg-primary { background-color: var(--accent) !important; }
+    .bg-accent { background-color: var(--accent-glow) !important; }
+    .bg-primary\/10,
+    .bg-accent\/10 { background-color: rgba(46,117,182,0.12) !important; }
+    .bg-accent\/15 { background-color: rgba(46,117,182,0.18) !important; }
+
+    /* Borders */
+    .border-slate-100 { border-color: var(--border-subtle) !important; }
+    .border-slate-200 { border-color: var(--border-mid) !important; }
+    .border-accent\/20 { border-color: rgba(125,211,252,0.20) !important; }
+    .border-accent\/30 { border-color: rgba(125,211,252,0.30) !important; }
+    .border-primary\/30 { border-color: rgba(46,117,182,0.40) !important; }
+
+    /* Buttons */
+    .bg-primary.text-white { color: #FFFFFF !important; }
+    button, a[class*="bg-primary"]:hover { background-color: var(--accent-light) !important; }
+
+    /* Inline code in tech-tag pills */
+    code, .font-mono { color: var(--accent-glow); }
+
+    /* Marquee text on hero */
+    .marquee, .marquee * { color: var(--text-muted) !important; }
+
+    /* Footer dark section */
+    footer { background: var(--bg-deep) !important; }
+
+    /* Toast */
+    .toast { background: var(--bg-card) !important; border: 1px solid var(--border-subtle); }
+
+    /* Slate-100 borders that wrap sections */
+    .border-y.border-slate-100,
+    [class*="border-slate-100"] { border-color: var(--border-subtle) !important; }
+
+    /* Hover states */
+    .hover\:text-white:hover { color: var(--text-strong) !important; }
+    .hover\:text-primary:hover { color: var(--accent-glow) !important; }
+
+    /* "Inset" headings keep visual weight */
+    h1, h2, h3, h4 { color: var(--text-strong); }
+
+    /* Subtle pill tags (the small tech badges) */
+    .text-\[11px\].bg-white {
+      background: rgba(255,255,255,0.06) !important;
+      border-color: var(--border-subtle) !important;
+      color: var(--text) !important;
+    }
+
+    /* Inline code blocks (the `<code>` snippets in cards) */
+    code.bg-white {
+      background: rgba(46,117,182,0.18) !important;
+      color: var(--accent-glow) !important;
+      border: 1px solid rgba(46,117,182,0.30);
+    }
+  </style>
 </head>
 <body class="bg-white text-ink antialiased">
 
@@ -134,12 +295,12 @@
       <div class="hidden md:flex items-center gap-8 text-sm text-muted">
         <a href="#about" class="hover:text-primary transition link-underline">About</a>
         <a href="#work" class="hover:text-primary transition link-underline">Work</a>
+        <a href="./blog/" class="hover:text-primary transition link-underline">Writing</a>
         <a href="#experience" class="hover:text-primary transition link-underline">Experience</a>
         <a href="#stack" class="hover:text-primary transition link-underline">Stack</a>
         <a href="#learning" class="hover:text-primary transition link-underline">Learning</a>
         <a href="#open-source" class="hover:text-primary transition link-underline">Open source</a>
         <a href="#volunteering" class="hover:text-primary transition link-underline">Community</a>
-        <a href="#now" class="hover:text-primary transition link-underline">Now</a>
         <a href="#contact" class="hover:text-primary transition link-underline">Contact</a>
       </div>
       <a href="#contact" class="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition font-medium">Hire me</a>
@@ -1473,6 +1634,7 @@
         <ul class="space-y-1.5">
           <li><a href="#about" class="hover:text-white transition">About</a></li>
           <li><a href="#work" class="hover:text-white transition">Selected work</a></li>
+          <li><a href="./blog/" class="hover:text-white transition">Writing →</a></li>
           <li><a href="#experience" class="hover:text-white transition">Experience</a></li>
           <li><a href="#learning" class="hover:text-white transition">Learning</a></li>
           <li><a href="#open-source" class="hover:text-white transition">Open source</a></li>
