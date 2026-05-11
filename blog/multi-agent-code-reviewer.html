@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Three AI Agents in Parallel + One Supervisor — Nery Cano</title>
+  <meta name="description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Three AI Agents in Parallel + One Supervisor — Nery Cano" />
+  <meta property="og:description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
+  <meta property="article:published_time" content="2026-05-19" />
+  <meta property="article:tag" content="Multi-agent" />
+  <meta property="article:tag" content="Anthropic Claude" />
+  <meta property="article:tag" content="Vercel AI SDK" />
+  <meta property="article:tag" content="Zod" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Three AI Agents in Parallel + One Supervisor" />
+  <meta name="twitter:description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner.png" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root {
+      --primary: #1F3A68;
+      --accent: #2E75B6;
+      --accent-light: #4FA9E8;
+      --accent-glow: #7DD3FC;
+      --ink: #0F172A;
+      --bg-deep: #06101F;
+      --bg-mid: #0E1F3A;
+      --muted: #94A3B8;
+      --text: #E2E8F0;
+      --text-strong: #F1F5F9;
+      --border: rgba(148, 163, 184, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 19px;
+      line-height: 1.7;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
+                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
+                  var(--bg-deep);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
+    .header-nav {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 24px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .header-nav a { color: var(--muted); }
+    .header-nav a:hover { color: var(--accent-glow); }
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .article-meta {
+      margin-top: 56px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+    }
+    h1.article-title {
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      color: var(--text-strong);
+      margin: 14px 0 12px;
+    }
+    .article-subtitle {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--muted);
+      margin: 0 0 32px;
+    }
+    .byline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .byline-name {
+      font-family: "Inter", system-ui, sans-serif;
+      font-weight: 600;
+      color: var(--text-strong);
+      font-size: 15px;
+    }
+    .byline-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .banner-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 8px 0 40px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+    .article-body {
+      font-size: 19px;
+      line-height: 1.75;
+      color: var(--text);
+    }
+    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
+      font-family: "Inter", system-ui, sans-serif;
+      color: var(--text-strong);
+      margin: 48px 0 14px;
+      letter-spacing: -0.4px;
+      line-height: 1.25;
+    }
+    .article-body h1 { font-size: 32px; font-weight: 800; }
+    .article-body h2 { font-size: 26px; font-weight: 700; }
+    .article-body h3 { font-size: 21px; font-weight: 700; }
+    .article-body p { margin: 18px 0; }
+    .article-body strong { color: var(--text-strong); font-weight: 700; }
+    .article-body em { color: var(--text); }
+    .article-body ul, .article-body ol { padding-left: 28px; }
+    .article-body li { margin: 8px 0; }
+    .article-body blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 24px 0;
+      padding: 4px 24px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .article-body code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.88em;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(46,117,182,0.25);
+    }
+    .article-body pre {
+      background: #1a1f2e !important;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px !important;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 24px 0;
+    }
+    .article-body pre code {
+      background: transparent;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font-size: 14px;
+    }
+    .article-body hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+    .article-body img { max-width: 100%; border-radius: 6px; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .article-body th, .article-body td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
+    .footer-cta {
+      margin-top: 56px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
+    }
+    .footer-cta h3 {
+      margin: 0 0 12px;
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 20px;
+      color: var(--text-strong);
+    }
+    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
+    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
+    .footer-cta .links a {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--accent-glow);
+    }
+    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-pill {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 14px;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      border: 1px solid rgba(46,117,182,0.3);
+      letter-spacing: 1px;
+    }
+    .site-footer {
+      max-width: 760px;
+      margin: 60px auto 40px;
+      padding: 24px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 1px;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      h1.article-title { font-size: 32px; }
+      .article-subtitle { font-size: 18px; }
+      .article-body { font-size: 17px; }
+      .article-body h1 { font-size: 26px; }
+      .article-body h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="header-nav">
+    <a href="../">← Portfolio</a>
+    <a href="./">All writing</a>
+  </nav>
+  <article class="article">
+    <div class="article-meta">May 19, 2026 · 11 min read</div>
+    <h1 class="article-title">Three AI Agents in Parallel + One Supervisor</h1>
+    <p class="article-subtitle">How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer.</p>
+    <div class="byline">
+      <div>
+        <div class="byline-name">Nery Cano</div>
+        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+      </div>
+    </div>
+    <img class="banner-img" src="post_2_multiagent_banner.png" alt="Three AI Agents in Parallel + One Supervisor" />
+    <div class="article-body">
+<p><em>How <code>Promise.all</code>, Zod, and Server-Sent Events compose into a multi-agent system that's easier to reason about than a single big LLM.</em></p>
+<hr />
+<p>A single LLM doing "general code review" is mid.</p>
+<p>Not because LLMs are bad — they're great. But ask one model to find security bugs, performance bugs, and maintainability bugs all at once, and you'll see the same failure modes show up over and over: it skews toward whatever category looks most obvious in the snippet, drops findings when the code gets long, and produces <em>unbalanced</em> reports — five style nits, zero security flags, on a SQL injection that's plain as day.</p>
+<p>I built a code reviewer that doesn't have that problem. The trick was to stop asking a single agent to be a generalist and instead orchestrate <strong>three specialists in parallel</strong> with a <strong>supervisor</strong> consolidating their findings.</p>
+<p>This post walks through the architecture, the three engineering decisions I'd defend in any review, and the small but important surprises that came up while building it.</p>
+<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
+<hr />
+<h2>The architecture in one diagram</h2>
+<pre><code class="language-typescript">            ┌──────────────┐
+   code ──► │  parseInput  │ (snippet or GitHub URL)
+            └──────┬───────┘
+                   ▼
+            ┌──────────────┐
+            │ extractMeta  │ (lang, lines, complexity)
+            └──────┬───────┘
+                   ▼
+   ┌─────────── Promise.all ───────────┐
+   │                                   │
+   ▼               ▼                   ▼
+┌───────┐      ┌────────┐         ┌──────────┐
+│ Sec   │      │ Perf   │         │  Maint   │
+│ agent │      │ agent  │         │  agent   │
+└───┬───┘      └───┬────┘         └────┬─────┘
+    └──────────────┼──────────────────┘
+                   ▼
+            ┌──────────────┐
+            │  Supervisor  │ (deduplicates, scores 0–100, summary)
+            └──────┬───────┘
+                   ▼
+                report
+</code></pre>
+<p>All four agents are LLM calls. The three specialists are <code>claude-sonnet-4.6</code>. The supervisor is <code>claude-haiku-4.5</code> (cheaper, fine for the mechanical sort/dedupe job). Every step is streamed back to the browser as Server-Sent Events so the user sees a live timeline of what's happening, not a 30-second loading spinner.</p>
+<hr />
+<h2>Decision 1 — <code>Promise.all</code>, not sequential</h2>
+<p>The naive way to run three agents is to await them one after another:</p>
+<pre><code class="language-ts">const sec = await runSecurityAgent(code, meta);
+const perf = await runPerformanceAgent(code, meta);
+const maint = await runMaintainabilityAgent(code, meta);
+</code></pre>
+<p>That works, but it's <strong>3× slower than it has to be</strong>. Each agent makes an independent LLM call; none of them needs the others' output. A 15-second per-agent latency adds up to ~45 seconds of "loading…"</p>
+<p><code>Promise.all</code> parallelizes the three calls trivially:</p>
+<pre><code class="language-ts">const [secFindings, perfFindings, maintFindings] = await Promise.all([
+  runSecurityAgent(code, meta).then((findings) =&gt; {
+    send({ type: 'agent', name: 'security', status: 'done', findings });
+    return findings;
+  }),
+  runPerformanceAgent(code, meta).then((findings) =&gt; {
+    send({ type: 'agent', name: 'performance', status: 'done', findings });
+    return findings;
+  }),
+  runMaintainabilityAgent(code, meta).then((findings) =&gt; {
+    send({ type: 'agent', name: 'maintainability', status: 'done', findings });
+    return findings;
+  }),
+]);
+
+// Supervisor needs all three — runs after.
+const report = await runSupervisorAgent(
+  [...secFindings, ...perfFindings, ...maintFindings],
+  meta,
+);
+</code></pre>
+<p>Three things to notice:</p>
+<ol>
+<li><strong>Total latency is now <code>max(t_sec, t_perf, t_maint)</code> ≈ 15s</strong>, not their sum.</li>
+<li>The <code>.then(...)</code> chains let me <strong>send an SSE event the moment each agent finishes</strong>, in whatever order they happen to finish. The UI shows "✓ Maintainability done · 🔄 Security still running" without me having to plumb anything special.</li>
+<li>The supervisor naturally runs <em>after</em> <code>Promise.all</code> resolves — no extra awaits needed; the data dependency is enforced by the call site.</li>
+</ol>
+<p>If your agents <em>do</em> depend on each other (e.g. agent B needs agent A's output to plan its query), <code>Promise.all</code> won't help and you should keep the sequential pattern. But for code review, where each specialist has a different lens on the same input, parallel is free latency.</p>
+<hr />
+<h2>Decision 2 — Zod schemas as agent contracts</h2>
+<p>This is the single most important pattern I've adopted in 2026 for working with LLMs.</p>
+<p>The old way: ask the model nicely to return JSON, then <code>JSON.parse()</code> and hope nothing weird happens. This fails in three ways:</p>
+<ul>
+<li>The model returns <code>```json ... ```</code> markdown-fenced output and your parser breaks.</li>
+<li>The model invents a field that doesn't exist in your TypeScript type.</li>
+<li>The model omits a required field; you don't notice until production.</li>
+</ul>
+<p>The new way: pass a <strong>Zod schema</strong> to AI SDK v6's <code>generateObject</code>, and let the SDK enforce the shape on the way out of the model.</p>
+<pre><code class="language-ts">const FindingSchema = z.object({
+  severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
+  category: z.enum(['security', 'performance', 'maintainability']),
+  title: z.string(),
+  line: z.number().int().positive().optional(),
+  description: z.string(),
+  suggestion: z.string(),
+  codeExample: z.object({
+    before: z.string(),
+    after: z.string(),
+  }).optional(),
+});
+
+const FindingArraySchema = z.array(FindingSchema);
+
+export async function runSecurityAgent(code: string, meta: CodeMetadata): Promise&lt;Finding[]&gt; {
+  const { object } = await generateObject({
+    model: REVIEW_MODEL,         // claude-sonnet-4.6
+    schema: FindingArraySchema,  // ← the contract
+    system: SYSTEM_PROMPT_SECURITY,
+    prompt: `Language: ${meta.lang}\nLines: ${meta.lines}\n\nCode:\n\`\`\`${meta.lang}\n${code}\n\`\`\``,
+  });
+  return object; // already typed as Finding[]
+}
+</code></pre>
+<p>Three things to notice:</p>
+<ol>
+<li><strong>No parsing.</strong> No regex. No <code>try { JSON.parse(text) } catch</code>. The SDK does it.</li>
+<li><strong>No casting.</strong> <code>object</code> is typed as <code>Finding[]</code>, end of story.</li>
+<li><strong>No "did the model hallucinate a field?" anxiety.</strong> If the model returns something that doesn't match the schema, the SDK retries or throws. Either way, the bug never escapes into your business logic.</li>
+</ol>
+<p>This is what I mean by <em>agent contracts</em>. The schema is a hard boundary between "untrusted LLM text" and "trusted typed data." Once you pass it, the model is just another component.</p>
+<p>The same pattern works for the supervisor:</p>
+<pre><code class="language-ts">const ReviewReportSchema = z.object({
+  score: z.number().int().min(0).max(100),
+  summary: z.string(),
+  recommendation: z.string(),
+  findings: FindingArraySchema,
+});
+
+export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata) {
+  const { object } = await generateObject({
+    model: SUPERVISOR_MODEL,    // claude-haiku-4.5
+    schema: ReviewReportSchema,
+    system: SUPERVISOR_PROMPT,
+    prompt: `Code metadata: ${meta.lang}, ${meta.lines} lines\n\nRaw findings:\n${JSON.stringify(findings, null, 2)}`,
+  });
+  return object;
+}
+</code></pre>
+<p>Same idea, different schema. The supervisor's prompt is a few sentences telling it to deduplicate, prioritize by severity (security &gt; performance &gt; maintainability when severity ties), and assign a 0–100 score with cutoffs (90+ = production-ready, &lt;50 = significant problems). The schema enforces that the score is an integer 0–100, the summary is a string, and the findings are still valid <code>Finding[]</code>.</p>
+<hr />
+<h2>Decision 3 — Single SSE endpoint, no Redis</h2>
+<p>The most tempting bad architecture for "long-running multi-step jobs" is:</p>
+<ol>
+<li>Client <code>POST /jobs/start</code> → returns a <code>jobId</code>.</li>
+<li>Client polls <code>GET /jobs/:id/status</code> every second.</li>
+<li>Server writes job state to Redis or KV between calls.</li>
+</ol>
+<p>This adds a whole external dependency (Redis), introduces stale-state bugs, and gives the user a worse UX (1-second polling intervals look chunky).</p>
+<p>The cleaner pattern: the <code>POST</code> request itself <strong>is</strong> the stream. The browser opens the connection, the server pushes events as the job progresses, and when the job is done the connection closes.</p>
+<p>Server side:</p>
+<pre><code class="language-ts">export async function POST(req: Request) {
+  const body = await req.json();
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (event: object) =&gt; {
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+      };
+
+      try {
+        await orchestrate(send, body);
+      } catch (err) {
+        send({ type: 'error', message: String(err) });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
+}
+</code></pre>
+<p>The <code>send</code> function is a simple closure that emits a Server-Sent Event. Inside <code>orchestrate</code>, every step calls <code>send()</code> when it starts, when it produces results, when it errors:</p>
+<pre><code class="language-ts">send({ type: 'started', jobId });
+send({ type: 'step', name: 'parseInput', status: 'done' });
+send({ type: 'agent', name: 'security', status: 'running' });
+// ... agent runs in parallel ...
+send({ type: 'agent', name: 'security', status: 'done', findings });
+// ... supervisor runs ...
+send({ type: 'report', report });
+send({ type: 'done' });
+</code></pre>
+<p>Client side, the browser reads the stream:</p>
+<pre><code class="language-ts">const res = await fetch('/api/review', { method: 'POST', body: JSON.stringify({ ... }) });
+const reader = res.body!.getReader();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  buffer += decoder.decode(value, { stream: true });
+  const events = buffer.split('\n\n');
+  buffer = events.pop() ?? '';
+  for (const event of events) {
+    if (!event.startsWith('data: ')) continue;
+    const parsed = JSON.parse(event.slice(6));
+    setEvents(prev =&gt; [...prev, parsed]);
+  }
+}
+</code></pre>
+<p>That's it. No <code>setInterval</code>. No second endpoint. No Redis. The state lives in the streaming response, the job dies when the connection closes, and the client gets real-time updates with zero polling overhead.</p>
+<p>The only constraint: this works inside a single function invocation. If your job is too slow for the platform's max function duration, you do need a real job queue. But for "three agents + a supervisor in 30 seconds total," it's perfect.</p>
+<hr />
+<h2>Why Haiku for the supervisor</h2>
+<p>A small but cost-relevant choice: I use Sonnet for the three specialists and <strong>Haiku</strong> for the supervisor.</p>
+<p>The specialists are doing real reasoning: parsing code, identifying vulnerabilities, suggesting fixes with diffs. They benefit from Sonnet's depth.</p>
+<p>The supervisor is doing <strong>mechanical work</strong>: sort, deduplicate, prioritize, summarize, score. None of those require deep reasoning about the code itself — the supervisor never sees the code, only the structured findings. Haiku is plenty.</p>
+<p>Concretely:</p>
+<ul>
+<li>A typical review fires 4 LLM calls (3 specialists + 1 supervisor).</li>
+<li>Three of those are Sonnet, one is Haiku — significantly cheaper than four Sonnet calls, and indistinguishable in output quality for the supervisor's specific job.</li>
+</ul>
+<p>This is a generalizable lesson: <strong>the model you pick should match the cognitive complexity of the task, not the impressiveness of the system overall.</strong> A multi-agent system with a Haiku-powered supervisor is still a sophisticated system. You don't gain anything by paying Sonnet rates for a task Haiku does fine.</p>
+<hr />
+<h2>What I learned</h2>
+<p>Three things I'll carry forward:</p>
+<ol>
+<li><strong>Specialists + supervisor beats one big agent.</strong> Splitting a fuzzy task into focused sub-tasks gives the model less cognitive overhead per call and produces more balanced output. The mental model is closer to a human team than a brain-in-a-vat.</li>
+<li><strong>Zod schemas are non-negotiable for LLM tool outputs.</strong> Treat the schema as the contract. Your business logic should never see free-form model text — only validated typed data.</li>
+<li><strong>Streams beat polling for any job that takes 5–60 seconds.</strong> SSE inside a single POST is the cleanest pattern I've found. Use it as the default; reach for a real job queue only when you actually exceed function duration.</li>
+</ol>
+<p>The full code, including the <code>code-input</code> editor, the <code>workflow-progress</code> timeline component, and all four agent prompts, is on GitHub. Live demo accepts both pasted snippets and GitHub file URLs.</p>
+<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong><br />
+🔗 <strong>Live demo:</strong> multi-agent-code-reviewer-sable.vercel.app</p>
+    </div>
+    <div class="tag-pills">
+      <span class="tag-pill">Multi-agent</span>
+      <span class="tag-pill">Anthropic Claude</span>
+      <span class="tag-pill">Vercel AI SDK</span>
+      <span class="tag-pill">Zod</span>
+    </div>
+    <div class="footer-cta">
+      <h3>About this project</h3>
+      <p>The full source code, README, and live demo:</p>
+      <div class="links">
+        <a href="https://github.com/NeryC/multi-agent-code-reviewer">💻 github.com/NeryC/multi-agent-code-reviewer ↗</a>
+        <a href="https://multi-agent-code-reviewer-sable.vercel.app">🔗 Live demo ↗</a>
+      </div>
+      <h3 style="margin-top:24px;">About the author</h3>
+      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
+      <div class="links">
+        <a href="../">Portfolio ↗</a>
+        <a href="https://github.com/NeryC">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
+        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
+      </div>
+    </div>
+  </article>
+  <footer class="site-footer">
+    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

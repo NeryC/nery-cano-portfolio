@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building a Zero-Dependency PDF Parser to Survive Vercel Serverless — Nery Cano</title>
+  <meta name="description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless — Nery Cano" />
+  <meta property="og:description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
+  <meta property="article:published_time" content="2026-05-12" />
+  <meta property="article:tag" content="RAG" />
+  <meta property="article:tag" content="Anthropic Claude" />
+  <meta property="article:tag" content="Next.js" />
+  <meta property="article:tag" content="Serverless" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless" />
+  <meta name="twitter:description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root {
+      --primary: #1F3A68;
+      --accent: #2E75B6;
+      --accent-light: #4FA9E8;
+      --accent-glow: #7DD3FC;
+      --ink: #0F172A;
+      --bg-deep: #06101F;
+      --bg-mid: #0E1F3A;
+      --muted: #94A3B8;
+      --text: #E2E8F0;
+      --text-strong: #F1F5F9;
+      --border: rgba(148, 163, 184, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 19px;
+      line-height: 1.7;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
+                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
+                  var(--bg-deep);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
+    .header-nav {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 24px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .header-nav a { color: var(--muted); }
+    .header-nav a:hover { color: var(--accent-glow); }
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .article-meta {
+      margin-top: 56px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+    }
+    h1.article-title {
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      color: var(--text-strong);
+      margin: 14px 0 12px;
+    }
+    .article-subtitle {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--muted);
+      margin: 0 0 32px;
+    }
+    .byline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .byline-name {
+      font-family: "Inter", system-ui, sans-serif;
+      font-weight: 600;
+      color: var(--text-strong);
+      font-size: 15px;
+    }
+    .byline-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .banner-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 8px 0 40px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+    .article-body {
+      font-size: 19px;
+      line-height: 1.75;
+      color: var(--text);
+    }
+    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
+      font-family: "Inter", system-ui, sans-serif;
+      color: var(--text-strong);
+      margin: 48px 0 14px;
+      letter-spacing: -0.4px;
+      line-height: 1.25;
+    }
+    .article-body h1 { font-size: 32px; font-weight: 800; }
+    .article-body h2 { font-size: 26px; font-weight: 700; }
+    .article-body h3 { font-size: 21px; font-weight: 700; }
+    .article-body p { margin: 18px 0; }
+    .article-body strong { color: var(--text-strong); font-weight: 700; }
+    .article-body em { color: var(--text); }
+    .article-body ul, .article-body ol { padding-left: 28px; }
+    .article-body li { margin: 8px 0; }
+    .article-body blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 24px 0;
+      padding: 4px 24px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .article-body code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.88em;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(46,117,182,0.25);
+    }
+    .article-body pre {
+      background: #1a1f2e !important;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px !important;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 24px 0;
+    }
+    .article-body pre code {
+      background: transparent;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font-size: 14px;
+    }
+    .article-body hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+    .article-body img { max-width: 100%; border-radius: 6px; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .article-body th, .article-body td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
+    .footer-cta {
+      margin-top: 56px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
+    }
+    .footer-cta h3 {
+      margin: 0 0 12px;
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 20px;
+      color: var(--text-strong);
+    }
+    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
+    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
+    .footer-cta .links a {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--accent-glow);
+    }
+    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-pill {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 14px;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      border: 1px solid rgba(46,117,182,0.3);
+      letter-spacing: 1px;
+    }
+    .site-footer {
+      max-width: 760px;
+      margin: 60px auto 40px;
+      padding: 24px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 1px;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      h1.article-title { font-size: 32px; }
+      .article-subtitle { font-size: 18px; }
+      .article-body { font-size: 17px; }
+      .article-body h1 { font-size: 26px; }
+      .article-body h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="header-nav">
+    <a href="../">← Portfolio</a>
+    <a href="./">All writing</a>
+  </nav>
+  <article class="article">
+    <div class="article-meta">May 12, 2026 · 9 min read</div>
+    <h1 class="article-title">Building a Zero-Dependency PDF Parser to Survive Vercel Serverless</h1>
+    <p class="article-subtitle">How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys.</p>
+    <div class="byline">
+      <div>
+        <div class="byline-name">Nery Cano</div>
+        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+      </div>
+    </div>
+    <img class="banner-img" src="post_1_rag_banner.png" alt="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless" />
+    <div class="article-body">
+<p><em>How I dodged <code>DOMMatrix is not defined</code> and shipped a RAG agent that actually deploys.</em></p>
+<hr />
+<p>I was three hours into building a "chat with your PDFs" demo on Next.js 16 when I hit the kind of error that makes you question your career.</p>
+<pre><code class="language-typescript">ReferenceError: DOMMatrix is not defined
+    at /var/task/node_modules/pdfjs-dist/build/pdf.js:...
+</code></pre>
+<p>The PDF was loading fine on <code>localhost</code>. The moment I deployed to Vercel — boom. Function crash. The error surfaced from <code>pdfjs-dist</code>, the underlying library used by <code>pdf-parse</code> and roughly every "easy" PDF-text-extraction package on npm.</p>
+<p>The reason is simple and brutal: <code>pdfjs-dist</code> was designed to run <strong>in the browser</strong>. It depends on <code>DOMMatrix</code>, <code>canvas</code>, and a handful of other DOM APIs that have always been part of the Web Platform but have never existed in Node.js. On your laptop, Next.js's dev server is a forgiving Node + JSDOM-ish environment that papers over the gap. On Vercel's serverless runtime, there is no DOM, no shim, no mercy.</p>
+<p>I needed a different path.</p>
+<p>This post is about that path. I ended up writing a <strong>zero-dependency PDF parser</strong> using nothing but Node's built-in <code>zlib</code> and a few regular expressions. It is not pretty. It will never replace a real PDF library. But it's small, it's serverless-safe, and it ships.</p>
+<p>If you're building anything that has to extract text from user-uploaded PDFs in a Vercel/Lambda/Cloudflare Workers context, this is the cleanest workaround I've found.</p>
+<hr />
+<h2>A 60-second PDF anatomy lesson</h2>
+<p>Before the parser makes sense, you need to know what's actually inside a <code>.pdf</code> file. I knew almost nothing about this when I started; an afternoon of reading the <a href="https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf">Adobe PDF 1.7 reference</a> clarified things faster than I expected.</p>
+<p>A PDF is a tree of objects, encoded as a mix of ASCII and binary. The text you actually see on screen lives inside <strong>content streams</strong> — blobs of PostScript-like instructions that say "move the cursor here, set this font, show this string."</p>
+<p>A typical content stream looks something like this:</p>
+<pre><code class="language-typescript">BT
+  /F1 12 Tf
+  72 720 Td
+  (Hello, world.) Tj
+  0 -14 Td
+  [(Multiple) -250 (segments)] TJ
+ET
+</code></pre>
+<p>Two operators do almost all the work:</p>
+<ul>
+<li><strong><code>Tj</code></strong> — show a single string. Syntax: <code>(some text) Tj</code>.</li>
+<li><strong><code>TJ</code></strong> — show an array of strings with kerning adjustments. Syntax: <code>[(Multiple) -250 (segments)] TJ</code>.</li>
+</ul>
+<p>If you can extract the strings inside the parentheses of every <code>Tj</code> and <code>TJ</code> operator in every content stream, you have, approximately, the text of the PDF.</p>
+<p>There's one catch. Modern PDFs almost always <strong>compress</strong> their content streams using zlib (the <code>FlateDecode</code> filter in PDF terminology). A raw PDF byte-stream contains long runs of binary garbage that decompresses into the readable PostScript above.</p>
+<p>So the parser needs to do three things:</p>
+<ol>
+<li>Find every <code>stream ... endstream</code> block.</li>
+<li>Detect whether it's <code>FlateDecode</code>-compressed and inflate if so.</li>
+<li>Pull text out of <code>Tj</code> / <code>TJ</code> operators with regex.</li>
+</ol>
+<p>That's the entire algorithm.</p>
+<hr />
+<h2>Step 1 — Find every stream</h2>
+<p>A PDF stream is delimited by the literal keywords <code>stream</code> and <code>endstream</code>, with newlines in between. The content between them is opaque bytes — either binary (compressed) or PostScript (raw).</p>
+<p>The robust way to read a PDF in Node without losing bytes is to read it as <code>latin1</code>. Latin-1 maps every byte 0–255 to a unique character, so the round-trip is lossless. (UTF-8 would corrupt anything non-ASCII; the <code>Buffer</code> API is overkill for text scanning.)</p>
+<pre><code class="language-ts">import { inflateSync } from 'zlib'; // built-in, no npm install
+
+function extractPdfText(buffer: Buffer): string {
+  const raw = buffer.toString('latin1');
+  const texts: string[] = [];
+
+  const streamRegex = /stream\r?\n([\s\S]*?)\r?\nendstream/g;
+  let m: RegExpExecArray | null;
+
+  while ((m = streamRegex.exec(raw)) !== null) {
+    const streamData = m[1];
+    // ... step 2 below
+  }
+
+  return texts.join(' ').replace(/\s+/g, ' ').trim();
+}
+</code></pre>
+<p><code>[\s\S]*?</code> is the lazy "match anything including newlines" idiom — JavaScript doesn't have <code>re.DOTALL</code> like Python, so this is the standard workaround.</p>
+<h2>Step 2 — Decompress if FlateDecode</h2>
+<p>Each PDF stream is preceded by a dictionary that tells you which filter (if any) was used to encode the data. The dictionary lives in the bytes just before the <code>stream</code> keyword. We don't need to fully parse it — checking whether <code>FlateDecode</code> appears in the ~500 bytes preceding the stream is enough for 99% of real-world PDFs.</p>
+<pre><code class="language-ts">const streamStart = m.index;
+const preceding = raw.slice(Math.max(0, streamStart - 500), streamStart);
+const isFlate = preceding.includes('FlateDecode');
+
+let content: string;
+if (isFlate) {
+  try {
+    const compressed = Buffer.from(streamData, 'latin1');
+    const decompressed = inflateSync(compressed);
+    content = decompressed.toString('utf8');
+  } catch {
+    continue; // corrupted stream, skip
+  }
+} else {
+  content = streamData;
+}
+</code></pre>
+<p><code>inflateSync</code> is part of Node's built-in <code>zlib</code> module — no npm install, no bundling. It throws on malformed input, which is fine because PDFs sometimes contain partial or corrupted streams that aren't worth crashing the whole upload over.</p>
+<p>After inflation, <code>content</code> is the PostScript-like text we actually want.</p>
+<h2>Step 3 — Pull text from Tj and TJ</h2>
+<p>Two regexes do most of the work.</p>
+<pre><code class="language-ts">// Skip streams that don't have any text operators
+if (!content.includes('Tj') &amp;&amp; !content.includes('TJ')) continue;
+
+// (text) Tj
+for (const t of content.matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g)) {
+  const s = t[1]
+    .replace(/\\n/g, '\n')
+    .replace(/\\(\d{3})/g, (_, oct) =&gt; String.fromCharCode(parseInt(oct, 8)));
+  if (s.trim()) texts.push(s);
+}
+
+// [(text) -250 (more) ...] TJ
+for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
+  for (const p of t[1].matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g)) {
+    if (p[1].trim()) texts.push(p[1]);
+  }
+}
+</code></pre>
+<p>The <code>(?:\\.[^)\\]*)*</code> mess is there to handle escaped characters inside parentheses — PDFs allow <code>\)</code> and <code>\\</code> inside string literals, which would otherwise terminate the match early. The <code>\\(\d{3})</code> pass converts octal escapes (<code>\101</code> → <code>A</code>) that appear in some PDFs.</p>
+<p>This is enough to extract the text from a clinical paper, a textbook chapter, or pretty much any text-based PDF you'll feed a RAG pipeline.</p>
+<h2>What this does NOT handle</h2>
+<p>I want to be honest: this parser is good enough for RAG, not good enough for everything.</p>
+<p>It does not handle:</p>
+<ul>
+<li><strong>Scanned PDFs</strong> (image-only, no text streams). For those, you need OCR — Tesseract, AWS Textract, or Google Document AI.</li>
+<li><strong>Complex font encodings</strong> (<code>ToUnicode</code> CMaps). Some PDFs encode characters with non-standard glyph IDs that need a CMap lookup. Most consumer-generated PDFs (Word, Pages, LaTeX) are fine; weird editorial PDFs sometimes return garbage.</li>
+<li><strong>Table structure.</strong> Text comes out in reading order, but you lose the row/column relationships. Fine for chunking, bad for "extract this table as JSON."</li>
+<li><strong>Encrypted PDFs.</strong> They'll just look like garbage after the missing decryption step.</li>
+</ul>
+<p>For RAG, none of these usually matter. You're going to chunk the text anyway, embed it, and let semantic search do the heavy lifting.</p>
+<hr />
+<h2>Wiring it into the ingestion pipeline</h2>
+<p>Once the text is out, the rest of the ingestion is standard:</p>
+<pre><code class="language-ts">async function processDocument(blobUrl: string, sessionId: string, documentId: string) {
+  const buffer = await fetch(blobUrl).then(r =&gt; r.arrayBuffer());
+  const text = extractPdfText(Buffer.from(buffer));
+
+  const chunks = chunkText(text);              // ~500 tokens each, 50-token overlap
+  const embeddings = await embedBatch(chunks); // Voyage AI batch endpoint
+
+  await supabase.from('chunks').insert(
+    chunks.map((c, i) =&gt; ({
+      document_id: documentId,
+      session_id: sessionId,
+      content: c.content,
+      embedding: embeddings[i],
+      chunk_index: i,
+      page_number: c.pageNumber,
+    }))
+  );
+
+  await supabase
+    .from('documents')
+    .update({ status: 'ready', chunk_count: chunks.length })
+    .eq('id', documentId);
+}
+</code></pre>
+<p>A subtle point that bit me: I originally ran <code>processDocument</code> in the background using Vercel's <code>after()</code>. That dies on the Hobby plan because <code>after()</code> keeps the function alive past the 10-second hard cap. The fix was unromantic — run ingestion <strong>synchronously</strong> inside the upload route handler, fast enough that a 1–10 page PDF finishes in 2–5 seconds. The user gets <code>status: 'ready'</code> directly in the response and never sees a "processing" spinner.</p>
+<hr />
+<h2>What I learned</h2>
+<p>Two takeaways I'll carry into every future serverless LLM project:</p>
+<p><strong>Treat browser-only dependencies as a serverless red flag.</strong> If a package is built on top of <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, or any DOM API, assume it'll break in serverless and look for a Node-native alternative — even if it means writing a worse, simpler parser yourself. The maintenance cost of "weird unfixable production crash on Friday afternoon" outweighs the convenience of <code>npm install pdf-parse</code>.</p>
+<p><strong>A worse, smaller, owned parser beats a fancier one you can't debug.</strong> This parser is ~80 lines. I understand every byte of it. When something goes wrong, the stack trace points at a regex I wrote, not at three layers of abstraction inside a library. That ownership is worth a lot when you're shipping under a timeline.</p>
+<p>The full code, with chunking, embedding, the dual memory system, and the chat agent on top, lives at:</p>
+<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong><br />
+🔗 <strong>Live demo:</strong> rag-agent-memory.vercel.app</p>
+<p>If you're hitting the same <code>DOMMatrix is not defined</code> wall — paste my parser into your <code>lib/</code> folder, <code>npm uninstall pdf-parse</code>, and ship.</p>
+    </div>
+    <div class="tag-pills">
+      <span class="tag-pill">RAG</span>
+      <span class="tag-pill">Anthropic Claude</span>
+      <span class="tag-pill">Next.js</span>
+      <span class="tag-pill">Serverless</span>
+    </div>
+    <div class="footer-cta">
+      <h3>About this project</h3>
+      <p>The full source code, README, and live demo:</p>
+      <div class="links">
+        <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-with-memory ↗</a>
+        <a href="https://rag-agent-memory.vercel.app">🔗 Live demo ↗</a>
+      </div>
+      <h3 style="margin-top:24px;">About the author</h3>
+      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
+      <div class="links">
+        <a href="../">Portfolio ↗</a>
+        <a href="https://github.com/NeryC">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
+        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
+      </div>
+    </div>
+  </article>
+  <footer class="site-footer">
+    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
