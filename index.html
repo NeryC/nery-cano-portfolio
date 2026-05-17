@@ -243,7 +243,27 @@
 
     /* Buttons */
     .bg-primary.text-white { color: #FFFFFF !important; }
-    button, a[class*="bg-primary"]:hover { background-color: var(--accent-light) !important; }
+    /*
+     * Hover state for primary CTAs (anchors / buttons styled with
+     * .bg-primary). Previously this rule was `button, a[class*=...]:hover`
+     * — the bare `button` selector matched EVERY <button> on the page and
+     * gave them all a permanent #4FA9E8 background. That made the email
+     * button in the hero (slate text, blue bg) effectively invisible.
+     * Scope to only primary-styled buttons / anchors on hover.
+     */
+    button[class*="bg-primary"]:hover,
+    a[class*="bg-primary"]:hover { background-color: var(--accent-light) !important; }
+
+    /*
+     * Generic buttons (icon, copy-to-clipboard, etc.) should be
+     * transparent and inherit the slate text from their container.
+     * Browser user-agent gives <button> a `color: ButtonText` and a
+     * light gray background by default, which both clash with dark mode.
+     */
+    button:not([class*="bg-primary"]):not([class*="bg-emerald"]):not([class*="bg-white"]) {
+      background: transparent;
+      color: inherit;
+    }
 
     /* Inline code in tech-tag pills */
     code, .font-mono { color: var(--accent-glow); }
