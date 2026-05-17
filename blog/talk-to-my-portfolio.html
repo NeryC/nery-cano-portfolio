@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget — Nery Cano</title>
+  <meta name="description" content="How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget — Nery Cano" />
+  <meta property="og:description" content="How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_banner.svg" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/talk-to-my-portfolio.html" />
+  <meta property="article:published_time" content="2026-05-17" />
+  <meta property="article:tag" content="MCP" />
+  <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="Anthropic Claude" />
+  <meta property="article:tag" content="Next.js" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget" />
+  <meta name="twitter:description" content="How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_banner.svg" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root {
+      --primary: #1F3A68;
+      --accent: #2E75B6;
+      --accent-light: #4FA9E8;
+      --accent-glow: #7DD3FC;
+      --ink: #0F172A;
+      --bg-deep: #06101F;
+      --bg-mid: #0E1F3A;
+      --muted: #94A3B8;
+      --text: #E2E8F0;
+      --text-strong: #F1F5F9;
+      --border: rgba(148, 163, 184, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 19px;
+      line-height: 1.7;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
+                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
+                  var(--bg-deep);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
+    .header-nav {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 24px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .header-nav a { color: var(--muted); }
+    .header-nav a:hover { color: var(--accent-glow); }
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .article-meta {
+      margin-top: 56px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+    }
+    h1.article-title {
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      color: var(--text-strong);
+      margin: 14px 0 12px;
+    }
+    .article-subtitle {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--muted);
+      margin: 0 0 32px;
+    }
+    .byline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .byline-name {
+      font-family: "Inter", system-ui, sans-serif;
+      font-weight: 600;
+      color: var(--text-strong);
+      font-size: 15px;
+    }
+    .byline-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .banner-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 8px 0 40px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+    .article-body {
+      font-size: 19px;
+      line-height: 1.75;
+      color: var(--text);
+    }
+    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
+      font-family: "Inter", system-ui, sans-serif;
+      color: var(--text-strong);
+      margin: 48px 0 14px;
+      letter-spacing: -0.4px;
+      line-height: 1.25;
+    }
+    .article-body h1 { font-size: 32px; font-weight: 800; }
+    .article-body h2 { font-size: 26px; font-weight: 700; }
+    .article-body h3 { font-size: 21px; font-weight: 700; }
+    .article-body p { margin: 18px 0; }
+    .article-body strong { color: var(--text-strong); font-weight: 700; }
+    .article-body em { color: var(--text); }
+    .article-body ul, .article-body ol { padding-left: 28px; }
+    .article-body li { margin: 8px 0; }
+    .article-body blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 24px 0;
+      padding: 4px 24px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .article-body code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.88em;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(46,117,182,0.25);
+    }
+    .article-body pre {
+      background: #1a1f2e !important;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px !important;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 24px 0;
+    }
+    .article-body pre code {
+      background: transparent;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font-size: 14px;
+    }
+    .article-body hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+    .article-body img { max-width: 100%; border-radius: 6px; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .article-body th, .article-body td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
+
+    /* Didactic figures */
+    .figure {
+      margin: 40px -8px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
+    }
+    .figure svg { display: block; width: 100%; height: auto; }
+    .figure-caption {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 18px;
+      text-align: center;
+    }
+    .figure-caption strong {
+      color: var(--accent-glow);
+      letter-spacing: 1.4px;
+    }
+    .callout {
+      margin: 32px 0;
+      padding: 18px 22px;
+      border-radius: 10px;
+      background: rgba(46,117,182,0.10);
+      border: 1px solid rgba(46,117,182,0.30);
+      border-left: 3px solid var(--accent-glow);
+    }
+    .callout-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+      margin-bottom: 6px;
+    }
+    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
+    .bug-row {
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .bug-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--accent-glow);
+      flex-shrink: 0;
+      width: 48px;
+    }
+    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
+    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
+
+    .footer-cta {
+      margin-top: 56px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
+    }
+    .footer-cta h3 {
+      margin: 0 0 12px;
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 20px;
+      color: var(--text-strong);
+    }
+    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
+    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
+    .footer-cta .links a {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--accent-glow);
+    }
+    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-pill {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 14px;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      border: 1px solid rgba(46,117,182,0.3);
+      letter-spacing: 1px;
+    }
+    .site-footer {
+      max-width: 760px;
+      margin: 60px auto 40px;
+      padding: 24px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 1px;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      h1.article-title { font-size: 32px; }
+      .article-subtitle { font-size: 18px; }
+      .article-body { font-size: 17px; }
+      .article-body h1 { font-size: 26px; }
+      .article-body h2 { font-size: 22px; }
+      .figure { margin: 32px -8px; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="header-nav">
+    <a href="../">← Portfolio</a>
+    <a href="./">All writing</a>
+  </nav>
+  <article class="article">
+    <div class="article-meta">May 17, 2026 · 18 min read</div>
+    <h1 class="article-title">Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget</h1>
+    <p class="article-subtitle">How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel.</p>
+    <div class="byline">
+      <div>
+        <div class="byline-name">Nery Cano</div>
+        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+      </div>
+    </div>
+    <img class="banner-img" src="post_4_talk_banner.svg" alt="Talk to my portfolio — MCP server + embeddable AI widget" />
+
+    <div class="article-body">
+
+<p><em>This is the fourth and most ambitious project in the Talent Global portfolio series. The previous three (research agent, multi-agent reviewer, RAG with memory) were standalone Next.js apps. This one is a <strong>protocol implementation, a multi-package monorepo, and a piece of JavaScript that has to embed itself into someone else's HTML page</strong> — my own portfolio.</em></p>
+
+<p>If you opened this post from the bottom-right corner of <a href="../">neryc.github.io/nery-cano-portfolio</a>, you already clicked the FAB. That little 💬 button loads <code>widget.js</code>, mounts a Preact component, opens an iframe pointing at a Next.js page, and from there talks to a Model Context Protocol server that exposes a structured view of my entire professional history.</p>
+
+<p>The fun part: it took ten minutes to design and several hours to debug. Six production bugs separated "passes all 115 tests locally" from "actually works on Vercel." This is the long version of what's inside.</p>
+
+<p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong> · <a href="https://talk-to-my-portfolio.vercel.app">live demo</a> · <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">MCP endpoint</a></p>
+
+<hr />
+
+<h2>What it is, in one paragraph</h2>
+
+<p>An <strong>MCP server</strong> exposes 9 tools, 4 resources, and 3 prompts that read from JSON/Markdown files describing my CV, my projects, my work experience, my skills, and 164 real Platzi diplomas scraped via Playwright. Any MCP-compatible client (Claude Desktop, ChatGPT desktop, your own agent) can connect over Streamable HTTP and ask things like <em>"What projects has Nery built with TypeScript and Anthropic Claude?"</em>. Answers come from the structured data, not from the model's training set — so there are no hallucinations about my background.</p>
+
+<p>The same server also feeds a chat widget that I embed on this very portfolio. That gives recruiters a one-click way to ask anything about me without scrolling through 1,500 lines of HTML.</p>
+
+<div class="figure">
+<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrowEnd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
+    </marker>
+    <linearGradient id="boxFill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#122845"/>
+      <stop offset="1" stop-color="#0E1F3A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Browser host -->
+  <g transform="translate(20, 30)">
+    <rect width="160" height="100" rx="10" fill="url(#boxFill)" stroke="rgba(148,163,184,0.3)"/>
+    <text x="80" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Portfolio (host)</text>
+    <text x="80" y="50" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">neryc.github.io</text>
+    <text x="80" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#7DD3FC">&lt;script src="widget.js"&gt;</text>
+    <text x="80" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">+ FAB · iframe shell</text>
+  </g>
+
+  <!-- Vercel Next.js -->
+  <g transform="translate(260, 30)">
+    <rect width="200" height="100" rx="10" fill="url(#boxFill)" stroke="rgba(46,117,182,0.45)"/>
+    <text x="100" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">apps/web · Next.js 16</text>
+    <text x="100" y="48" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">talk-to-my-portfolio.vercel.app</text>
+    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">/widget · /demo · /api/agent</text>
+    <text x="100" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">/api/mcp (Streamable HTTP)</text>
+  </g>
+
+  <!-- MCP server -->
+  <g transform="translate(540, 30)">
+    <rect width="160" height="100" rx="10" fill="url(#boxFill)" stroke="rgba(125,211,252,0.5)"/>
+    <text x="80" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">@neryc/portfolio-mcp</text>
+    <text x="80" y="48" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">in-process MCP server</text>
+    <text x="80" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">9 tools · 4 resources</text>
+    <text x="80" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">3 prompts · sampling/elicit</text>
+  </g>
+
+  <!-- Data -->
+  <g transform="translate(540, 200)">
+    <rect width="160" height="120" rx="10" fill="url(#boxFill)" stroke="rgba(148,163,184,0.3)"/>
+    <text x="80" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">@neryc/portfolio-shared</text>
+    <text x="80" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">Zod schemas + JSON/MD</text>
+    <text x="80" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">cv.json · experience.json</text>
+    <text x="80" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">skills.json · courses.json</text>
+    <text x="80" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">projects/*.md · cv.md</text>
+  </g>
+
+  <!-- Widget pkg -->
+  <g transform="translate(20, 200)">
+    <rect width="160" height="120" rx="10" fill="url(#boxFill)" stroke="rgba(148,163,184,0.3)"/>
+    <text x="80" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">packages/widget</text>
+    <text x="80" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">Preact + esbuild bundle</text>
+    <text x="80" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">FAB · iframe wrapper</text>
+    <text x="80" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">→ apps/web/public/widget.js</text>
+    <text x="80" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">13 KB minified</text>
+  </g>
+
+  <!-- arrows -->
+  <line x1="180" y1="80" x2="258" y2="80" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
+  <text x="219" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">iframe</text>
+
+  <line x1="462" y1="80" x2="538" y2="80" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
+  <text x="500" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">in-process</text>
+
+  <line x1="620" y1="130" x2="620" y2="198" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
+  <text x="660" y="170" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">readFileSync</text>
+
+  <line x1="100" y1="198" x2="100" y2="132" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
+  <text x="62" y="170" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">build</text>
+</svg>
+<p class="figure-caption">Figure 1 · <strong>Big picture.</strong> The portfolio loads <code>widget.js</code>, which mounts a FAB and an iframe pointing at <code>/widget</code> on Vercel. From there everything is one Next.js deployment — the MCP server runs in-process alongside the agent.</p>
+</div>
+
+<h2>The monorepo, briefly</h2>
+
+<p>Four pnpm workspace packages:</p>
+
+<ul>
+<li><strong><code>apps/web</code></strong> — Next.js 16 (App Router, Turbopack). Hosts <code>/widget</code> (the iframe UI), <code>/demo</code> (the standalone chat), <code>/api/agent</code> (streaming agent route), and <code>/api/mcp</code> (Streamable HTTP MCP transport).</li>
+<li><strong><code>packages/mcp-server</code></strong> — <code>@neryc/portfolio-mcp</code>. Pure TypeScript that registers tools/resources/prompts against the MCP SDK. Has its own CLI binary for stdio mode (so Claude Desktop can launch it locally).</li>
+<li><strong><code>packages/shared</code></strong> — Zod schemas + typed data loaders + the JSON/Markdown seed files. Both apps and the MCP server import from here.</li>
+<li><strong><code>packages/widget</code></strong> — The Preact + esbuild bundle that becomes <code>widget.js</code>. Output is dropped into <code>apps/web/public/</code> so Vercel serves it at the public origin.</li>
+</ul>
+
+<p>Plus <code>scripts/sync-platzi</code> — a Playwright scraper that logs into Platzi once, walks the public profile + learning dashboard, and dumps 164 real courses with diploma URLs into <code>packages/shared/data/courses.json</code>. That data is what the MCP server returns when an agent asks <em>"show me Nery's Python certificates."</em></p>
+
+<hr />
+
+<h2>What's MCP, and why use it for this?</h2>
+
+<p>The Model Context Protocol is a small JSON-RPC protocol Anthropic published in late 2024 to standardize the conversation between an LLM client and a tool/data backend. A server exposes:</p>
+
+<ul>
+<li><strong>Tools</strong> — callable functions with Zod (or JSON Schema) parameters. Same role as OpenAI's function calling, except portable across providers.</li>
+<li><strong>Resources</strong> — read-only URIs the client can fetch. Think files, but addressable by scheme (<code>portfolio://cv/full</code>, <code>portfolio://projects/research-agent/case-study</code>).</li>
+<li><strong>Prompts</strong> — parametrized prompt templates that bundle instructions + arguments + sampling preferences.</li>
+</ul>
+
+<p>It also supports <strong>sampling</strong> (the server asking the client to run an LLM call) and <strong>elicitation</strong> (the server asking the client to collect structured input from the user). These are the bits that make MCP feel different from "just function calling."</p>
+
+<div class="figure">
+<svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrTip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
+    </marker>
+  </defs>
+  <!-- Two columns -->
+  <g transform="translate(60, 30)">
+    <rect width="180" height="40" rx="8" fill="rgba(46,117,182,0.18)" stroke="rgba(46,117,182,0.45)"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">MCP Client</text>
+    <text x="90" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">(Claude Desktop · Cursor)</text>
+    <text x="90" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">(my /api/agent · ChatGPT)</text>
+  </g>
+  <g transform="translate(480, 30)">
+    <rect width="180" height="40" rx="8" fill="rgba(125,211,252,0.18)" stroke="rgba(125,211,252,0.45)"/>
+    <text x="90" y="25" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">MCP Server</text>
+    <text x="90" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">@neryc/portfolio-mcp</text>
+  </g>
+
+  <!-- protocol lines -->
+  <g font-family="JetBrains Mono, monospace" font-size="11" fill="#94A3B8">
+    <line x1="150" y1="120" x2="570" y2="120" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
+    <text x="360" y="113" text-anchor="middle" fill="#7DD3FC">initialize  ·  client capabilities</text>
+
+    <line x1="570" y1="148" x2="150" y2="148" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
+    <text x="360" y="141" text-anchor="middle" fill="#7DD3FC">initialized  ·  server info + tools/resources/prompts</text>
+
+    <line x1="150" y1="186" x2="570" y2="186" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
+    <text x="360" y="179" text-anchor="middle" fill="#7DD3FC">tools/list  →  tools/call({ name, arguments })</text>
+
+    <line x1="570" y1="214" x2="150" y2="214" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
+    <text x="360" y="207" text-anchor="middle" fill="#7DD3FC">result  ·  may include resource refs</text>
+
+    <line x1="150" y1="244" x2="570" y2="244" stroke="rgba(125,211,252,0.5)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrTip)"/>
+    <text x="360" y="237" text-anchor="middle" fill="rgba(125,211,252,0.7)">sampling/elicitation (server → client)</text>
+  </g>
+</svg>
+<p class="figure-caption">Figure 2 · <strong>The MCP handshake.</strong> The client initializes with its capabilities; the server replies with what it can do; tool calls flow back and forth; sampling and elicitation requests go the <em>other</em> way too — server asks the client.</p>
+</div>
+
+<p>The wire format is plain JSON-RPC 2.0. The transport can be <strong>stdio</strong> (local subprocess, used by Claude Desktop) or <strong>Streamable HTTP</strong> (one-shot POST that returns either JSON or an SSE stream, used by remote clients). The SDK ships both server- and client-side transports for each.</p>
+
+<p>So why bother with MCP for a portfolio chatbot? I could have written a plain Next.js API route. Three answers:</p>
+
+<ol>
+<li><strong>Portability.</strong> The same server runs locally over stdio (so a hiring manager could add it to Claude Desktop and ask questions in their existing tool) and remotely over HTTP (so I can power a public widget). One code path, two transports.</li>
+<li><strong>It's the project, not just a means.</strong> The role I'm targeting (LLM/AI Full-Stack Engineer) cares that I can implement protocols, not just call them. MCP is the closest thing to a "standard" in agent tooling right now; doing it well is the demo.</li>
+<li><strong>Sampling and elicitation.</strong> Without these, "book a call" would be a server-side stub that just emails Cal.com. <em>With</em> them, the booking flow can ask the client for the user's name + preferred slot via a structured form, then ask the client's LLM to draft a personalized confirmation message. The server orchestrates; the client renders.</li>
+</ol>
+
+<hr />
+
+<h2>The MCP server: 9 tools, 4 resources, 3 prompts</h2>
+
+<p>Every tool is a tiny object: a Zod input schema and an <code>execute</code> async function. The same pattern as Vercel AI SDK's <code>tool()</code>, just transport-agnostic.</p>
+
+<pre><code class="language-ts">// packages/mcp-server/src/tools/list-projects.ts
+import { z } from 'zod';
+import { loadProjects } from '@neryc/portfolio-shared';
+
+export const listProjectsTool = {
+  name: 'listProjects',
+  description: 'List all portfolio projects with slug, title, and tagline.',
+  inputSchema: z.object({}),
+  execute: async () =&gt; {
+    const projects = loadProjects();
+    return {
+      projects: projects.map((p) =&gt; ({
+        slug: p.slug,
+        title: p.title,
+        tagline: p.tagline,
+        tags: p.tags,
+        demoUrl: p.demoUrl,
+        githubUrl: p.githubUrl,
+      })),
+    };
+  },
+};</code></pre>
+
+<p>The full tool registry:</p>
+
+<table>
+<thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><code>listProjects</code></td><td>All projects, summary view</td></tr>
+<tr><td><code>getProject</code></td><td>Full project detail by slug</td></tr>
+<tr><td><code>searchByTech</code></td><td>Search projects + courses + experience by tech keyword</td></tr>
+<tr><td><code>searchCourses</code></td><td>Search 164 Platzi certificates by topic</td></tr>
+<tr><td><code>getCourse</code></td><td>One course with verifiable diploma URL</td></tr>
+<tr><td><code>getExperience</code></td><td>Full work history (companies, roles, impact)</td></tr>
+<tr><td><code>getSkills</code></td><td>Skills grouped by area (languages, frameworks, infra, AI)</td></tr>
+<tr><td><code>getAvailability</code></td><td>Cal.com availability for a date range</td></tr>
+<tr><td><code>bookCall</code></td><td>Book a 30-minute call (elicits name + email + slot)</td></tr>
+</tbody>
+</table>
+
+<p>Resources expose readable URIs that LLM clients can fetch directly:</p>
+
+<pre><code class="language-ts">// portfolio://cv/full                       → text/markdown, the full CV
+// portfolio://projects/{slug}/readme         → text/markdown, project README
+// portfolio://projects/{slug}/case-study     → text/markdown, project case study
+// portfolio://courses/{slug}/certificate     → application/json, diploma metadata
+</code></pre>
+
+<p>And the prompts encode three reusable agent flows. Each gets pulled with <code>prompts/get</code> and applied to the conversation:</p>
+
+<pre><code class="language-ts">// pitch-for-role          → tailored pitch for a job description (uses sampling)
+// tech-deep-dive          → focused walkthrough of one technology (uses sampling)
+// compare-with-jd         → side-by-side fit analysis (uses sampling + elicitation)</code></pre>
+
+<p>The "uses sampling" annotation is real: <code>pitch-for-role</code> first asks the server for tool-grounded facts, then issues a sampling request back to the client to <em>compose</em> the pitch using the client's LLM. The server never calls Anthropic itself — it just orchestrates.</p>
+
+<div class="callout">
+<div class="callout-label">Pattern · Sampling</div>
+<p>Sampling means the <strong>server</strong> asks the <strong>client</strong> to run an LLM call. The client decides which model, applies its own rate-limits and safety filters, and returns the completion. For a portfolio server this is free: I don't pay for tokens, the client (Claude Desktop, my agent, etc.) does. For internal tooling it's how you let a server compose summaries without giving it its own API key.</p>
+</div>
+
+<hr />
+
+<h2>The chat agent: AI SDK v6 + in-process MCP</h2>
+
+<p>The widget chat (<code>/widget</code> page) talks to <code>/api/agent</code>. That route builds a <code>ToolLoopAgent</code> from the AI SDK v6, hands it the MCP-discovered tools, and streams the response back as a UI Message Stream.</p>
+
+<p>The clever bit is <em>how</em> it discovers the tools. There are two MCP clients in this codebase:</p>
+
+<ol>
+<li>An <strong>HTTP client</strong> for external MCP servers (e.g. GitHub MCP, if you wanted to bolt that in).</li>
+<li>An <strong>in-process client</strong> for the portfolio MCP server, since it lives in the same Node process as the agent route.</li>
+</ol>
+
+<div class="figure">
+<svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="badArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F87171"/>
+    </marker>
+    <marker id="goodArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#86EFAC"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="60" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Before: HTTP self-call</text>
+  <text x="400" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">After: InMemoryTransport</text>
+
+  <!-- BEFORE -->
+  <g transform="translate(40, 60)">
+    <rect x="0" y="0" width="140" height="60" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.45)"/>
+    <text x="70" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">/api/agent</text>
+    <text x="70" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Vercel function</text>
+
+    <rect x="170" y="0" width="140" height="60" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.45)"/>
+    <text x="240" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">/api/mcp</text>
+    <text x="240" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">another function</text>
+
+    <!-- arrows -->
+    <line x1="140" y1="22" x2="168" y2="22" stroke="#F87171" stroke-width="1.5" marker-end="url(#badArr)"/>
+    <text x="154" y="14" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F87171">POST /init</text>
+
+    <line x1="168" y1="42" x2="142" y2="42" stroke="#F87171" stroke-width="1.5" marker-end="url(#badArr)"/>
+    <text x="154" y="56" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F87171">session ID</text>
+
+    <!-- pain points -->
+    <g transform="translate(0, 90)" font-family="JetBrains Mono, monospace" font-size="10" fill="#FCA5A5">
+      <text x="0" y="0">× Two cold starts per request</text>
+      <text x="0" y="18">× Stateful session pinned per worker</text>
+      <text x="0" y="36">× Resolve own URL (VERCEL_URL)</text>
+      <text x="0" y="54">× Doubles serverless cost</text>
+    </g>
+  </g>
+
+  <!-- divider -->
+  <line x1="360" y1="60" x2="360" y2="370" stroke="rgba(148,163,184,0.2)" stroke-dasharray="4,4"/>
+
+  <!-- AFTER -->
+  <g transform="translate(400, 60)">
+    <rect x="0" y="0" width="280" height="60" rx="8" fill="rgba(134,239,172,0.08)" stroke="rgba(134,239,172,0.45)"/>
+    <text x="140" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">/api/agent (same process)</text>
+    <text x="140" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Vercel function</text>
+
+    <!-- linked pair inside -->
+    <g transform="translate(40, 90)">
+      <rect x="0" y="0" width="80" height="48" rx="6" fill="rgba(46,117,182,0.18)" stroke="rgba(46,117,182,0.5)"/>
+      <text x="40" y="20" text-anchor="middle" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#F1F5F9">MCP client</text>
+      <text x="40" y="36" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">web-host</text>
+
+      <rect x="120" y="0" width="80" height="48" rx="6" fill="rgba(125,211,252,0.15)" stroke="rgba(125,211,252,0.5)"/>
+      <text x="160" y="20" text-anchor="middle" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#F1F5F9">MCP server</text>
+      <text x="160" y="36" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">portfolio</text>
+
+      <line x1="80" y1="24" x2="118" y2="24" stroke="#86EFAC" stroke-width="1.5" marker-end="url(#goodArr)"/>
+      <line x1="118" y1="32" x2="82" y2="32" stroke="#86EFAC" stroke-width="1.5" marker-end="url(#goodArr)"/>
+    </g>
+
+    <text x="100" y="160" font-family="JetBrains Mono, monospace" font-size="9" fill="#86EFAC">InMemoryTransport.createLinkedPair()</text>
+
+    <!-- wins -->
+    <g transform="translate(0, 190)" font-family="JetBrains Mono, monospace" font-size="10" fill="#86EFAC">
+      <text x="0" y="0">✓ One cold start (just /api/agent)</text>
+      <text x="0" y="18">✓ Session state in one process</text>
+      <text x="0" y="36">✓ No URL resolution needed</text>
+      <text x="0" y="54">✓ Sub-ms client ↔ server roundtrip</text>
+    </g>
+  </g>
+</svg>
+<p class="figure-caption">Figure 3 · <strong>The fix that mattered most.</strong> The first version of <code>/api/agent</code> made an HTTP self-call to <code>/api/mcp</code>. That works locally but on Vercel the two functions land on different workers, the MCP transport is stateful, and the second call fails with <em>"Server not initialized."</em> The fix: link client and server with the SDK's <code>InMemoryTransport</code>, all in the same process.</p>
+</div>
+
+<p>The in-process bridge is twelve lines:</p>
+
+<pre><code class="language-ts">// apps/web/lib/mcp-client.ts
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { buildServer } from '@neryc/portfolio-mcp/server';
+
+export async function connectInProcessPortfolio(name: string) {
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const { server } = buildServer();
+  await server.connect(serverTransport);
+  const client = new Client(
+    { name: 'web-host', version: '0.0.0' },
+    { capabilities: { sampling: {}, elicitation: {} } },
+  );
+  await client.connect(clientTransport);
+  return { name, client };
+}</code></pre>
+
+<p>The agent itself is short. Discover the tools, wrap them so the AI SDK can call them, hand them to <code>ToolLoopAgent</code>:</p>
+
+<pre><code class="language-ts">// apps/web/lib/agent.ts
+export function buildAgent(discovered: DiscoveredTool[]) {
+  const aiTools = Object.fromEntries(
+    discovered.map((t) =&gt; [
+      t.name,
+      tool({
+        description: t.description,
+        // The MCP server returns JSON Schema, not Zod. Wrap with jsonSchema()
+        // so the AI SDK knows it's a schema-like object, not a Zod instance.
+        inputSchema: jsonSchema(t.inputSchema) as never,
+        execute: async (args) =&gt; {
+          const result = await t.invoke(args);
+          const first = result.content[0];
+          if (first?.type === 'text') {
+            try { return JSON.parse(first.text); } catch { return { text: first.text }; }
+          }
+          return result;
+        },
+      }),
+    ]),
+  );
+
+  return new ToolLoopAgent({
+    model: 'anthropic/claude-sonnet-4-6', // routes through Vercel AI Gateway
+    instructions: SYSTEM_PROMPT,
+    tools: aiTools,
+    stopWhen: stepCountIs(10),
+  });
+}</code></pre>
+
+<p>And the route is twenty lines, mostly rate-limiting and message conversion:</p>
+
+<pre><code class="language-ts">// apps/web/app/api/agent/route.ts
+export const runtime = 'nodejs';
+export const maxDuration = 300;
+
+let _ctxPromise: Promise&lt;AgentContext&gt; | null = null;
+
+function getAgentContext() {
+  if (_ctxPromise) return _ctxPromise;
+  _ctxPromise = (async () =&gt; {
+    const portfolio = await connectInProcessPortfolio('portfolio');
+    const tools = await discoverToolsFromServers([portfolio]);
+    return { agent: buildAgent(tools) };
+  })();
+  return _ctxPromise;
+}
+
+export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'anon';
+  const limit = await rateLimit(ip);
+  if (!limit.allowed) return new Response(JSON.stringify({ error: 'rate-limited' }), { status: 429 });
+
+  const { messages } = await req.json() as { messages: UIMessage[] };
+  const { agent } = await getAgentContext();
+  const modelMessages = await convertToModelMessages(messages);
+  const result = await agent.stream({ messages: modelMessages });
+  return result.toUIMessageStreamResponse();
+}</code></pre>
+
+<p>The agent context is memoized at module scope, so warm invocations re-use the in-process MCP client. On Vercel the worker recycles every few minutes; cold-start cost is ~50 ms.</p>
+
+<hr />
+
+<h2>The embeddable widget: Preact + esbuild + a single &lt;script&gt; tag</h2>
+
+<p>For the FAB to drop into any HTML page (including my static GitHub Pages portfolio), the widget bundle has three constraints:</p>
+
+<ol>
+<li><strong>It has to fit on a budget.</strong> 13 KB minified, no React, no Tailwind shipped to the host.</li>
+<li><strong>It has to isolate styles.</strong> If the host page has aggressive CSS resets or its own utility classes, the widget can't break. Putting the heavy UI inside an iframe sidesteps that problem entirely.</li>
+<li><strong>It has to know its own origin.</strong> The script is hosted at <code>talk-to-my-portfolio.vercel.app/widget.js</code>; the iframe needs to load from the same host. Hardcoding the URL is fragile, so the bundle reads <code>document.currentScript.src</code> at load time and trims off <code>/widget.js</code>.</li>
+</ol>
+
+<p>The full source is &lt;100 lines:</p>
+
+<pre><code class="language-tsx">// packages/widget/src/index.tsx
+import { h, render } from 'preact';
+import { useState } from 'preact/hooks';
+
+const WIDGET_HOST =
+  (document.currentScript as HTMLScriptElement | null)?.src?.replace(/\/widget\.js.*$/, '') ??
+  'https://talk-to-my-portfolio.vercel.app';
+
+const COLOR_ACCENT = '#2E75B6';
+const COLOR_ACCENT_HOVER = '#4FA9E8';
+const COLOR_PANEL_BG = '#06101F';
+
+function FAB() {
+  const [open, setOpen] = useState(false);
+  const [hover, setHover] = useState(false);
+  return (
+    &lt;div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 999999, fontFamily: 'Inter, system-ui, sans-serif' }}&gt;
+      {open &amp;&amp; (
+        &lt;div style={{
+          width: 'min(440px, calc(100vw - 32px))',
+          height: 'min(640px, calc(100vh - 96px))',
+          marginBottom: 12, borderRadius: 16, overflow: 'hidden',
+          boxShadow: '0 20px 40px -8px rgba(6,16,31,0.55), 0 8px 16px -4px rgba(46,117,182,0.25)',
+          background: COLOR_PANEL_BG,
+          border: '1px solid rgba(148, 163, 184, 0.14)',
+        }}&gt;
+          &lt;iframe src={`${WIDGET_HOST}/widget`} style={{ width: '100%', height: '100%', border: 0 }} /&gt;
+        &lt;/div&gt;
+      )}
+      &lt;button onClick={() =&gt; setOpen(!open)} /* ...styled FAB... */&gt;
+        {open ? '×' : '💬'}
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+const mount = document.createElement('div');
+mount.id = 'portfolio-widget-root';
+document.body.appendChild(mount);
+render(&lt;FAB /&gt;, mount);</code></pre>
+
+<p>esbuild bundles this as an IIFE, aliases <code>react</code> and <code>react-dom</code> to <code>preact/compat</code>, and writes the output directly into <code>apps/web/public/widget.js</code> so Vercel serves it under the public origin:</p>
+
+<pre><code class="language-js">// packages/widget/esbuild.config.mjs
+await build({
+  entryPoints: ['src/index.tsx'],
+  bundle: true,
+  outfile: '../../apps/web/public/widget.js',
+  format: 'iife',
+  globalName: 'PortfolioWidget',
+  target: 'es2020',
+  minify: true,
+  jsx: 'automatic',
+  jsxImportSource: 'preact',
+  alias: { react: 'preact/compat', 'react-dom': 'preact/compat' },
+});</code></pre>
+
+<p>On the host (this portfolio), the integration is exactly one line above <code>&lt;/body&gt;</code>:</p>
+
+<pre><code class="language-html">&lt;script src="https://talk-to-my-portfolio.vercel.app/widget.js" async defer&gt;&lt;/script&gt;</code></pre>
+
+<p>Two bytes of work for the host, one CDN-cached file, no framework lock-in.</p>
+
+<hr />
+
+<h2>The six bugs that broke production</h2>
+
+<p>Local tests passed. <code>pnpm test</code> reported 115 green. <code>pnpm build</code> compiled. I pushed to Vercel and opened <code>/api/mcp</code> from <code>curl</code> — and got a 500. Then <code>/api/agent</code> also 500'd. Six bugs separated "works locally" from "live."</p>
+
+<p>What follows is the chronology, in the order they surfaced. Each one is the kind of thing that doesn't show up in unit tests because it's about how the platform <em>bundles</em> and <em>runs</em> the code, not about logic.</p>
+
+<div class="bug-row">
+<div class="bug-num">BUG 1</div>
+<div>
+  <div class="bug-title"><code>ENOENT</code>: cannot open <code>/var/task/packages/mcp-server/package.json</code></div>
+  <div class="bug-desc">The MCP server's <code>buildServer()</code> reads its own <code>package.json</code> at module-evaluation time to get its name and version. Locally that file exists. On Vercel, Turbopack bundles every route module into a single chunk in <code>.next/server/...</code>, and the original relative path <code>../package.json</code> resolves to nowhere. The serverless function throws on <em>import</em>, so the route never even runs.</div>
+</div>
+</div>
+
+<pre><code class="language-ts">// BEFORE
+const pkg = JSON.parse(
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf-8')
+);
+
+// AFTER — JSON import that Turbopack inlines at build time
+import pkg from '../package.json' with { type: 'json' };</code></pre>
+
+<div class="bug-row">
+<div class="bug-num">BUG 2</div>
+<div>
+  <div class="bug-title">HTTP self-call falls over on serverless workers</div>
+  <div class="bug-desc">The first cut of <code>/api/agent</code> built an HTTP MCP client pointing at its own <code>/api/mcp</code> route. Locally everything is one Node process. On Vercel the two routes live in separate serverless functions. The <code>initialize</code> request hits worker A and creates a session there; the follow-up <code>tools/list</code> hits worker B, which has no session for that ID and returns <em>"Bad Request: Server not initialized."</em></div>
+</div>
+</div>
+
+<p>The fix is the in-process MCP client shown in Figure 3 above: <code>InMemoryTransport.createLinkedPair()</code> wires a client and a server inside the same V8 isolate. No HTTP, no session-loss, no second cold start.</p>
+
+<div class="bug-row">
+<div class="bug-num">BUG 3</div>
+<div>
+  <div class="bug-title"><code>Invalid prompt: messages do not match the ModelMessage[] schema</code></div>
+  <div class="bug-desc">The client uses <code>useChat</code> from <code>@ai-sdk/react</code>, which sends <code>UIMessage[]</code> (parts-based, with <code>{ type: 'text', text: '…' }</code> shaped tokens). <code>ToolLoopAgent.stream()</code> wants <code>ModelMessage[]</code>. AI SDK v6 exposes <code>convertToModelMessages()</code> as the conversion bridge — I had forgotten to call it.</div>
+</div>
+</div>
+
+<pre><code class="language-ts">const modelMessages = await convertToModelMessages(messages);
+const result = await agent.stream({ messages: modelMessages });</code></pre>
+
+<div class="bug-row">
+<div class="bug-num">BUG 4</div>
+<div>
+  <div class="bug-title"><code>TypeError: e is not a function</code> during tool execution</div>
+  <div class="bug-desc">The MCP server returns tool input schemas as JSON Schema objects. The AI SDK's <code>tool()</code> expects either a Zod schema (which has <code>.parse</code>) or a <code>Schema</code> created via the SDK's <code>jsonSchema()</code> wrapper. Passing the raw JSON Schema worked at compile time but blew up at runtime when the SDK tried to validate the inputs.</div>
+</div>
+</div>
+
+<pre><code class="language-ts">// BEFORE
+inputSchema: t.inputSchema as never,
+
+// AFTER
+inputSchema: jsonSchema(t.inputSchema) as never,</code></pre>
+
+<div class="bug-row">
+<div class="bug-num">BUG 5</div>
+<div>
+  <div class="bug-title">Direct Anthropic SDK without an API key</div>
+  <div class="bug-desc">The agent originally pinned a model with <code>anthropic('claude-sonnet-4-6')</code>, which calls Anthropic directly and needs <code>ANTHROPIC_API_KEY</code>. The whole portfolio runs through Vercel AI Gateway (one key, automatic provider failover, usage dashboard). Switching to the string-model form lets AI SDK v6 route through the Gateway whenever <code>AI_GATEWAY_API_KEY</code> is set.</div>
+</div>
+</div>
+
+<pre><code class="language-ts">// BEFORE — direct Anthropic
+model: anthropic('claude-sonnet-4-6'),
+
+// AFTER — routed through Vercel AI Gateway
+model: 'anthropic/claude-sonnet-4-6',</code></pre>
+
+<div class="bug-row">
+<div class="bug-num">BUG 6</div>
+<div>
+  <div class="bug-title"><code>ENOENT</code>: cannot open <code>packages/shared/data/projects/_index.json</code></div>
+  <div class="bug-desc">The data loader reads JSON and Markdown files from <code>packages/shared/data/</code> via <code>readFileSync</code>. Next.js's dependency tracer follows static imports, so it ships every <em>imported</em> JS file — but raw <code>readFileSync</code> calls are opaque to the tracer, and the data directory got left out of the deployment bundle.</div>
+</div>
+</div>
+
+<pre><code class="language-ts">// apps/web/next.config.ts
+const nextConfig: NextConfig = {
+  outputFileTracingRoot: path.join(process.cwd(), '..', '..'),
+  outputFileTracingIncludes: {
+    '/api/mcp/[[...path]]': ['../../packages/shared/data/**/*'],
+    '/api/agent': ['../../packages/shared/data/**/*'],
+  },
+};</code></pre>
+
+<p>Six fixes, six commits, all live. The full diff is roughly 80 lines of code across the six commits, but each line is the difference between "deploys" and "produces a 500 on first request."</p>
+
+<div class="callout">
+<div class="callout-label">Takeaway</div>
+<p>Production tests aren't a substitute for unit tests; they're orthogonal. Of these six bugs, <strong>zero</strong> were detectable from <code>pnpm test</code> because they all live at the boundary between the application code and the platform — file-system layout, serverless worker boundaries, bundler tracing, env-var contracts. The cheapest way to catch them is to deploy a preview <em>early</em> and hit the endpoints with <code>curl</code>.</p>
+</div>
+
+<hr />
+
+<h2>The UX polish loop</h2>
+
+<p>Once the API worked, the widget itself looked nothing like a finished product. The first cut had Geist for typography, raw JSON tool output rendered inline, table cells breaking mid-word at 360 px width, and a generic light theme that clashed with the dark portfolio. Six more iterations got it to the version embedded in this page.</p>
+
+<div class="figure">
+<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="evoBefore" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FAFAFA"/>
+      <stop offset="1" stop-color="#E5E7EB"/>
+    </linearGradient>
+    <linearGradient id="evoAfter" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#122845"/>
+      <stop offset="1" stop-color="#06101F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Before -->
+  <g transform="translate(40, 30)">
+    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Before</text>
+    <rect width="260" height="260" rx="14" fill="url(#evoBefore)" stroke="#D1D5DB"/>
+    <!-- raw json -->
+    <rect x="14" y="14" width="232" height="60" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
+    <text x="20" y="32" font-family="JetBrains Mono, monospace" font-size="9" fill="#374151">&gt; getSkills output-available</text>
+    <text x="20" y="46" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280">{ "skills": [{ "skill":</text>
+    <text x="20" y="60" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280">"TypeScript", "level":...</text>
+    <!-- broken table -->
+    <text x="14" y="96" font-family="Inter, system-ui" font-size="11" fill="#111827" font-weight="700">Lenguajes</text>
+    <text x="14" y="120" font-family="Inter, system-ui" font-size="10" fill="#374151">TypeScript</text>
+    <text x="100" y="120" font-family="Inter, system-ui" font-size="10" fill="#374151">Profic</text>
+    <text x="100" y="132" font-family="Inter, system-ui" font-size="10" fill="#374151">ient</text>
+    <text x="160" y="120" font-family="Inter, system-ui" font-size="10" fill="#374151">research-</text>
+    <text x="160" y="132" font-family="Inter, system-ui" font-size="10" fill="#374151">agent</text>
+    <text x="14" y="160" font-family="Inter, system-ui" font-size="10" fill="#374151">JavaScript</text>
+    <text x="100" y="160" font-family="Inter, system-ui" font-size="10" fill="#374151">Expe</text>
+    <text x="100" y="172" font-family="Inter, system-ui" font-size="10" fill="#374151">rt</text>
+    <text x="160" y="160" font-family="Inter, system-ui" font-size="10" fill="#374151">multi-</text>
+
+    <text x="14" y="216" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="#111827" font-style="italic">[ver certificado](https://drive...</text>
+
+    <!-- pain labels -->
+    <g font-family="JetBrains Mono, monospace" font-size="9" fill="#DC2626">
+      <text x="14" y="240">× Geist + serif fallback</text>
+    </g>
+  </g>
+
+  <!-- Divider with arrow -->
+  <text x="360" y="170" text-anchor="middle" font-family="Inter, system-ui" font-size="30" font-weight="800" fill="#7DD3FC">→</text>
+
+  <!-- After -->
+  <g transform="translate(420, 30)">
+    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">After</text>
+    <rect width="260" height="260" rx="14" fill="url(#evoAfter)" stroke="rgba(148,163,184,0.18)"/>
+    <!-- Header -->
+    <rect x="14" y="14" width="232" height="30" rx="8" fill="rgba(46,117,182,0.08)"/>
+    <circle cx="28" cy="29" r="9" fill="#2E75B6"/>
+    <text x="42" y="33" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">Nery's portfolio</text>
+    <rect x="200" y="22" width="40" height="16" rx="8" fill="rgba(74,222,128,0.12)" stroke="rgba(74,222,128,0.35)"/>
+    <text x="220" y="32" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#86EFAC" letter-spacing="1">ONLINE</text>
+
+    <!-- User bubble -->
+    <g transform="translate(120, 56)">
+      <rect width="126" height="28" rx="10" fill="#2E75B6"/>
+      <text x="63" y="18" text-anchor="middle" font-family="Inter, system-ui" font-size="10" fill="#FFFFFF">que skills tiene?</text>
+    </g>
+
+    <!-- Assistant bubble -->
+    <g transform="translate(14, 96)">
+      <rect width="232" height="146" rx="10" fill="rgba(18,40,69,0.85)" stroke="rgba(148,163,184,0.14)"/>
+      <text x="14" y="22" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="1" fill="#94A3B8">SKILL          NIVEL    EVIDENCIA</text>
+      <line x1="14" y1="28" x2="218" y2="28" stroke="rgba(148,163,184,0.18)"/>
+      <text x="14" y="46" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">TypeScript</text>
+      <text x="100" y="46" font-family="Inter, system-ui" font-size="10" fill="#E2E8F0">Expert</text>
+      <g transform="translate(150, 36)">
+        <rect width="64" height="14" rx="3" fill="rgba(46,117,182,0.2)" stroke="rgba(46,117,182,0.4)"/>
+        <text x="32" y="11" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#7DD3FC">research-agent</text>
+      </g>
+      <text x="14" y="72" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">JavaScript</text>
+      <text x="100" y="72" font-family="Inter, system-ui" font-size="10" fill="#E2E8F0">Expert</text>
+      <text x="14" y="98" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">Python</text>
+      <text x="100" y="98" font-family="Inter, system-ui" font-size="10" fill="#E2E8F0">Proficient</text>
+      <text x="14" y="128" font-family="Inter, system-ui" font-size="10" fill="#7DD3FC" text-decoration="underline">Ver diploma</text>
+    </g>
+  </g>
+</svg>
+<p class="figure-caption">Figure 4 · <strong>Before / after.</strong> Same data, same model, same prompt. The left is the first deploy: raw JSON in chat, broken table wrapping, mid-character word breaks, and Geist falling back to the browser default serif because <code>--font-sans: var(--font-sans)</code> was a circular CSS variable. The right is the version live today: Inter typography, hidden tool internals, full-width assistant card, cyan-glow inline tech tokens.</p>
+</div>
+
+<h3>1 · Fix typography</h3>
+<p><code>globals.css</code> had <code>--font-sans: var(--font-sans);</code> — a self-reference. Tailwind was happily emitting CSS that resolved to nothing, so the browser fell back to Times. Switched to Inter + JetBrains Mono via <code>next/font/google</code> with proper system-font fallback stacks. Done in two lines.</p>
+
+<h3>2 · Hide the tool internals</h3>
+<p>The first cut rendered every tool call as a card with the raw JSON output below it. Useful for debugging, terrible UX. Now <code>MessageList</code> filters out <code>dynamic-tool</code> and <code>tool-*</code> parts entirely. The agent still calls the tools — visitors just don't see the plumbing.</p>
+
+<h3>3 · Tables that don't crush words</h3>
+<p>At 360 px width, <code>overflow-wrap: anywhere</code> on <code>td</code>/<code>th</code> broke single words at character boundaries: "Proficient" became "Profic / ient." Switched to default word-boundary wrapping plus <code>prose-table:block prose-table:overflow-x-auto</code> so tables wider than the column scroll horizontally instead of being squashed.</p>
+
+<h3>4 · Match the parent portfolio's palette</h3>
+<p>The widget had to feel like part of the portfolio, not a foreign element. Lifted the portfolio's CSS variables verbatim — <code>#06101F</code> deep navy, <code>#2E75B6</code> primary blue, <code>#7DD3FC</code> accent glow — into the chat's dark theme. Inline <code>&lt;code&gt;</code> now picks up the same cyan-glow + tinted background as on the portfolio's project cards.</p>
+
+<h3>5 · Empty state with suggested questions</h3>
+<p>Before, opening the FAB gave you a blank textarea. After, you get four clickable suggestion chips that seed the conversation in one tap. Recruiters tend to ask the same four things in different words ("what's his stack?", "AI projects?", "where does he work?", "is he available?"), so making them buttons removes the cold-start problem.</p>
+
+<h3>6 · Trim incomplete markdown while streaming</h3>
+<p>The agent emits tokens one-by-one through <code>ReactMarkdown</code>. For a frame or two each cycle, the model emits partial markdown like <code>[Ver diploma]</code> before <code>(https://drive.google.com/...)</code> lands. ReactMarkdown renders the raw text, then snaps to a styled link a moment later — visible as a flicker on every link. A small <code>trimIncompleteMarkdown()</code> helper shaves off any trailing unfinished link/code/emphasis on the last text part of the still-streaming assistant message. The link appears in one shot once the closing token arrives.</p>
+
+<pre><code class="language-ts">function trimIncompleteMarkdown(text: string): string {
+  let result = text;
+  // Unclosed link: [...] or [...](unclosed
+  const lastBracket = result.lastIndexOf('[');
+  if (lastBracket !== -1) {
+    const tail = result.slice(lastBracket);
+    if (!/^\[[^\]]*\]\([^)]+\)/.test(tail)) result = result.slice(0, lastBracket);
+  }
+  // Unclosed inline code: odd backtick count
+  const matches = result.match(/`/g);
+  if (matches &amp;&amp; matches.length % 2 === 1) {
+    result = result.slice(0, result.lastIndexOf('`'));
+  }
+  // Unclosed bold/italic at end
+  return result.replace(/(\*{1,2})$/, '');
+}</code></pre>
+
+<hr />
+
+<h2>What the data layer looks like</h2>
+
+<p>164 Platzi courses are a lot of structured data to maintain by hand, so I didn't. <code>scripts/sync-platzi</code> is a Playwright bot that logs into Platzi once (interactive, stores the session in <code>.platzi-session/</code>), then on subsequent runs walks the public profile <em>and</em> the learning dashboard, merges both views (the public profile lists completed courses with diplomas; the dashboard has accurate completion dates), and writes the merged result into <code>packages/shared/data/courses.json</code>.</p>
+
+<pre><code class="language-bash">pnpm --filter sync-platzi exec playwright install chromium  # first run only
+pnpm --filter sync-platzi sync                              # subsequent runs are headless</code></pre>
+
+<p>The merge is the interesting part. Public-profile entries are authoritative for <em>which</em> courses I've done; dashboard entries are authoritative for <em>when</em>. Joining them gives me a single record per course with both fields, plus the diploma URL extracted from the public profile's link element.</p>
+
+<p>Every record validates against a Zod schema in <code>packages/shared/src/schemas/course.ts</code>, so the MCP server can return type-safe data without re-validating on every call:</p>
+
+<pre><code class="language-ts">export const CourseSchema = z.object({
+  slug: z.string(),
+  title: z.string(),
+  diplomaUrl: z.url().optional(),
+  completedAt: z.iso.date().optional(),
+  skills: z.array(z.string()),
+  category: z.enum(['frontend','backend','ai','data','devops','soft-skills','other']),
+});</code></pre>
+
+<p>If Platzi changes their HTML, the scraper breaks loudly with a Zod parse error instead of silently returning junk data. That's been a useful guard rail twice already.</p>
+
+<hr />
+
+<h2>Tests and CI</h2>
+
+<p>The project ships with 115 tests across four packages. The interesting split is between the <strong>full suite</strong> and the <strong>@critical subset</strong>:</p>
+
+<pre><code class="language-bash">pnpm test            # full: 115 tests (3 skipped)
+pnpm test:critical   # @critical only: 27 tests (sampling, elicitation, capabilities)</code></pre>
+
+<p>Critical tests are tagged by wrapping their <code>describe</code> block with <code>@critical</code>:</p>
+
+<pre><code class="language-ts">describe('@critical pitch-for-role with sampling', () =&gt; {
+  // ...
+});</code></pre>
+
+<p>CI runs <code>pnpm test:critical</code> as a separate step <em>before</em> the full suite. If the MCP contract regresses (sampling stops working, elicitation breaks, capability negotiation fails), the pipeline stops at the gate step with an obvious message — instead of burying the failure inside a 115-test run.</p>
+
+<p>The actual CI workflow is also where two production-y bugs surfaced that didn't show up locally:</p>
+
+<ol>
+<li><strong>Workspace consumers can't typecheck before build.</strong> <code>scripts/sync-platzi</code> depends on <code>@neryc/portfolio-shared</code>, which exports from <code>./dist/index.js</code>. A fresh CI checkout has no <code>dist/</code> directory, so <code>tsc</code> fails with <code>TS2307</code>. Reordered the workflow to run <code>pnpm build</code> before <code>pnpm typecheck</code>; <code>pnpm -r build</code> respects dependency topology so <code>shared</code> finishes before its consumers.</li>
+<li><strong>pnpm version conflict.</strong> The workflow had <code>version: 9</code> on <code>pnpm/action-setup@v4</code>; <code>package.json</code> had <code>packageManager: pnpm@9.12.0</code>. Both set → <code>ERR_PNPM_BAD_PM_VERSION</code>. Removed the action-level version so the <code>packageManager</code> field is the single source of truth.</li>
+</ol>
+
+<hr />
+
+<h2>What I'd do differently</h2>
+
+<p>Three things I'd change if I were starting over today:</p>
+
+<ol>
+<li><strong>Deploy on day zero.</strong> All six production bugs would have surfaced a week earlier if I'd put a Vercel preview behind a draft PR from the first commit. Local + tests is necessary, not sufficient.</li>
+<li><strong>Don't read files at module-load time.</strong> <code>readFileSync</code> at the top of a server module is a footgun on bundled serverless. JSON imports + <code>outputFileTracingIncludes</code> for the small handful of dynamic reads (Markdown files by slug) is more declarative and survives bundler tracing.</li>
+<li><strong>Adopt <code>InMemoryTransport</code> from the start.</strong> The HTTP self-call pattern looks correct in a diagram but loses against the realities of serverless worker boundaries. Co-located clients should use the SDK's in-memory transport. The hosted MCP endpoint is still exposed for external consumers (Claude Desktop, etc.); my own agent just doesn't go through it.</li>
+</ol>
+
+<hr />
+
+<h2>The pattern, generalized</h2>
+
+<p>This project is a useful template for any "embeddable AI feature" you want to bolt onto a static site or someone else's host. The shape is:</p>
+
+<ol>
+<li><strong>Backend</strong> exposes a structured data model via MCP (tools / resources / prompts). Lives behind a single HTTP endpoint <em>and</em> a stdio binary; one code path, two transports.</li>
+<li><strong>Agent</strong> runs on the same Vercel deployment, talks to the MCP server in-process via <code>InMemoryTransport</code>, streams responses to the browser.</li>
+<li><strong>Widget</strong> is a tiny Preact + esbuild bundle that loads from your origin, mounts a FAB, and opens an iframe at <code>/widget</code> for the heavy UI. One <code>&lt;script&gt;</code> tag on the host.</li>
+</ol>
+
+<p>~ 2,400 lines of TypeScript total. Five evenings of work. The MCP contract is portable — Claude Desktop can connect to the exact same server tomorrow, no changes needed.</p>
+
+<p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong><br />
+🔗 <strong>Live:</strong> talk-to-my-portfolio.vercel.app · <strong>MCP endpoint:</strong> /api/mcp · <strong>Demo UI:</strong> /demo<br />
+🔗 The FAB you see in the bottom-right corner of this very page is the production widget — try it.</p>
+
+    </div>
+    <div class="tag-pills">
+      <span class="tag-pill">MCP</span>
+      <span class="tag-pill">AI Agents</span>
+      <span class="tag-pill">Anthropic Claude</span>
+      <span class="tag-pill">Next.js</span>
+      <span class="tag-pill">Vercel AI SDK</span>
+      <span class="tag-pill">Preact</span>
+    </div>
+    <div class="footer-cta">
+      <h3>About this project</h3>
+      <p>The full source code, README, and live demo:</p>
+      <div class="links">
+        <a href="https://github.com/NeryC/talk-to-my-portfolio">💻 github.com/NeryC/talk-to-my-portfolio ↗</a>
+        <a href="https://talk-to-my-portfolio.vercel.app">🔗 Live demo ↗</a>
+        <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">🔌 MCP endpoint ↗</a>
+      </div>
+      <h3 style="margin-top:24px;">About the author</h3>
+      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
+      <div class="links">
+        <a href="../">Portfolio ↗</a>
+        <a href="https://github.com/NeryC">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
+        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
+      </div>
+    </div>
+  </article>
+  <footer class="site-footer">
+    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>
