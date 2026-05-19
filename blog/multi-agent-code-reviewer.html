@@ -193,6 +193,61 @@
       text-align: left;
     }
     .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
+    .figure {
+      margin: 40px -8px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
+    }
+    .figure svg { display: block; width: 100%; height: auto; }
+    .figure-caption {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 18px;
+      text-align: center;
+    }
+    .figure-caption strong {
+      color: var(--accent-glow);
+      letter-spacing: 1.4px;
+    }
+    .callout {
+      margin: 32px 0;
+      padding: 18px 22px;
+      border-radius: 10px;
+      background: rgba(46,117,182,0.10);
+      border: 1px solid rgba(46,117,182,0.30);
+      border-left: 3px solid var(--accent-glow);
+    }
+    .callout-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+      margin-bottom: 6px;
+    }
+    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
+    .bug-row {
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .bug-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--accent-glow);
+      flex-shrink: 0;
+      width: 48px;
+    }
+    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
+    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
     .footer-cta {
       margin-top: 56px;
       padding: 32px;
@@ -243,6 +298,7 @@
       .article-body { font-size: 17px; }
       .article-body h1 { font-size: 26px; }
       .article-body h2 { font-size: 22px; }
+      .figure { margin: 32px -8px; padding: 16px; }
     }
   </style>
 </head>
@@ -262,49 +318,128 @@
       </div>
     </div>
     <img class="banner-img" src="post_2_multiagent_banner.png" alt="Three AI Agents in Parallel + One Supervisor" />
+
     <div class="article-body">
-<p><em>How <code>Promise.all</code>, Zod, and Server-Sent Events compose into a multi-agent system that's easier to reason about than a single big LLM.</em></p>
-<hr />
+
+<p><em>How <code>Promise.all</code>, Zod, and Server-Sent Events compose into a multi-agent code reviewer that's easier to reason about than a single big LLM — and noticeably faster.</em></p>
+
 <p>A single LLM doing "general code review" is mid.</p>
+
 <p>Not because LLMs are bad — they're great. But ask one model to find security bugs, performance bugs, and maintainability bugs all at once, and you'll see the same failure modes show up over and over: it skews toward whatever category looks most obvious in the snippet, drops findings when the code gets long, and produces <em>unbalanced</em> reports — five style nits, zero security flags, on a SQL injection that's plain as day.</p>
+
 <p>I built a code reviewer that doesn't have that problem. The trick was to stop asking a single agent to be a generalist and instead orchestrate <strong>three specialists in parallel</strong> with a <strong>supervisor</strong> consolidating their findings.</p>
+
 <p>This post walks through the architecture, the three engineering decisions I'd defend in any review, and the small but important surprises that came up while building it.</p>
+
 <p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
+
 <hr />
-<h2>The architecture in one diagram</h2>
-<pre><code class="language-typescript">            ┌──────────────┐
-   code ──► │  parseInput  │ (snippet or GitHub URL)
-            └──────┬───────┘
-                   ▼
-            ┌──────────────┐
-            │ extractMeta  │ (lang, lines, complexity)
-            └──────┬───────┘
-                   ▼
-   ┌─────────── Promise.all ───────────┐
-   │                                   │
-   ▼               ▼                   ▼
-┌───────┐      ┌────────┐         ┌──────────┐
-│ Sec   │      │ Perf   │         │  Maint   │
-│ agent │      │ agent  │         │  agent   │
-└───┬───┘      └───┬────┘         └────┬─────┘
-    └──────────────┼──────────────────┘
-                   ▼
-            ┌──────────────┐
-            │  Supervisor  │ (deduplicates, scores 0–100, summary)
-            └──────┬───────┘
-                   ▼
-                report
-</code></pre>
-<p>All four agents are LLM calls. The three specialists are <code>claude-sonnet-4.6</code>. The supervisor is <code>claude-haiku-4.5</code> (cheaper, fine for the mechanical sort/dedupe job). Every step is streamed back to the browser as Server-Sent Events so the user sees a live timeline of what's happening, not a 30-second loading spinner.</p>
+
+<h2>What it is, in one paragraph</h2>
+
+<p>A Next.js 16 app where you paste a code snippet (or a GitHub URL) and three specialized LLM agents — Security, Performance, Maintainability — each run their own pass over the code <em>in parallel</em>. A fourth agent, the Supervisor, deduplicates and scores the combined findings into a 0–100 review report. Every step streams back to the browser as Server-Sent Events, so the user sees a live timeline instead of a single 30-second spinner. The whole pipeline runs in one Vercel function invocation, no Redis, no job queue.</p>
+
+<div class="figure">
+<svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
+    </marker>
+    <linearGradient id="boxB" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#122845"/>
+      <stop offset="1" stop-color="#0E1F3A"/>
+    </linearGradient>
+    <linearGradient id="boxSup" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1F3A68"/>
+      <stop offset="1" stop-color="#0E1F3A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Input -->
+  <g transform="translate(20, 30)">
+    <rect width="160" height="56" rx="10" fill="url(#boxB)" stroke="rgba(148,163,184,0.3)"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">parseInput</text>
+    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">snippet | github url</text>
+  </g>
+
+  <!-- Meta -->
+  <g transform="translate(220, 30)">
+    <rect width="160" height="56" rx="10" fill="url(#boxB)" stroke="rgba(148,163,184,0.3)"/>
+    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">extractMeta</text>
+    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">lang · lines · complexity</text>
+  </g>
+
+  <!-- Promise.all label -->
+  <g transform="translate(420, 30)">
+    <rect width="260" height="56" rx="10" fill="rgba(46,117,182,0.10)" stroke="rgba(46,117,182,0.4)" stroke-dasharray="4,3"/>
+    <text x="130" y="24" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1.5" fill="#7DD3FC">PROMISE.ALL</text>
+    <text x="130" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">3 specialists run concurrently</text>
+  </g>
+
+  <!-- Three specialists -->
+  <g transform="translate(40, 140)">
+    <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
+    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Security agent</text>
+    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
+    <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
+    <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
+  </g>
+
+  <g transform="translate(230, 140)">
+    <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
+    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Performance agent</text>
+    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
+    <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
+    <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
+  </g>
+
+  <g transform="translate(420, 140)">
+    <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
+    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Maintainability</text>
+    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
+    <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
+    <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
+  </g>
+
+  <!-- Supervisor -->
+  <g transform="translate(180, 264)">
+    <rect width="360" height="72" rx="10" fill="url(#boxSup)" stroke="rgba(125,211,252,0.6)" stroke-width="1.5"/>
+    <text x="180" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Supervisor</text>
+    <text x="180" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#7DD3FC">claude-haiku-4.5</text>
+    <text x="180" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">dedupe · prioritize · score 0–100 → ReviewReport</text>
+  </g>
+
+  <!-- arrows -->
+  <line x1="180" y1="58" x2="218" y2="58" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="380" y1="58" x2="418" y2="58" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+
+  <!-- to three specialists -->
+  <line x1="300" y1="86" x2="125" y2="138" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="300" y1="86" x2="315" y2="138" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="300" y1="86" x2="505" y2="138" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+
+  <!-- merge to supervisor -->
+  <line x1="125" y1="222" x2="280" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="315" y1="222" x2="360" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="505" y1="222" x2="440" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+</svg>
+<p class="figure-caption">Figure 1 · <strong>The orchestration.</strong> Three Sonnet specialists run inside a single <code>Promise.all</code>; each emits its own SSE event the moment it finishes. The Haiku supervisor consumes the merged <code>Finding[]</code> and emits a typed <code>ReviewReport</code> with a 0–100 score.</p>
+</div>
+
 <hr />
-<h2>Decision 1 — <code>Promise.all</code>, not sequential</h2>
+
+<h2>Decision 1 · <code>Promise.all</code>, not sequential</h2>
+
 <p>The naive way to run three agents is to await them one after another:</p>
+
 <pre><code class="language-ts">const sec = await runSecurityAgent(code, meta);
 const perf = await runPerformanceAgent(code, meta);
-const maint = await runMaintainabilityAgent(code, meta);
-</code></pre>
+const maint = await runMaintainabilityAgent(code, meta);</code></pre>
+
 <p>That works, but it's <strong>3× slower than it has to be</strong>. Each agent makes an independent LLM call; none of them needs the others' output. A 15-second per-agent latency adds up to ~45 seconds of "loading…"</p>
+
 <p><code>Promise.all</code> parallelizes the three calls trivially:</p>
+
 <pre><code class="language-ts">const [secFindings, perfFindings, maintFindings] = await Promise.all([
   runSecurityAgent(code, meta).then((findings) =&gt; {
     send({ type: 'agent', name: 'security', status: 'done', findings });
@@ -324,25 +459,34 @@ const maint = await runMaintainabilityAgent(code, meta);
 const report = await runSupervisorAgent(
   [...secFindings, ...perfFindings, ...maintFindings],
   meta,
-);
-</code></pre>
+);</code></pre>
+
 <p>Three things to notice:</p>
+
 <ol>
 <li><strong>Total latency is now <code>max(t_sec, t_perf, t_maint)</code> ≈ 15s</strong>, not their sum.</li>
 <li>The <code>.then(...)</code> chains let me <strong>send an SSE event the moment each agent finishes</strong>, in whatever order they happen to finish. The UI shows "✓ Maintainability done · 🔄 Security still running" without me having to plumb anything special.</li>
 <li>The supervisor naturally runs <em>after</em> <code>Promise.all</code> resolves — no extra awaits needed; the data dependency is enforced by the call site.</li>
 </ol>
+
 <p>If your agents <em>do</em> depend on each other (e.g. agent B needs agent A's output to plan its query), <code>Promise.all</code> won't help and you should keep the sequential pattern. But for code review, where each specialist has a different lens on the same input, parallel is free latency.</p>
+
 <hr />
-<h2>Decision 2 — Zod schemas as agent contracts</h2>
+
+<h2>Decision 2 · Zod schemas as agent contracts</h2>
+
 <p>This is the single most important pattern I've adopted in 2026 for working with LLMs.</p>
+
 <p>The old way: ask the model nicely to return JSON, then <code>JSON.parse()</code> and hope nothing weird happens. This fails in three ways:</p>
+
 <ul>
 <li>The model returns <code>```json ... ```</code> markdown-fenced output and your parser breaks.</li>
 <li>The model invents a field that doesn't exist in your TypeScript type.</li>
 <li>The model omits a required field; you don't notice until production.</li>
 </ul>
+
 <p>The new way: pass a <strong>Zod schema</strong> to AI SDK v6's <code>generateObject</code>, and let the SDK enforce the shape on the way out of the model.</p>
+
 <pre><code class="language-ts">const FindingSchema = z.object({
   severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
   category: z.enum(['security', 'performance', 'maintainability']),
@@ -366,16 +510,23 @@ export async function runSecurityAgent(code: string, meta: CodeMetadata): Promis
     prompt: `Language: ${meta.lang}\nLines: ${meta.lines}\n\nCode:\n\`\`\`${meta.lang}\n${code}\n\`\`\``,
   });
   return object; // already typed as Finding[]
-}
-</code></pre>
+}</code></pre>
+
 <p>Three things to notice:</p>
+
 <ol>
 <li><strong>No parsing.</strong> No regex. No <code>try { JSON.parse(text) } catch</code>. The SDK does it.</li>
 <li><strong>No casting.</strong> <code>object</code> is typed as <code>Finding[]</code>, end of story.</li>
 <li><strong>No "did the model hallucinate a field?" anxiety.</strong> If the model returns something that doesn't match the schema, the SDK retries or throws. Either way, the bug never escapes into your business logic.</li>
 </ol>
-<p>This is what I mean by <em>agent contracts</em>. The schema is a hard boundary between "untrusted LLM text" and "trusted typed data." Once you pass it, the model is just another component.</p>
+
+<div class="callout">
+<div class="callout-label">Pattern · Schema as contract</div>
+<p>Treat the Zod schema as a hard boundary between "untrusted LLM text" and "trusted typed data." Your business logic should never touch a raw model response — only the validated, parsed output. Once you internalize this, every downstream component gets simpler because it can rely on its inputs being well-shaped.</p>
+</div>
+
 <p>The same pattern works for the supervisor:</p>
+
 <pre><code class="language-ts">const ReviewReportSchema = z.object({
   score: z.number().int().min(0).max(100),
   summary: z.string(),
@@ -391,20 +542,28 @@ export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata
     prompt: `Code metadata: ${meta.lang}, ${meta.lines} lines\n\nRaw findings:\n${JSON.stringify(findings, null, 2)}`,
   });
   return object;
-}
-</code></pre>
+}</code></pre>
+
 <p>Same idea, different schema. The supervisor's prompt is a few sentences telling it to deduplicate, prioritize by severity (security &gt; performance &gt; maintainability when severity ties), and assign a 0–100 score with cutoffs (90+ = production-ready, &lt;50 = significant problems). The schema enforces that the score is an integer 0–100, the summary is a string, and the findings are still valid <code>Finding[]</code>.</p>
+
 <hr />
-<h2>Decision 3 — Single SSE endpoint, no Redis</h2>
+
+<h2>Decision 3 · Single SSE endpoint, no Redis</h2>
+
 <p>The most tempting bad architecture for "long-running multi-step jobs" is:</p>
+
 <ol>
 <li>Client <code>POST /jobs/start</code> → returns a <code>jobId</code>.</li>
 <li>Client polls <code>GET /jobs/:id/status</code> every second.</li>
 <li>Server writes job state to Redis or KV between calls.</li>
 </ol>
+
 <p>This adds a whole external dependency (Redis), introduces stale-state bugs, and gives the user a worse UX (1-second polling intervals look chunky).</p>
+
 <p>The cleaner pattern: the <code>POST</code> request itself <strong>is</strong> the stream. The browser opens the connection, the server pushes events as the job progresses, and when the job is done the connection closes.</p>
+
 <p>Server side:</p>
+
 <pre><code class="language-ts">export async function POST(req: Request) {
   const body = await req.json();
 
@@ -432,9 +591,10 @@ export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata
       'Connection': 'keep-alive',
     },
   });
-}
-</code></pre>
+}</code></pre>
+
 <p>The <code>send</code> function is a simple closure that emits a Server-Sent Event. Inside <code>orchestrate</code>, every step calls <code>send()</code> when it starts, when it produces results, when it errors:</p>
+
 <pre><code class="language-ts">send({ type: 'started', jobId });
 send({ type: 'step', name: 'parseInput', status: 'done' });
 send({ type: 'agent', name: 'security', status: 'running' });
@@ -442,9 +602,10 @@ send({ type: 'agent', name: 'security', status: 'running' });
 send({ type: 'agent', name: 'security', status: 'done', findings });
 // ... supervisor runs ...
 send({ type: 'report', report });
-send({ type: 'done' });
-</code></pre>
+send({ type: 'done' });</code></pre>
+
 <p>Client side, the browser reads the stream:</p>
+
 <pre><code class="language-ts">const res = await fetch('/api/review', { method: 'POST', body: JSON.stringify({ ... }) });
 const reader = res.body!.getReader();
 
@@ -459,32 +620,71 @@ while (true) {
     const parsed = JSON.parse(event.slice(6));
     setEvents(prev =&gt; [...prev, parsed]);
   }
-}
-</code></pre>
+}</code></pre>
+
 <p>That's it. No <code>setInterval</code>. No second endpoint. No Redis. The state lives in the streaming response, the job dies when the connection closes, and the client gets real-time updates with zero polling overhead.</p>
+
 <p>The only constraint: this works inside a single function invocation. If your job is too slow for the platform's max function duration, you do need a real job queue. But for "three agents + a supervisor in 30 seconds total," it's perfect.</p>
+
 <hr />
+
 <h2>Why Haiku for the supervisor</h2>
+
 <p>A small but cost-relevant choice: I use Sonnet for the three specialists and <strong>Haiku</strong> for the supervisor.</p>
+
 <p>The specialists are doing real reasoning: parsing code, identifying vulnerabilities, suggesting fixes with diffs. They benefit from Sonnet's depth.</p>
+
 <p>The supervisor is doing <strong>mechanical work</strong>: sort, deduplicate, prioritize, summarize, score. None of those require deep reasoning about the code itself — the supervisor never sees the code, only the structured findings. Haiku is plenty.</p>
+
 <p>Concretely:</p>
+
 <ul>
 <li>A typical review fires 4 LLM calls (3 specialists + 1 supervisor).</li>
 <li>Three of those are Sonnet, one is Haiku — significantly cheaper than four Sonnet calls, and indistinguishable in output quality for the supervisor's specific job.</li>
 </ul>
+
 <p>This is a generalizable lesson: <strong>the model you pick should match the cognitive complexity of the task, not the impressiveness of the system overall.</strong> A multi-agent system with a Haiku-powered supervisor is still a sophisticated system. You don't gain anything by paying Sonnet rates for a task Haiku does fine.</p>
+
 <hr />
+
 <h2>What I learned</h2>
+
 <p>Three things I'll carry forward:</p>
+
 <ol>
 <li><strong>Specialists + supervisor beats one big agent.</strong> Splitting a fuzzy task into focused sub-tasks gives the model less cognitive overhead per call and produces more balanced output. The mental model is closer to a human team than a brain-in-a-vat.</li>
 <li><strong>Zod schemas are non-negotiable for LLM tool outputs.</strong> Treat the schema as the contract. Your business logic should never see free-form model text — only validated typed data.</li>
 <li><strong>Streams beat polling for any job that takes 5–60 seconds.</strong> SSE inside a single POST is the cleanest pattern I've found. Use it as the default; reach for a real job queue only when you actually exceed function duration.</li>
 </ol>
+
+<hr />
+
+<h2>What I'd do differently</h2>
+
+<ol>
+<li><strong>Add a "languages" agent dimension instead of a hard-coded set of three.</strong> The current Security / Performance / Maintainability split is generic; a Python-specific reviewer or a SQL-specific reviewer would find a different (and probably better) class of issue. The architecture supports it for free — adding agents is one entry in the <code>Promise.all</code> array — I just didn't generalize the orchestrator to accept a runtime list of specialists.</li>
+<li><strong>Persist reports in the database so they're shareable by URL.</strong> Right now a review lives only in the client's memory; refresh the page and it's gone. A small <code>reviews</code> table with the input snippet and the report JSON would let a user share <code>/review/{id}</code> and would also produce a great dataset for evaluating the agents against each other over time.</li>
+<li><strong>Stream the supervisor's reasoning, not just its final report.</strong> The user sees a live timeline up to the supervisor step, then a sudden block of output. Switching the supervisor to <code>streamObject</code> would let the score and the summary appear progressively, which is a noticeably better UX for a 5–8 second tail.</li>
+</ol>
+
+<hr />
+
+<h2>The pattern, generalized</h2>
+
+<p>"Specialists in parallel + a supervisor to consolidate" is a pattern that pays off any time the work decomposes along independent axes. Some other places it fits:</p>
+
+<ul>
+<li><strong>Document review</strong> — legal, factual, stylistic specialists; an editor-supervisor that produces the consolidated edit list.</li>
+<li><strong>Search reranking</strong> — relevance, freshness, diversity specialists; a supervisor that picks the final top-10.</li>
+<li><strong>Multi-source data extraction</strong> — one agent per source format (PDF, HTML, image); a supervisor that merges the extracted records and resolves conflicts.</li>
+</ul>
+
+<p>The shape is always the same: bounded sub-tasks running concurrently, a cheaper model on top consolidating the structured outputs, every step streamed back to the user so the latency feels like ~max(individual) rather than ~sum(individual).</p>
+
 <p>The full code, including the <code>code-input</code> editor, the <code>workflow-progress</code> timeline component, and all four agent prompts, is on GitHub. Live demo accepts both pasted snippets and GitHub file URLs.</p>
-<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong><br />
-🔗 <strong>Live demo:</strong> multi-agent-code-reviewer-sable.vercel.app</p>
+
+<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
+
     </div>
     <div class="tag-pills">
       <span class="tag-pill">Multi-agent</span>
