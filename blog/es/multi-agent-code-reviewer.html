@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Three AI Agents in Parallel + One Supervisor — Nery Cano</title>
-  <meta name="description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <title>Tres agentes de IA en paralelo + un supervisor — Nery Cano</title>
+  <meta name="description" content="Cómo Promise.all, Zod y Server-Sent Events se combinan en un revisor de código multi-agente." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Three AI Agents in Parallel + One Supervisor — Nery Cano" />
-  <meta property="og:description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <meta property="og:title" content="Tres agentes de IA en paralelo + un supervisor — Nery Cano" />
+  <meta property="og:description" content="Cómo Promise.all, Zod y Server-Sent Events se combinan en un revisor de código multi-agente." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner.png" />
-  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/multi-agent-code-reviewer.html" />
   <meta property="article:published_time" content="2026-05-19" />
   <meta property="article:tag" content="Multi-agent" />
   <meta property="article:tag" content="Anthropic Claude" />
   <meta property="article:tag" content="Vercel AI SDK" />
   <meta property="article:tag" content="Zod" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Three AI Agents in Parallel + One Supervisor" />
-  <meta name="twitter:description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <meta name="twitter:title" content="Tres agentes de IA en paralelo + un supervisor" />
+  <meta name="twitter:description" content="Cómo Promise.all, Zod y Server-Sent Events se combinan en un revisor de código multi-agente." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner.png" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
@@ -307,41 +307,41 @@
 </head>
 <body>
   <nav class="header-nav">
-    <a href="../">← Portfolio</a>
-    <a href="./">All writing</a>
-    <a href="es/multi-agent-code-reviewer.html">Español ↗</a>
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todos los artículos</a>
+    <a href="../multi-agent-code-reviewer.html">English ↗</a>
   </nav>
   <article class="article">
-    <div class="article-meta">May 19, 2026 · 11 min read</div>
-    <h1 class="article-title">Three AI Agents in Parallel + One Supervisor</h1>
-    <p class="article-subtitle">How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer.</p>
+    <div class="article-meta">19 may 2026 · 11 min de lectura</div>
+    <h1 class="article-title">Tres agentes de IA en paralelo + un supervisor</h1>
+    <p class="article-subtitle">Cómo Promise.all, Zod y Server-Sent Events se combinan en un revisor de código multi-agente.</p>
     <div class="byline">
       <div>
         <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+        <div class="byline-meta">Ingeniero Full-Stack Senior · Sistemas de IA/LLM · github.com/NeryC</div>
       </div>
     </div>
-    <img class="banner-img" src="post_2_multiagent_banner.png" alt="Three AI Agents in Parallel + One Supervisor" />
+    <img class="banner-img" src="../post_2_multiagent_banner.png" alt="Tres agentes de IA en paralelo + un supervisor" />
 
     <div class="article-body">
 
-<p><em>How <code>Promise.all</code>, Zod, and Server-Sent Events compose into a multi-agent code reviewer that's easier to reason about than a single big LLM — and noticeably faster.</em></p>
+<p><em>Cómo <code>Promise.all</code>, Zod y Server-Sent Events se combinan en un revisor de código multi-agente que es más fácil de razonar que un único LLM grande — y notablemente más rápido.</em></p>
 
-<p>A single LLM doing "general code review" is mid.</p>
+<p>Un único LLM haciendo «revisión de código general» es mediocre.</p>
 
-<p>Not because LLMs are bad — they're great. But ask one model to find security bugs, performance bugs, and maintainability bugs all at once, and you'll see the same failure modes show up over and over: it skews toward whatever category looks most obvious in the snippet, drops findings when the code gets long, and produces <em>unbalanced</em> reports — five style nits, zero security flags, on a SQL injection that's plain as day.</p>
+<p>No porque los LLMs sean malos — son geniales. Pero pídele a un modelo que encuentre bugs de seguridad, de rendimiento y de mantenibilidad todos a la vez, y verás aparecer los mismos modos de fallo una y otra vez: se inclina hacia la categoría que se ve más obvia en el snippet, deja caer hallazgos cuando el código se alarga, y produce reportes <em>desbalanceados</em> — cinco nimiedades de estilo, cero banderas de seguridad, sobre una inyección SQL que está clarísima.</p>
 
-<p>I built a code reviewer that doesn't have that problem. The trick was to stop asking a single agent to be a generalist and instead orchestrate <strong>three specialists in parallel</strong> with a <strong>supervisor</strong> consolidating their findings.</p>
+<p>Construí un revisor de código que no tiene ese problema. El truco fue dejar de pedirle a un único agente que fuera generalista y, en cambio, orquestar <strong>tres especialistas en paralelo</strong> con un <strong>supervisor</strong> que consolida sus hallazgos.</p>
 
-<p>This post walks through the architecture, the three engineering decisions I'd defend in any review, and the small but important surprises that came up while building it.</p>
+<p>Este post recorre la arquitectura, las tres decisiones de ingeniería que defendería en cualquier review, y las sorpresas pequeñas pero importantes que surgieron al construirlo.</p>
 
-<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
+<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">demo en vivo</a></p>
 
 <hr />
 
-<h2>What it is, in one paragraph</h2>
+<h2>Qué es, en un párrafo</h2>
 
-<p>A Next.js 16 app where you paste a code snippet (or a GitHub URL) and three specialized LLM agents — Security, Performance, Maintainability — each run their own pass over the code <em>in parallel</em>. A fourth agent, the Supervisor, deduplicates and scores the combined findings into a 0–100 review report. Every step streams back to the browser as Server-Sent Events, so the user sees a live timeline instead of a single 30-second spinner. The whole pipeline runs in one Vercel function invocation, no Redis, no job queue.</p>
+<p>Una app Next.js 16 donde pegas un snippet de código (o una URL de GitHub) y tres agentes LLM especializados — Seguridad, Rendimiento, Mantenibilidad — corren cada uno su propia pasada sobre el código <em>en paralelo</em>. Un cuarto agente, el Supervisor, deduplica y puntúa los hallazgos combinados en un reporte de revisión de 0–100. Cada paso se transmite de vuelta al navegador como Server-Sent Events, así que el usuario ve una línea de tiempo en vivo en vez de un único spinner de 30 segundos. Todo el pipeline corre en una sola invocación de función de Vercel, sin Redis, sin cola de trabajos.</p>
 
 <div class="figure">
 <svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
@@ -363,27 +363,27 @@
   <g transform="translate(20, 30)">
     <rect width="160" height="56" rx="10" fill="url(#boxB)" stroke="rgba(148,163,184,0.3)"/>
     <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">parseInput</text>
-    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">snippet | github url</text>
+    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">snippet | url de github</text>
   </g>
 
   <!-- Meta -->
   <g transform="translate(220, 30)">
     <rect width="160" height="56" rx="10" fill="url(#boxB)" stroke="rgba(148,163,184,0.3)"/>
     <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">extractMeta</text>
-    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">lang · lines · complexity</text>
+    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">lenguaje · líneas · complejidad</text>
   </g>
 
   <!-- Promise.all label -->
   <g transform="translate(420, 30)">
     <rect width="260" height="56" rx="10" fill="rgba(46,117,182,0.10)" stroke="rgba(46,117,182,0.4)" stroke-dasharray="4,3"/>
     <text x="130" y="24" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1.5" fill="#7DD3FC">PROMISE.ALL</text>
-    <text x="130" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">3 specialists run concurrently</text>
+    <text x="130" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">3 especialistas en concurrencia</text>
   </g>
 
   <!-- Three specialists -->
   <g transform="translate(40, 140)">
     <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Security agent</text>
+    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Agente de seguridad</text>
     <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
     <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
     <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
@@ -391,7 +391,7 @@
 
   <g transform="translate(230, 140)">
     <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Performance agent</text>
+    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Agente de rendimiento</text>
     <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
     <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
     <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
@@ -399,7 +399,7 @@
 
   <g transform="translate(420, 140)">
     <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Maintainability</text>
+    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Mantenibilidad</text>
     <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
     <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
     <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
@@ -410,7 +410,7 @@
     <rect width="360" height="72" rx="10" fill="url(#boxSup)" stroke="rgba(125,211,252,0.6)" stroke-width="1.5"/>
     <text x="180" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Supervisor</text>
     <text x="180" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#7DD3FC">claude-haiku-4.5</text>
-    <text x="180" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">dedupe · prioritize · score 0–100 → ReviewReport</text>
+    <text x="180" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">deduplica · prioriza · puntúa 0–100 → ReviewReport</text>
   </g>
 
   <!-- arrows -->
@@ -427,22 +427,22 @@
   <line x1="315" y1="222" x2="360" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
   <line x1="505" y1="222" x2="440" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
 </svg>
-<p class="figure-caption">Figure 1 · <strong>The orchestration.</strong> Three Sonnet specialists run inside a single <code>Promise.all</code>; each emits its own SSE event the moment it finishes. The Haiku supervisor consumes the merged <code>Finding[]</code> and emits a typed <code>ReviewReport</code> with a 0–100 score.</p>
+<p class="figure-caption">Figura 1 · <strong>La orquestación.</strong> Tres especialistas Sonnet corren dentro de un único <code>Promise.all</code>; cada uno emite su propio evento SSE en el momento en que termina. El supervisor Haiku consume el <code>Finding[]</code> fusionado y emite un <code>ReviewReport</code> tipado con una puntuación de 0–100.</p>
 </div>
 
 <hr />
 
-<h2>Decision 1 · <code>Promise.all</code>, not sequential</h2>
+<h2>Decisión 1 · <code>Promise.all</code>, no secuencial</h2>
 
-<p>The naive way to run three agents is to await them one after another:</p>
+<p>La forma ingenua de correr tres agentes es esperarlos uno tras otro:</p>
 
 <pre><code class="language-ts">const sec = await runSecurityAgent(code, meta);
 const perf = await runPerformanceAgent(code, meta);
 const maint = await runMaintainabilityAgent(code, meta);</code></pre>
 
-<p>That works, but it's <strong>3× slower than it has to be</strong>. Each agent makes an independent LLM call; none of them needs the others' output. A 15-second per-agent latency adds up to ~45 seconds of "loading…"</p>
+<p>Eso funciona, pero es <strong>3× más lento de lo que tiene que ser</strong>. Cada agente hace una llamada al LLM independiente; ninguno necesita la salida de los otros. Una latencia de 15 segundos por agente suma ~45 segundos de «cargando…».</p>
 
-<p><code>Promise.all</code> parallelizes the three calls trivially:</p>
+<p><code>Promise.all</code> paraleliza las tres llamadas de forma trivial:</p>
 
 <pre><code class="language-ts">const [secFindings, perfFindings, maintFindings] = await Promise.all([
   runSecurityAgent(code, meta).then((findings) =&gt; {
@@ -465,31 +465,31 @@ const report = await runSupervisorAgent(
   meta,
 );</code></pre>
 
-<p>Three things to notice:</p>
+<p>Tres cosas para notar:</p>
 
 <ol>
-<li><strong>Total latency is now <code>max(t_sec, t_perf, t_maint)</code> ≈ 15s</strong>, not their sum.</li>
-<li>The <code>.then(...)</code> chains let me <strong>send an SSE event the moment each agent finishes</strong>, in whatever order they happen to finish. The UI shows "✓ Maintainability done · 🔄 Security still running" without me having to plumb anything special.</li>
-<li>The supervisor naturally runs <em>after</em> <code>Promise.all</code> resolves — no extra awaits needed; the data dependency is enforced by the call site.</li>
+<li><strong>La latencia total ahora es <code>max(t_sec, t_perf, t_maint)</code> ≈ 15s</strong>, no su suma.</li>
+<li>Las cadenas <code>.then(...)</code> me dejan <strong>enviar un evento SSE en el momento en que cada agente termina</strong>, en el orden en que terminen. La UI muestra «✓ Mantenibilidad lista · 🔄 Seguridad aún corriendo» sin que yo tenga que cablear nada especial.</li>
+<li>El supervisor corre naturalmente <em>después</em> de que <code>Promise.all</code> resuelve — sin awaits extra; la dependencia de datos la impone el sitio de la llamada.</li>
 </ol>
 
-<p>If your agents <em>do</em> depend on each other (e.g. agent B needs agent A's output to plan its query), <code>Promise.all</code> won't help and you should keep the sequential pattern. But for code review, where each specialist has a different lens on the same input, parallel is free latency.</p>
+<p>Si tus agentes <em>sí</em> dependen entre sí (p. ej. el agente B necesita la salida del agente A para planear su consulta), <code>Promise.all</code> no ayudará y deberías mantener el patrón secuencial. Pero para revisión de código, donde cada especialista tiene un lente distinto sobre el mismo input, el paralelo es latencia gratis.</p>
 
 <hr />
 
-<h2>Decision 2 · Zod schemas as agent contracts</h2>
+<h2>Decisión 2 · Schemas de Zod como contratos de agente</h2>
 
-<p>This is the single most important pattern I've adopted in 2026 for working with LLMs.</p>
+<p>Este es el patrón más importante que he adoptado en 2026 para trabajar con LLMs.</p>
 
-<p>The old way: ask the model nicely to return JSON, then <code>JSON.parse()</code> and hope nothing weird happens. This fails in three ways:</p>
+<p>La forma vieja: pedirle amablemente al modelo que devuelva JSON, luego <code>JSON.parse()</code> y esperar que no pase nada raro. Esto falla de tres maneras:</p>
 
 <ul>
-<li>The model returns <code>```json ... ```</code> markdown-fenced output and your parser breaks.</li>
-<li>The model invents a field that doesn't exist in your TypeScript type.</li>
-<li>The model omits a required field; you don't notice until production.</li>
+<li>El modelo devuelve una salida envuelta en markdown <code>```json ... ```</code> y tu parser se rompe.</li>
+<li>El modelo inventa un campo que no existe en tu tipo de TypeScript.</li>
+<li>El modelo omite un campo requerido; no lo notas hasta producción.</li>
 </ul>
 
-<p>The new way: pass a <strong>Zod schema</strong> to AI SDK v6's <code>generateObject</code>, and let the SDK enforce the shape on the way out of the model.</p>
+<p>La forma nueva: pasarle un <strong>schema de Zod</strong> al <code>generateObject</code> del AI SDK v6, y dejar que el SDK imponga la forma a la salida del modelo.</p>
 
 <pre><code class="language-ts">const FindingSchema = z.object({
   severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
@@ -516,20 +516,20 @@ export async function runSecurityAgent(code: string, meta: CodeMetadata): Promis
   return object; // already typed as Finding[]
 }</code></pre>
 
-<p>Three things to notice:</p>
+<p>Tres cosas para notar:</p>
 
 <ol>
-<li><strong>No parsing.</strong> No regex. No <code>try { JSON.parse(text) } catch</code>. The SDK does it.</li>
-<li><strong>No casting.</strong> <code>object</code> is typed as <code>Finding[]</code>, end of story.</li>
-<li><strong>No "did the model hallucinate a field?" anxiety.</strong> If the model returns something that doesn't match the schema, the SDK retries or throws. Either way, the bug never escapes into your business logic.</li>
+<li><strong>Sin parseo.</strong> Sin regex. Sin <code>try { JSON.parse(text) } catch</code>. Lo hace el SDK.</li>
+<li><strong>Sin casteo.</strong> <code>object</code> está tipado como <code>Finding[]</code>, fin de la historia.</li>
+<li><strong>Sin la ansiedad de «¿alucinó el modelo un campo?».</strong> Si el modelo devuelve algo que no coincide con el schema, el SDK reintenta o lanza una excepción. De cualquier modo, el bug nunca se escapa a tu lógica de negocio.</li>
 </ol>
 
 <div class="callout">
-<div class="callout-label">Pattern · Schema as contract</div>
-<p>Treat the Zod schema as a hard boundary between "untrusted LLM text" and "trusted typed data." Your business logic should never touch a raw model response — only the validated, parsed output. Once you internalize this, every downstream component gets simpler because it can rely on its inputs being well-shaped.</p>
+<div class="callout-label">Patrón · Schema como contrato</div>
+<p>Trata el schema de Zod como una frontera dura entre «texto no confiable del LLM» y «datos tipados confiables». Tu lógica de negocio nunca debería tocar una respuesta cruda del modelo — solo la salida validada y parseada. Una vez que interiorizas esto, cada componente aguas abajo se vuelve más simple porque puede confiar en que sus inputs están bien formados.</p>
 </div>
 
-<p>The same pattern works for the supervisor:</p>
+<p>El mismo patrón funciona para el supervisor:</p>
 
 <pre><code class="language-ts">const ReviewReportSchema = z.object({
   score: z.number().int().min(0).max(100),
@@ -548,25 +548,25 @@ export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata
   return object;
 }</code></pre>
 
-<p>Same idea, different schema. The supervisor's prompt is a few sentences telling it to deduplicate, prioritize by severity (security &gt; performance &gt; maintainability when severity ties), and assign a 0–100 score with cutoffs (90+ = production-ready, &lt;50 = significant problems). The schema enforces that the score is an integer 0–100, the summary is a string, and the findings are still valid <code>Finding[]</code>.</p>
+<p>Misma idea, distinto schema. El prompt del supervisor son unas pocas frases que le dicen que deduplique, priorice por severidad (seguridad &gt; rendimiento &gt; mantenibilidad cuando la severidad empata), y asigne una puntuación de 0–100 con cortes (90+ = listo para producción, &lt;50 = problemas significativos). El schema impone que la puntuación sea un entero 0–100, que el resumen sea una cadena, y que los hallazgos sigan siendo un <code>Finding[]</code> válido.</p>
 
 <hr />
 
-<h2>Decision 3 · Single SSE endpoint, no Redis</h2>
+<h2>Decisión 3 · Un solo endpoint SSE, sin Redis</h2>
 
-<p>The most tempting bad architecture for "long-running multi-step jobs" is:</p>
+<p>La mala arquitectura más tentadora para «trabajos multi-paso de larga duración» es:</p>
 
 <ol>
-<li>Client <code>POST /jobs/start</code> → returns a <code>jobId</code>.</li>
-<li>Client polls <code>GET /jobs/:id/status</code> every second.</li>
-<li>Server writes job state to Redis or KV between calls.</li>
+<li>El cliente hace <code>POST /jobs/start</code> → devuelve un <code>jobId</code>.</li>
+<li>El cliente hace polling a <code>GET /jobs/:id/status</code> cada segundo.</li>
+<li>El servidor escribe el estado del trabajo en Redis o KV entre llamadas.</li>
 </ol>
 
-<p>This adds a whole external dependency (Redis), introduces stale-state bugs, and gives the user a worse UX (1-second polling intervals look chunky).</p>
+<p>Esto añade toda una dependencia externa (Redis), introduce bugs de estado obsoleto, y le da al usuario una peor UX (los intervalos de polling de 1 segundo se ven a tirones).</p>
 
-<p>The cleaner pattern: the <code>POST</code> request itself <strong>is</strong> the stream. The browser opens the connection, the server pushes events as the job progresses, and when the job is done the connection closes.</p>
+<p>El patrón más limpio: la propia petición <code>POST</code> <strong>es</strong> el stream. El navegador abre la conexión, el servidor empuja eventos a medida que el trabajo avanza, y cuando el trabajo termina la conexión se cierra.</p>
 
-<p>Server side:</p>
+<p>Lado servidor:</p>
 
 <pre><code class="language-ts">export async function POST(req: Request) {
   const body = await req.json();
@@ -597,7 +597,7 @@ export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata
   });
 }</code></pre>
 
-<p>The <code>send</code> function is a simple closure that emits a Server-Sent Event. Inside <code>orchestrate</code>, every step calls <code>send()</code> when it starts, when it produces results, when it errors:</p>
+<p>La función <code>send</code> es un closure simple que emite un Server-Sent Event. Dentro de <code>orchestrate</code>, cada paso llama a <code>send()</code> cuando empieza, cuando produce resultados, cuando da error:</p>
 
 <pre><code class="language-ts">send({ type: 'started', jobId });
 send({ type: 'step', name: 'parseInput', status: 'done' });
@@ -608,7 +608,7 @@ send({ type: 'agent', name: 'security', status: 'done', findings });
 send({ type: 'report', report });
 send({ type: 'done' });</code></pre>
 
-<p>Client side, the browser reads the stream:</p>
+<p>Lado cliente, el navegador lee el stream:</p>
 
 <pre><code class="language-ts">const res = await fetch('/api/review', { method: 'POST', body: JSON.stringify({ ... }) });
 const reader = res.body!.getReader();
@@ -626,68 +626,68 @@ while (true) {
   }
 }</code></pre>
 
-<p>That's it. No <code>setInterval</code>. No second endpoint. No Redis. The state lives in the streaming response, the job dies when the connection closes, and the client gets real-time updates with zero polling overhead.</p>
+<p>Eso es todo. Sin <code>setInterval</code>. Sin un segundo endpoint. Sin Redis. El estado vive en la respuesta en streaming, el trabajo muere cuando la conexión se cierra, y el cliente recibe actualizaciones en tiempo real con cero sobrecarga de polling.</p>
 
-<p>The only constraint: this works inside a single function invocation. If your job is too slow for the platform's max function duration, you do need a real job queue. But for "three agents + a supervisor in 30 seconds total," it's perfect.</p>
+<p>La única restricción: esto funciona dentro de una sola invocación de función. Si tu trabajo es demasiado lento para la duración máxima de función de la plataforma, sí necesitas una cola de trabajos de verdad. Pero para «tres agentes + un supervisor en 30 segundos en total», es perfecto.</p>
 
 <hr />
 
-<h2>Why Haiku for the supervisor</h2>
+<h2>Por qué Haiku para el supervisor</h2>
 
-<p>A small but cost-relevant choice: I use Sonnet for the three specialists and <strong>Haiku</strong> for the supervisor.</p>
+<p>Una elección pequeña pero relevante para el costo: uso Sonnet para los tres especialistas y <strong>Haiku</strong> para el supervisor.</p>
 
-<p>The specialists are doing real reasoning: parsing code, identifying vulnerabilities, suggesting fixes with diffs. They benefit from Sonnet's depth.</p>
+<p>Los especialistas hacen razonamiento de verdad: parsear código, identificar vulnerabilidades, sugerir arreglos con diffs. Se benefician de la profundidad de Sonnet.</p>
 
-<p>The supervisor is doing <strong>mechanical work</strong>: sort, deduplicate, prioritize, summarize, score. None of those require deep reasoning about the code itself — the supervisor never sees the code, only the structured findings. Haiku is plenty.</p>
+<p>El supervisor hace <strong>trabajo mecánico</strong>: ordenar, deduplicar, priorizar, resumir, puntuar. Nada de eso requiere razonamiento profundo sobre el código en sí — el supervisor nunca ve el código, solo los hallazgos estructurados. Haiku sobra.</p>
 
-<p>Concretely:</p>
+<p>Concretamente:</p>
 
 <ul>
-<li>A typical review fires 4 LLM calls (3 specialists + 1 supervisor).</li>
-<li>Three of those are Sonnet, one is Haiku — significantly cheaper than four Sonnet calls, and indistinguishable in output quality for the supervisor's specific job.</li>
+<li>Una revisión típica dispara 4 llamadas al LLM (3 especialistas + 1 supervisor).</li>
+<li>Tres de esas son Sonnet, una es Haiku — significativamente más barato que cuatro llamadas a Sonnet, e indistinguible en calidad de salida para el trabajo específico del supervisor.</li>
 </ul>
 
-<p>This is a generalizable lesson: <strong>the model you pick should match the cognitive complexity of the task, not the impressiveness of the system overall.</strong> A multi-agent system with a Haiku-powered supervisor is still a sophisticated system. You don't gain anything by paying Sonnet rates for a task Haiku does fine.</p>
+<p>Esta es una lección generalizable: <strong>el modelo que eliges debería coincidir con la complejidad cognitiva de la tarea, no con lo impresionante del sistema en general.</strong> Un sistema multi-agente con un supervisor impulsado por Haiku sigue siendo un sistema sofisticado. No ganas nada pagando tarifas de Sonnet por una tarea que Haiku hace bien.</p>
 
 <hr />
 
-<h2>What I learned</h2>
+<h2>Lo que aprendí</h2>
 
-<p>Three things I'll carry forward:</p>
+<p>Tres cosas que me llevaré hacia adelante:</p>
 
 <ol>
-<li><strong>Specialists + supervisor beats one big agent.</strong> Splitting a fuzzy task into focused sub-tasks gives the model less cognitive overhead per call and produces more balanced output. The mental model is closer to a human team than a brain-in-a-vat.</li>
-<li><strong>Zod schemas are non-negotiable for LLM tool outputs.</strong> Treat the schema as the contract. Your business logic should never see free-form model text — only validated typed data.</li>
-<li><strong>Streams beat polling for any job that takes 5–60 seconds.</strong> SSE inside a single POST is the cleanest pattern I've found. Use it as the default; reach for a real job queue only when you actually exceed function duration.</li>
+<li><strong>Especialistas + supervisor le gana a un único agente grande.</strong> Partir una tarea difusa en sub-tareas enfocadas le da al modelo menos sobrecarga cognitiva por llamada y produce una salida más balanceada. El modelo mental se parece más a un equipo humano que a un cerebro-en-una-cubeta.</li>
+<li><strong>Los schemas de Zod son innegociables para las salidas de tools de LLM.</strong> Trata el schema como el contrato. Tu lógica de negocio nunca debería ver texto libre del modelo — solo datos tipados validados.</li>
+<li><strong>Los streams le ganan al polling para cualquier trabajo que tarde 5–60 segundos.</strong> SSE dentro de un único POST es el patrón más limpio que he encontrado. Úsalo por defecto; echa mano de una cola de trabajos de verdad solo cuando de verdad excedas la duración de función.</li>
 </ol>
 
 <hr />
 
-<h2>What I'd do differently</h2>
+<h2>Qué haría distinto</h2>
 
 <ol>
-<li><strong>Add a "languages" agent dimension instead of a hard-coded set of three.</strong> The current Security / Performance / Maintainability split is generic; a Python-specific reviewer or a SQL-specific reviewer would find a different (and probably better) class of issue. The architecture supports it for free — adding agents is one entry in the <code>Promise.all</code> array — I just didn't generalize the orchestrator to accept a runtime list of specialists.</li>
-<li><strong>Persist reports in the database so they're shareable by URL.</strong> Right now a review lives only in the client's memory; refresh the page and it's gone. A small <code>reviews</code> table with the input snippet and the report JSON would let a user share <code>/review/{id}</code> and would also produce a great dataset for evaluating the agents against each other over time.</li>
-<li><strong>Stream the supervisor's reasoning, not just its final report.</strong> The user sees a live timeline up to the supervisor step, then a sudden block of output. Switching the supervisor to <code>streamObject</code> would let the score and the summary appear progressively, which is a noticeably better UX for a 5–8 second tail.</li>
+<li><strong>Añadir una dimensión de agentes por «lenguaje» en vez de un set fijo de tres.</strong> La división actual de Seguridad / Rendimiento / Mantenibilidad es genérica; un revisor específico de Python o uno específico de SQL encontraría una clase de problema distinta (y probablemente mejor). La arquitectura lo soporta gratis — añadir agentes es una entrada en el array de <code>Promise.all</code> — simplemente no generalicé el orquestador para aceptar una lista de especialistas en runtime.</li>
+<li><strong>Persistir los reportes en la base de datos para que sean compartibles por URL.</strong> Ahora mismo una revisión vive solo en la memoria del cliente; refresca la página y se va. Una pequeña tabla <code>reviews</code> con el snippet de entrada y el JSON del reporte dejaría a un usuario compartir <code>/review/{id}</code> y además produciría un gran dataset para evaluar a los agentes entre sí a lo largo del tiempo.</li>
+<li><strong>Transmitir el razonamiento del supervisor, no solo su reporte final.</strong> El usuario ve una línea de tiempo en vivo hasta el paso del supervisor, y luego un bloque de salida repentino. Cambiar el supervisor a <code>streamObject</code> dejaría que la puntuación y el resumen aparecieran progresivamente, lo cual es una UX notablemente mejor para una cola de 5–8 segundos.</li>
 </ol>
 
 <hr />
 
-<h2>The pattern, generalized</h2>
+<h2>El patrón, generalizado</h2>
 
-<p>"Specialists in parallel + a supervisor to consolidate" is a pattern that pays off any time the work decomposes along independent axes. Some other places it fits:</p>
+<p>«Especialistas en paralelo + un supervisor que consolida» es un patrón que rinde cada vez que el trabajo se descompone en ejes independientes. Otros lugares donde encaja:</p>
 
 <ul>
-<li><strong>Document review</strong> — legal, factual, stylistic specialists; an editor-supervisor that produces the consolidated edit list.</li>
-<li><strong>Search reranking</strong> — relevance, freshness, diversity specialists; a supervisor that picks the final top-10.</li>
-<li><strong>Multi-source data extraction</strong> — one agent per source format (PDF, HTML, image); a supervisor that merges the extracted records and resolves conflicts.</li>
+<li><strong>Revisión de documentos</strong> — especialistas legal, factual, estilístico; un supervisor-editor que produce la lista de ediciones consolidada.</li>
+<li><strong>Reranking de búsqueda</strong> — especialistas en relevancia, frescura, diversidad; un supervisor que elige el top-10 final.</li>
+<li><strong>Extracción de datos multi-fuente</strong> — un agente por formato de fuente (PDF, HTML, imagen); un supervisor que fusiona los registros extraídos y resuelve conflictos.</li>
 </ul>
 
-<p>The shape is always the same: bounded sub-tasks running concurrently, a cheaper model on top consolidating the structured outputs, every step streamed back to the user so the latency feels like ~max(individual) rather than ~sum(individual).</p>
+<p>La forma es siempre la misma: sub-tareas acotadas corriendo en concurrencia, un modelo más barato encima consolidando las salidas estructuradas, cada paso transmitido de vuelta al usuario para que la latencia se sienta como ~max(individual) en vez de ~sum(individual).</p>
 
-<p>The full code, including the <code>code-input</code> editor, the <code>workflow-progress</code> timeline component, and all four agent prompts, is on GitHub. Live demo accepts both pasted snippets and GitHub file URLs.</p>
+<p>El código completo, incluyendo el editor <code>code-input</code>, el componente de línea de tiempo <code>workflow-progress</code>, y los cuatro prompts de agente, está en GitHub. La demo en vivo acepta tanto snippets pegados como URLs de archivos de GitHub.</p>
 
-<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
+<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">demo en vivo</a></p>
 
     </div>
     <div class="tag-pills">
@@ -697,16 +697,16 @@ while (true) {
       <span class="tag-pill">Zod</span>
     </div>
     <div class="footer-cta">
-      <h3>About this project</h3>
-      <p>The full source code, README, and live demo:</p>
+      <h3>Sobre este proyecto</h3>
+      <p>El código fuente completo, el README y la demo en vivo:</p>
       <div class="links">
         <a href="https://github.com/NeryC/multi-agent-code-reviewer">💻 github.com/NeryC/multi-agent-code-reviewer ↗</a>
-        <a href="https://multi-agent-code-reviewer-sable.vercel.app">🔗 Live demo ↗</a>
+        <a href="https://multi-agent-code-reviewer-sable.vercel.app">🔗 Demo en vivo ↗</a>
       </div>
-      <h3 style="margin-top:24px;">About the author</h3>
-      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
+      <h3 style="margin-top:24px;">Sobre el autor</h3>
+      <p>Soy Nery Cano, ingeniero full-stack senior radicado en Paraguay, construyo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / de ingeniería de IA.</p>
       <div class="links">
-        <a href="../">Portfolio ↗</a>
+        <a href="../../">Portfolio ↗</a>
         <a href="https://github.com/NeryC">GitHub ↗</a>
         <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
         <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
@@ -714,7 +714,7 @@ while (true) {
     </div>
   </article>
   <footer class="site-footer">
-    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+    © 2026 Nery Cano · Pensado con Next.js en mente · Servido como HTML plano porque es 200 ms más rápido
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>

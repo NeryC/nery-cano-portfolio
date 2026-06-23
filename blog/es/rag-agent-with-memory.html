@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building a Zero-Dependency PDF Parser to Survive Vercel Serverless — Nery Cano</title>
-  <meta name="description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <title>Un parser de PDF sin dependencias para sobrevivir al serverless de Vercel — Nery Cano</title>
+  <meta name="description" content="Cómo esquivé el «DOMMatrix is not defined» y lancé un agente RAG que de verdad despliega." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless — Nery Cano" />
-  <meta property="og:description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta property="og:title" content="Un parser de PDF sin dependencias para sobrevivir al serverless de Vercel — Nery Cano" />
+  <meta property="og:description" content="Cómo esquivé el «DOMMatrix is not defined» y lancé un agente RAG que de verdad despliega." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
-  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/rag-agent-with-memory.html" />
   <meta property="article:published_time" content="2026-05-12" />
   <meta property="article:tag" content="RAG" />
   <meta property="article:tag" content="Anthropic Claude" />
   <meta property="article:tag" content="Next.js" />
   <meta property="article:tag" content="Serverless" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless" />
-  <meta name="twitter:description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta name="twitter:title" content="Un parser de PDF sin dependencias para sobrevivir al serverless de Vercel" />
+  <meta name="twitter:description" content="Cómo esquivé el «DOMMatrix is not defined» y lancé un agente RAG que de verdad despliega." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
@@ -307,44 +307,44 @@
 </head>
 <body>
   <nav class="header-nav">
-    <a href="../">← Portfolio</a>
-    <a href="./">All writing</a>
-    <a href="es/rag-agent-with-memory.html">Español ↗</a>
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todos los artículos</a>
+    <a href="../rag-agent-with-memory.html">English ↗</a>
   </nav>
   <article class="article">
-    <div class="article-meta">May 12, 2026 · 9 min read</div>
-    <h1 class="article-title">Building a Zero-Dependency PDF Parser to Survive Vercel Serverless</h1>
-    <p class="article-subtitle">How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys.</p>
+    <div class="article-meta">12 may 2026 · 9 min de lectura</div>
+    <h1 class="article-title">Un parser de PDF sin dependencias para sobrevivir al serverless de Vercel</h1>
+    <p class="article-subtitle">Cómo esquivé el «DOMMatrix is not defined» y lancé un agente RAG que de verdad despliega.</p>
     <div class="byline">
       <div>
         <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+        <div class="byline-meta">Ingeniero Full-Stack Senior · Sistemas de IA/LLM · github.com/NeryC</div>
       </div>
     </div>
-    <img class="banner-img" src="post_1_rag_banner.png" alt="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless" />
+    <img class="banner-img" src="../post_1_rag_banner.png" alt="Un parser de PDF sin dependencias para sobrevivir al serverless de Vercel" />
 
     <div class="article-body">
 
-<p><em>How I dodged <code>DOMMatrix is not defined</code> and shipped a RAG agent that actually deploys — by replacing a 200KB npm package with 80 lines of regex and <code>zlib.inflateSync</code>.</em></p>
+<p><em>Cómo esquivé el <code>DOMMatrix is not defined</code> y lancé un agente RAG que de verdad despliega — reemplazando un paquete npm de 200KB con 80 líneas de regex y <code>zlib.inflateSync</code>.</em></p>
 
-<p>I was three hours into building a "chat with your PDFs" demo on Next.js 16 when I hit the kind of error that makes you question your career:</p>
+<p>Llevaba tres horas construyendo una demo de «chatea con tus PDFs» en Next.js 16 cuando me topé con el tipo de error que te hace cuestionar tu carrera:</p>
 
 <pre><code class="language-typescript">ReferenceError: DOMMatrix is not defined
     at /var/task/node_modules/pdfjs-dist/build/pdf.js:...</code></pre>
 
-<p>The PDF was loading fine on <code>localhost</code>. The moment I deployed to Vercel — boom. Function crash. The error surfaced from <code>pdfjs-dist</code>, the underlying library used by <code>pdf-parse</code> and roughly every "easy" PDF-text-extraction package on npm.</p>
+<p>El PDF cargaba sin problemas en <code>localhost</code>. En el momento en que desplegué a Vercel — boom. Crash de la función. El error venía de <code>pdfjs-dist</code>, la librería subyacente que usa <code>pdf-parse</code> y prácticamente todo paquete «fácil» de extracción de texto de PDF en npm.</p>
 
-<p>The reason is simple and brutal: <code>pdfjs-dist</code> was designed to run <strong>in the browser</strong>. It depends on <code>DOMMatrix</code>, <code>canvas</code>, and a handful of other DOM APIs that have always been part of the Web Platform but have never existed in Node.js. On your laptop, Next.js's dev server is a forgiving Node + JSDOM-ish environment that papers over the gap. On Vercel's serverless runtime, there is no DOM, no shim, no mercy.</p>
+<p>La razón es simple y brutal: <code>pdfjs-dist</code> fue diseñada para correr <strong>en el navegador</strong>. Depende de <code>DOMMatrix</code>, <code>canvas</code> y un puñado de otras APIs del DOM que siempre han sido parte de la Plataforma Web pero que nunca han existido en Node.js. En tu portátil, el dev server de Next.js es un entorno indulgente, tipo Node + JSDOM, que tapa el hueco. En el runtime serverless de Vercel no hay DOM, ni shim, ni piedad.</p>
 
-<p>I needed a different path. I ended up writing a <strong>zero-dependency PDF parser</strong> using nothing but Node's built-in <code>zlib</code> and a few regular expressions. It is not pretty. It will never replace a real PDF library. But it's small, it's serverless-safe, and it ships.</p>
+<p>Necesitaba otro camino. Acabé escribiendo un <strong>parser de PDF sin dependencias</strong> usando nada más que el <code>zlib</code> nativo de Node y unas cuantas expresiones regulares. No es bonito. Nunca reemplazará a una librería de PDF de verdad. Pero es pequeño, es seguro en serverless, y despliega.</p>
 
-<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://rag-agent-memory.vercel.app">live demo</a></p>
+<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://rag-agent-memory.vercel.app">demo en vivo</a></p>
 
 <hr />
 
-<h2>What it is, in one paragraph</h2>
+<h2>Qué es, en un párrafo</h2>
 
-<p>A RAG agent on Next.js 16 that lets a user upload PDFs, chunks them, embeds the chunks with Voyage AI, stores them in Supabase <code>pgvector</code>, and chats over them with citations. The single non-obvious piece is the PDF text extractor: ~80 lines of TypeScript that reads the raw bytes as <code>latin1</code>, inflates any <code>FlateDecode</code> streams with Node's built-in <code>zlib</code>, and pulls text out of <code>Tj</code> / <code>TJ</code> operators with two regular expressions. Zero npm dependencies beyond what the rest of the app already pulls in. Survives Vercel because it has no DOM dependencies.</p>
+<p>Un agente RAG en Next.js 16 que deja al usuario subir PDFs, los trocea en chunks, los embebe con Voyage AI, los guarda en <code>pgvector</code> de Supabase, y chatea sobre ellos con citas. La única pieza no obvia es el extractor de texto del PDF: ~80 líneas de TypeScript que leen los bytes crudos como <code>latin1</code>, inflan cualquier stream <code>FlateDecode</code> con el <code>zlib</code> nativo de Node, y sacan el texto de los operadores <code>Tj</code> / <code>TJ</code> con dos expresiones regulares. Cero dependencias npm más allá de lo que el resto de la app ya trae. Sobrevive a Vercel porque no tiene dependencias del DOM.</p>
 
 <div class="figure">
 <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
@@ -362,7 +362,7 @@
   <g transform="translate(20, 30)">
     <rect width="140" height="80" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
     <text x="70" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">user.pdf</text>
-    <text x="70" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">tree of objects</text>
+    <text x="70" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">árbol de objetos</text>
     <text x="70" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">+ FlateDecode</text>
     <text x="70" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">streams</text>
   </g>
@@ -371,16 +371,16 @@
   <g transform="translate(200, 30)">
     <rect width="150" height="80" rx="10" fill="url(#boxC)" stroke="rgba(125,211,252,0.5)"/>
     <text x="75" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#7DD3FC">STEP 1</text>
-    <text x="75" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">find streams</text>
+    <text x="75" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">buscar streams</text>
     <text x="75" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">/stream...endstream/g</text>
-    <text x="75" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">read as latin1</text>
+    <text x="75" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">leer como latin1</text>
   </g>
 
   <!-- Step 2 -->
   <g transform="translate(380, 30)">
     <rect width="150" height="80" rx="10" fill="url(#boxC)" stroke="rgba(125,211,252,0.5)"/>
     <text x="75" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#7DD3FC">STEP 2</text>
-    <text x="75" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">inflate</text>
+    <text x="75" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">inflar</text>
     <text x="75" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">zlib.inflateSync</text>
     <text x="75" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">if FlateDecode</text>
   </g>
@@ -389,7 +389,7 @@
   <g transform="translate(560, 30)">
     <rect width="140" height="80" rx="10" fill="url(#boxC)" stroke="rgba(125,211,252,0.5)"/>
     <text x="70" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#7DD3FC">STEP 3</text>
-    <text x="70" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">extract text</text>
+    <text x="70" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">extraer texto</text>
     <text x="70" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Tj · TJ regex</text>
     <text x="70" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">+ octal decode</text>
   </g>
@@ -402,25 +402,25 @@
   <!-- Downstream pipeline -->
   <g transform="translate(40, 180)">
     <rect width="150" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="75" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">chunk</text>
+    <text x="75" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">trocear</text>
     <text x="75" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">~500 tok · 50 overlap</text>
   </g>
 
   <g transform="translate(210, 180)">
     <rect width="150" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="75" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">embed</text>
+    <text x="75" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">embeber</text>
     <text x="75" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Voyage AI batch</text>
   </g>
 
   <g transform="translate(380, 180)">
     <rect width="160" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">store</text>
+    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">guardar</text>
     <text x="80" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Supabase · pgvector</text>
   </g>
 
   <g transform="translate(560, 180)">
     <rect width="140" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="70" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">chat + cite</text>
+    <text x="70" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">chat + citar</text>
     <text x="70" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">sonnet-4.6 + tools</text>
   </g>
 
@@ -435,21 +435,21 @@
   <line x1="540" y1="210" x2="558" y2="210" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
 
   <!-- Caption row labels -->
-  <text x="400" y="282" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#94A3B8">INGESTION PIPELINE</text>
-  <text x="400" y="300" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">synchronous inside the upload route · fits the 10s Hobby cap</text>
+  <text x="400" y="282" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#94A3B8">PIPELINE DE INGESTA</text>
+  <text x="400" y="300" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">síncrono dentro de la ruta de subida · cabe en el tope de 10s de Hobby</text>
 </svg>
-<p class="figure-caption">Figure 1 · <strong>Big picture.</strong> The PDF parser is three small steps on top of <code>zlib</code> and regex. Everything downstream is standard RAG plumbing — chunk, embed, store, chat — wired to run synchronously inside the upload route so it fits Vercel Hobby's 10-second function cap.</p>
+<p class="figure-caption">Figura 1 · <strong>Panorama general.</strong> El parser de PDF son tres pasos pequeños sobre <code>zlib</code> y regex. Todo lo que viene después es fontanería RAG estándar — trocear, embeber, guardar, chatear — cableado para correr de forma síncrona dentro de la ruta de subida, así cabe en el tope de 10 segundos de las funciones del plan Hobby de Vercel.</p>
 </div>
 
 <hr />
 
-<h2>A 60-second PDF anatomy lesson</h2>
+<h2>Una lección de anatomía de PDF en 60 segundos</h2>
 
-<p>Before the parser makes sense, you need to know what's actually inside a <code>.pdf</code> file. I knew almost nothing about this when I started; an afternoon of reading the <a href="https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf">Adobe PDF 1.7 reference</a> clarified things faster than I expected.</p>
+<p>Antes de que el parser tenga sentido, necesitas saber qué hay realmente dentro de un archivo <code>.pdf</code>. Yo sabía casi nada de esto cuando empecé; una tarde leyendo la <a href="https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf">referencia de Adobe PDF 1.7</a> me aclaró las cosas más rápido de lo que esperaba.</p>
 
-<p>A PDF is a tree of objects, encoded as a mix of ASCII and binary. The text you actually see on screen lives inside <strong>content streams</strong> — blobs of PostScript-like instructions that say "move the cursor here, set this font, show this string."</p>
+<p>Un PDF es un árbol de objetos, codificado como una mezcla de ASCII y binario. El texto que de verdad ves en pantalla vive dentro de <strong>content streams</strong> — bloques de instrucciones tipo PostScript que dicen «mueve el cursor aquí, pon esta fuente, muestra esta cadena».</p>
 
-<p>A typical content stream looks something like this:</p>
+<p>Un content stream típico se ve más o menos así:</p>
 
 <pre><code class="language-typescript">BT
   /F1 12 Tf
@@ -459,34 +459,34 @@
   [(Multiple) -250 (segments)] TJ
 ET</code></pre>
 
-<p>Two operators do almost all the work:</p>
+<p>Dos operadores hacen casi todo el trabajo:</p>
 
 <ul>
-<li><strong><code>Tj</code></strong> — show a single string. Syntax: <code>(some text) Tj</code>.</li>
-<li><strong><code>TJ</code></strong> — show an array of strings with kerning adjustments. Syntax: <code>[(Multiple) -250 (segments)] TJ</code>.</li>
+<li><strong><code>Tj</code></strong> — muestra una sola cadena. Sintaxis: <code>(some text) Tj</code>.</li>
+<li><strong><code>TJ</code></strong> — muestra un array de cadenas con ajustes de kerning. Sintaxis: <code>[(Multiple) -250 (segments)] TJ</code>.</li>
 </ul>
 
-<p>If you can extract the strings inside the parentheses of every <code>Tj</code> and <code>TJ</code> operator in every content stream, you have, approximately, the text of the PDF.</p>
+<p>Si puedes extraer las cadenas que hay dentro de los paréntesis de cada operador <code>Tj</code> y <code>TJ</code> en cada content stream, tienes, aproximadamente, el texto del PDF.</p>
 
-<p>There's one catch. Modern PDFs almost always <strong>compress</strong> their content streams using zlib (the <code>FlateDecode</code> filter in PDF terminology). A raw PDF byte-stream contains long runs of binary garbage that decompresses into the readable PostScript above.</p>
+<p>Hay una trampa. Los PDFs modernos casi siempre <strong>comprimen</strong> sus content streams con zlib (el filtro <code>FlateDecode</code> en la terminología de PDF). Un byte-stream crudo de PDF contiene largas tiradas de basura binaria que se descomprimen en el PostScript legible de arriba.</p>
 
-<p>So the parser needs to do three things:</p>
+<p>Así que el parser necesita hacer tres cosas:</p>
 
 <ol>
-<li>Find every <code>stream ... endstream</code> block.</li>
-<li>Detect whether it's <code>FlateDecode</code>-compressed and inflate if so.</li>
-<li>Pull text out of <code>Tj</code> / <code>TJ</code> operators with regex.</li>
+<li>Encontrar cada bloque <code>stream ... endstream</code>.</li>
+<li>Detectar si está comprimido con <code>FlateDecode</code> e inflarlo si es así.</li>
+<li>Sacar el texto de los operadores <code>Tj</code> / <code>TJ</code> con regex.</li>
 </ol>
 
-<p>That's the entire algorithm.</p>
+<p>Ese es todo el algoritmo.</p>
 
 <hr />
 
-<h2>Step 1 — Find every stream</h2>
+<h2>Paso 1 — Encontrar cada stream</h2>
 
-<p>A PDF stream is delimited by the literal keywords <code>stream</code> and <code>endstream</code>, with newlines in between. The content between them is opaque bytes — either binary (compressed) or PostScript (raw).</p>
+<p>Un stream de PDF está delimitado por las palabras clave literales <code>stream</code> y <code>endstream</code>, con saltos de línea en medio. El contenido entre ellas son bytes opacos — o binario (comprimido) o PostScript (crudo).</p>
 
-<p>The robust way to read a PDF in Node without losing bytes is to read it as <code>latin1</code>. Latin-1 maps every byte 0–255 to a unique character, so the round-trip is lossless. (UTF-8 would corrupt anything non-ASCII; the <code>Buffer</code> API is overkill for text scanning.)</p>
+<p>La forma robusta de leer un PDF en Node sin perder bytes es leerlo como <code>latin1</code>. Latin-1 mapea cada byte 0–255 a un carácter único, así que el round-trip es sin pérdida. (UTF-8 corrompería cualquier cosa no-ASCII; la API <code>Buffer</code> es excesiva para escanear texto.)</p>
 
 <pre><code class="language-ts">import { inflateSync } from 'zlib'; // built-in, no npm install
 
@@ -505,11 +505,11 @@ function extractPdfText(buffer: Buffer): string {
   return texts.join(' ').replace(/\s+/g, ' ').trim();
 }</code></pre>
 
-<p><code>[\s\S]*?</code> is the lazy "match anything including newlines" idiom — JavaScript doesn't have <code>re.DOTALL</code> like Python, so this is the standard workaround.</p>
+<p><code>[\s\S]*?</code> es el idioma perezoso de «matchea cualquier cosa incluyendo saltos de línea» — JavaScript no tiene <code>re.DOTALL</code> como Python, así que este es el workaround estándar.</p>
 
-<h2>Step 2 — Decompress if FlateDecode</h2>
+<h2>Paso 2 — Descomprimir si es FlateDecode</h2>
 
-<p>Each PDF stream is preceded by a dictionary that tells you which filter (if any) was used to encode the data. The dictionary lives in the bytes just before the <code>stream</code> keyword. We don't need to fully parse it — checking whether <code>FlateDecode</code> appears in the ~500 bytes preceding the stream is enough for 99% of real-world PDFs.</p>
+<p>Cada stream de PDF va precedido por un diccionario que te dice qué filtro (si hay alguno) se usó para codificar los datos. El diccionario vive en los bytes justo antes de la palabra clave <code>stream</code>. No necesitamos parsearlo por completo — comprobar si <code>FlateDecode</code> aparece en los ~500 bytes que preceden al stream es suficiente para el 99% de los PDFs del mundo real.</p>
 
 <pre><code class="language-ts">const streamStart = m.index;
 const preceding = raw.slice(Math.max(0, streamStart - 500), streamStart);
@@ -528,13 +528,13 @@ if (isFlate) {
   content = streamData;
 }</code></pre>
 
-<p><code>inflateSync</code> is part of Node's built-in <code>zlib</code> module — no npm install, no bundling. It throws on malformed input, which is fine because PDFs sometimes contain partial or corrupted streams that aren't worth crashing the whole upload over.</p>
+<p><code>inflateSync</code> es parte del módulo <code>zlib</code> nativo de Node — sin npm install, sin bundling. Lanza una excepción ante input malformado, lo cual está bien porque los PDFs a veces contienen streams parciales o corruptos por los que no vale la pena tirar abajo toda la subida.</p>
 
-<p>After inflation, <code>content</code> is the PostScript-like text we actually want.</p>
+<p>Tras inflarlo, <code>content</code> es el texto tipo PostScript que de verdad queremos.</p>
 
-<h2>Step 3 — Pull text from Tj and TJ</h2>
+<h2>Paso 3 — Sacar el texto de Tj y TJ</h2>
 
-<p>Two regexes do most of the work.</p>
+<p>Dos regexes hacen la mayor parte del trabajo.</p>
 
 <pre><code class="language-ts">// Skip streams that don't have any text operators
 if (!content.includes('Tj') &amp;&amp; !content.includes('TJ')) continue;
@@ -554,55 +554,55 @@ for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
   }
 }</code></pre>
 
-<p>The <code>(?:\\.[^)\\]*)*</code> mess is there to handle escaped characters inside parentheses — PDFs allow <code>\)</code> and <code>\\</code> inside string literals, which would otherwise terminate the match early. The <code>\\(\d{3})</code> pass converts octal escapes (<code>\101</code> → <code>A</code>) that appear in some PDFs.</p>
+<p>El lío de <code>(?:\\.[^)\\]*)*</code> está ahí para manejar caracteres escapados dentro de paréntesis — los PDFs permiten <code>\)</code> y <code>\\</code> dentro de literales de cadena, que de otro modo terminarían el match antes de tiempo. La pasada <code>\\(\d{3})</code> convierte los escapes octales (<code>\101</code> → <code>A</code>) que aparecen en algunos PDFs.</p>
 
-<p>This is enough to extract the text from a clinical paper, a textbook chapter, or pretty much any text-based PDF you'll feed a RAG pipeline.</p>
+<p>Esto basta para extraer el texto de un paper clínico, un capítulo de libro de texto, o prácticamente cualquier PDF basado en texto que le metas a un pipeline RAG.</p>
 
 <hr />
 
-<h2>What this does NOT handle</h2>
+<h2>Lo que esto NO maneja</h2>
 
-<p>I want to be honest: this parser is good enough for RAG, not good enough for everything.</p>
+<p>Quiero ser honesto: este parser es suficiente para RAG, no suficiente para todo.</p>
 
 <div class="bug-row">
 <div class="bug-num">EDGE 1</div>
 <div>
-  <div class="bug-title">Scanned PDFs (image-only, no text streams)</div>
-  <div class="bug-desc">There's no <code>Tj</code>/<code>TJ</code> content to extract — the pages are flattened images. For those you need OCR (Tesseract, AWS Textract, Google Document AI). The parser will return an empty string and the upload route can surface that gracefully.</div>
+  <div class="bug-title">PDFs escaneados (solo imagen, sin streams de texto)</div>
+  <div class="bug-desc">No hay contenido <code>Tj</code>/<code>TJ</code> que extraer — las páginas son imágenes aplanadas. Para esos necesitas OCR (Tesseract, AWS Textract, Google Document AI). El parser devolverá una cadena vacía y la ruta de subida puede manejarlo con elegancia.</div>
 </div>
 </div>
 
 <div class="bug-row">
 <div class="bug-num">EDGE 2</div>
 <div>
-  <div class="bug-title">Complex font encodings (<code>ToUnicode</code> CMaps)</div>
-  <div class="bug-desc">Some PDFs encode characters with non-standard glyph IDs that need a CMap lookup to map back to readable characters. Most consumer-generated PDFs (Word, Pages, LaTeX) are fine; weird editorial PDFs sometimes return garbage.</div>
+  <div class="bug-title">Codificaciones de fuente complejas (CMaps <code>ToUnicode</code>)</div>
+  <div class="bug-desc">Algunos PDFs codifican caracteres con IDs de glifo no estándar que necesitan una búsqueda en el CMap para mapearlos de vuelta a caracteres legibles. La mayoría de los PDFs generados por consumidores (Word, Pages, LaTeX) están bien; los PDFs editoriales raros a veces devuelven basura.</div>
 </div>
 </div>
 
 <div class="bug-row">
 <div class="bug-num">EDGE 3</div>
 <div>
-  <div class="bug-title">Table structure</div>
-  <div class="bug-desc">Text comes out in reading order, but you lose the row/column relationships. Fine for chunking and semantic search, bad for <em>"extract this table as JSON."</em></div>
+  <div class="bug-title">Estructura de tablas</div>
+  <div class="bug-desc">El texto sale en orden de lectura, pero pierdes las relaciones de fila/columna. Bien para trocear y búsqueda semántica, mal para <em>«extrae esta tabla como JSON».</em></div>
 </div>
 </div>
 
 <div class="bug-row">
 <div class="bug-num">EDGE 4</div>
 <div>
-  <div class="bug-title">Encrypted PDFs</div>
-  <div class="bug-desc">They'll just look like garbage after the missing decryption step. You need a real PDF library if encrypted PDFs are in scope.</div>
+  <div class="bug-title">PDFs cifrados</div>
+  <div class="bug-desc">Simplemente se verán como basura por el paso de descifrado que falta. Necesitas una librería de PDF de verdad si los PDFs cifrados entran en el alcance.</div>
 </div>
 </div>
 
-<p>For RAG, none of these usually matter. You're going to chunk the text anyway, embed it, and let semantic search do the heavy lifting.</p>
+<p>Para RAG, ninguno de estos suele importar. De todos modos vas a trocear el texto, embeberlo, y dejar que la búsqueda semántica haga el trabajo pesado.</p>
 
 <hr />
 
-<h2>Wiring it into the ingestion pipeline</h2>
+<h2>Conectándolo al pipeline de ingesta</h2>
 
-<p>Once the text is out, the rest of the ingestion is standard:</p>
+<p>Una vez que el texto está fuera, el resto de la ingesta es estándar:</p>
 
 <pre><code class="language-ts">async function processDocument(blobUrl: string, sessionId: string, documentId: string) {
   const buffer = await fetch(blobUrl).then(r =&gt; r.arrayBuffer());
@@ -628,50 +628,50 @@ for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
     .eq('id', documentId);
 }</code></pre>
 
-<p>A subtle point that bit me: I originally ran <code>processDocument</code> in the background using Vercel's <code>after()</code>. That dies on the Hobby plan because <code>after()</code> keeps the function alive past the 10-second hard cap. The fix was unromantic — run ingestion <strong>synchronously</strong> inside the upload route handler, fast enough that a 1–10 page PDF finishes in 2–5 seconds. The user gets <code>status: 'ready'</code> directly in the response and never sees a "processing" spinner.</p>
+<p>Un detalle sutil que me mordió: originalmente corría <code>processDocument</code> en segundo plano usando el <code>after()</code> de Vercel. Eso muere en el plan Hobby porque <code>after()</code> mantiene la función viva más allá del tope duro de 10 segundos. El arreglo fue poco romántico — correr la ingesta de forma <strong>síncrona</strong> dentro del handler de la ruta de subida, lo bastante rápido como para que un PDF de 1–10 páginas termine en 2–5 segundos. El usuario recibe <code>status: 'ready'</code> directamente en la respuesta y nunca ve un spinner de «procesando».</p>
 
 <div class="callout">
-<div class="callout-label">Takeaway</div>
-<p>Browser-only dependencies are a serverless red flag. If a package builds on <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, or any DOM API, assume it'll break in serverless and reach for a Node-native alternative — even if it means writing a smaller, dumber tool yourself. The maintenance cost of <em>"weird unfixable production crash on Friday afternoon"</em> outweighs the convenience of <code>npm install</code>.</p>
+<div class="callout-label">Para llevar</div>
+<p>Las dependencias solo-navegador son una bandera roja en serverless. Si un paquete se construye sobre <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, o cualquier API del DOM, asume que se romperá en serverless y echa mano de una alternativa nativa de Node — aunque eso signifique escribir tú mismo una herramienta más pequeña y tonta. El costo de mantenimiento de un <em>«crash raro e irreparable en producción un viernes por la tarde»</em> pesa más que la comodidad de <code>npm install</code>.</p>
 </div>
 
 <hr />
 
-<h2>What I learned</h2>
+<h2>Lo que aprendí</h2>
 
-<p>Two takeaways I'll carry into every future serverless LLM project:</p>
+<p>Dos aprendizajes que me llevaré a todo futuro proyecto de LLM en serverless:</p>
 
 <ol>
-<li><strong>Treat browser-only dependencies as a serverless red flag.</strong> If a package is built on top of <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, or any DOM API, assume it'll break in serverless and look for a Node-native alternative — even if it means writing a worse, simpler parser yourself. The maintenance cost of "weird unfixable production crash on Friday afternoon" outweighs the convenience of <code>npm install pdf-parse</code>.</li>
-<li><strong>A worse, smaller, owned parser beats a fancier one you can't debug.</strong> This parser is ~80 lines. I understand every byte of it. When something goes wrong, the stack trace points at a regex I wrote, not at three layers of abstraction inside a library. That ownership is worth a lot when you're shipping under a timeline.</li>
+<li><strong>Trata las dependencias solo-navegador como una bandera roja en serverless.</strong> Si un paquete se construye sobre <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, o cualquier API del DOM, asume que se romperá en serverless y busca una alternativa nativa de Node — aunque signifique escribir tú mismo un parser peor y más simple. El costo de mantenimiento de un «crash raro e irreparable en producción un viernes por la tarde» pesa más que la comodidad de <code>npm install pdf-parse</code>.</li>
+<li><strong>Un parser peor, más pequeño y propio le gana a uno más sofisticado que no puedes depurar.</strong> Este parser tiene ~80 líneas. Entiendo cada byte de él. Cuando algo sale mal, el stack trace apunta a un regex que yo escribí, no a tres capas de abstracción dentro de una librería. Esa propiedad vale mucho cuando estás entregando contra un plazo.</li>
 </ol>
 
 <hr />
 
-<h2>What I'd do differently</h2>
+<h2>Qué haría distinto</h2>
 
 <ol>
-<li><strong>Surface "no text extracted" as a first-class error in the UI.</strong> Right now if a user uploads a scanned PDF, the parser returns an empty string, the chunker produces zero chunks, and the document just sits at <code>status: 'ready'</code> with nothing to chat about. A simple check after extraction (<em>"extracted text was empty — this looks like a scanned PDF; OCR isn't supported yet"</em>) would prevent confusion and open the door to wiring up an OCR fallback later.</li>
-<li><strong>Detect <code>ToUnicode</code> CMaps and warn before chunking.</strong> The current parser silently returns gibberish for PDFs with custom glyph encodings. A quick sanity check (e.g. ratio of printable ASCII characters in the extracted text) could flag these and tell the user "this PDF uses non-standard fonts; results may be garbled."</li>
-<li><strong>Move ingestion off the upload route once I'm off Hobby.</strong> Synchronous ingestion is the right call inside a 10-second cap, but it caps the PDF size you can handle and makes the upload feel slow for bigger files. On Pro, I'd put ingestion behind Inngest or QStash with proper progress events streamed over SSE.</li>
+<li><strong>Mostrar «no se extrajo texto» como un error de primera clase en la UI.</strong> Ahora mismo, si un usuario sube un PDF escaneado, el parser devuelve una cadena vacía, el chunker produce cero chunks, y el documento se queda en <code>status: 'ready'</code> sin nada sobre lo que chatear. Una comprobación simple tras la extracción (<em>«el texto extraído estaba vacío — esto parece un PDF escaneado; el OCR aún no está soportado»</em>) evitaría confusión y abriría la puerta a conectar un fallback de OCR más adelante.</li>
+<li><strong>Detectar CMaps <code>ToUnicode</code> y avisar antes de trocear.</strong> El parser actual devuelve en silencio galimatías para PDFs con codificaciones de glifo personalizadas. Una comprobación rápida de cordura (p. ej. la proporción de caracteres ASCII imprimibles en el texto extraído) podría señalarlos y decirle al usuario «este PDF usa fuentes no estándar; los resultados pueden salir corruptos».</li>
+<li><strong>Sacar la ingesta de la ruta de subida una vez que salga de Hobby.</strong> La ingesta síncrona es la decisión correcta dentro de un tope de 10 segundos, pero limita el tamaño de PDF que puedes manejar y hace que la subida se sienta lenta con archivos más grandes. En Pro, pondría la ingesta detrás de Inngest o QStash con eventos de progreso apropiados transmitidos por SSE.</li>
 </ol>
 
 <hr />
 
-<h2>The pattern, generalized</h2>
+<h2>El patrón, generalizado</h2>
 
-<p>This project is really about a more general decision: <strong>when to write your own 80-line tool versus install a 200KB library.</strong> The rule I've landed on is roughly:</p>
+<p>Este proyecto trata en realidad de una decisión más general: <strong>cuándo escribir tu propia herramienta de 80 líneas frente a instalar una librería de 200KB.</strong> La regla a la que he llegado es, más o menos:</p>
 
 <ul>
-<li><strong>Library wins</strong> when the spec is large, the edge cases matter, and the runtime environment is generous. Server-side rendering of PDFs to images? Use <code>pdfjs-dist</code> on a worker that has a DOM polyfill.</li>
-<li><strong>Owned code wins</strong> when you only need a sliver of the spec, your runtime is restrictive, and the failure cost of <em>"the library doesn't deploy"</em> is high. Extracting text for RAG? 80 lines beats 200 KB.</li>
+<li><strong>Gana la librería</strong> cuando la spec es grande, los casos límite importan, y el entorno de runtime es generoso. ¿Renderizado de PDFs a imágenes en el servidor? Usa <code>pdfjs-dist</code> en un worker que tenga un polyfill del DOM.</li>
+<li><strong>Gana el código propio</strong> cuando solo necesitas una rebanada de la spec, tu runtime es restrictivo, y el costo de fallo de <em>«la librería no despliega»</em> es alto. ¿Extraer texto para RAG? 80 líneas le ganan a 200 KB.</li>
 </ul>
 
-<p>The same pattern applies far beyond PDF parsing — image thumbnailing (Sharp vs hand-rolling a Resize via <code>node:zlib</code>+PNG chunks), CSV parsing (Papa Parse vs a 20-line tokenizer), Markdown rendering (a full unified pipeline vs a single regex pass). Reach for the library by default, but know the moment to write the small version yourself.</p>
+<p>El mismo patrón aplica mucho más allá del parseo de PDF — miniaturas de imágenes (Sharp vs hacer a mano un Resize vía <code>node:zlib</code>+chunks de PNG), parseo de CSV (Papa Parse vs un tokenizador de 20 líneas), renderizado de Markdown (un pipeline completo de unified vs una sola pasada de regex). Echa mano de la librería por defecto, pero reconoce el momento de escribir tú mismo la versión pequeña.</p>
 
-<p>The full code, with chunking, embedding, the dual memory system, and the chat agent on top, lives at the repo below. If you're hitting the same <code>DOMMatrix is not defined</code> wall — paste my parser into your <code>lib/</code> folder, <code>npm uninstall pdf-parse</code>, and ship.</p>
+<p>El código completo, con troceado, embedding, el sistema de memoria dual, y el agente de chat encima, vive en el repo de abajo. Si te estás topando con el mismo muro de <code>DOMMatrix is not defined</code> — pega mi parser en tu carpeta <code>lib/</code>, haz <code>npm uninstall pdf-parse</code>, y despliega.</p>
 
-<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://rag-agent-memory.vercel.app">live demo</a></p>
+<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://rag-agent-memory.vercel.app">demo en vivo</a></p>
 
     </div>
     <div class="tag-pills">
@@ -681,16 +681,16 @@ for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
       <span class="tag-pill">Serverless</span>
     </div>
     <div class="footer-cta">
-      <h3>About this project</h3>
-      <p>The full source code, README, and live demo:</p>
+      <h3>Sobre este proyecto</h3>
+      <p>El código fuente completo, el README y la demo en vivo:</p>
       <div class="links">
         <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-with-memory ↗</a>
-        <a href="https://rag-agent-memory.vercel.app">🔗 Live demo ↗</a>
+        <a href="https://rag-agent-memory.vercel.app">🔗 Demo en vivo ↗</a>
       </div>
-      <h3 style="margin-top:24px;">About the author</h3>
-      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
+      <h3 style="margin-top:24px;">Sobre el autor</h3>
+      <p>Soy Nery Cano, ingeniero full-stack senior radicado en Paraguay, construyo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / de ingeniería de IA.</p>
       <div class="links">
-        <a href="../">Portfolio ↗</a>
+        <a href="../../">Portfolio ↗</a>
         <a href="https://github.com/NeryC">GitHub ↗</a>
         <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
         <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
@@ -698,7 +698,7 @@ for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
     </div>
   </article>
   <footer class="site-footer">
-    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+    © 2026 Nery Cano · Pensado con Next.js en mente · Servido como HTML plano porque es 200 ms más rápido
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>

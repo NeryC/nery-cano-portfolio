@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget — Nery Cano</title>
-  <meta name="description" content="How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel." />
+  <title>Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible — Nery Cano</title>
+  <meta name="description" content="Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget — Nery Cano" />
-  <meta property="og:description" content="How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel." />
+  <meta property="og:title" content="Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible — Nery Cano" />
+  <meta property="og:description" content="Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_banner.svg" />
-  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/talk-to-my-portfolio.html" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/talk-to-my-portfolio.html" />
   <meta property="article:published_time" content="2026-05-17" />
   <meta property="article:tag" content="MCP" />
   <meta property="article:tag" content="AI Agents" />
   <meta property="article:tag" content="Anthropic Claude" />
   <meta property="article:tag" content="Next.js" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget" />
-  <meta name="twitter:description" content="How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel." />
+  <meta name="twitter:title" content="Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible" />
+  <meta name="twitter:description" content="Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_banner.svg" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/talk-to-my-portfolio.html" />
@@ -310,39 +310,39 @@
 </head>
 <body>
   <nav class="header-nav">
-    <a href="../">← Portfolio</a>
-    <a href="./">All writing</a>
-    <a href="es/talk-to-my-portfolio.html">Español ↗</a>
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todos los artículos</a>
+    <a href="../talk-to-my-portfolio.html">English ↗</a>
   </nav>
   <article class="article">
-    <div class="article-meta">May 17, 2026 · 18 min read</div>
-    <h1 class="article-title">Building Talk to My Portfolio: An MCP Server + Embeddable AI Widget</h1>
-    <p class="article-subtitle">How I shipped a chat widget that lets visitors interrogate my CV, projects, and 164 Platzi certificates — and the six production bugs I had to fix to get it working on Vercel.</p>
+    <div class="article-meta">17 may 2026 · 18 min de lectura</div>
+    <h1 class="article-title">Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible</h1>
+    <p class="article-subtitle">Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel.</p>
     <div class="byline">
       <div>
         <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+        <div class="byline-meta">Ingeniero Full-Stack Senior · Sistemas de IA/LLM · github.com/NeryC</div>
       </div>
     </div>
-    <img class="banner-img" src="post_4_talk_banner.svg" alt="Talk to my portfolio — MCP server + embeddable AI widget" />
+    <img class="banner-img" src="../post_4_talk_banner.svg" alt="Talk to my portfolio — MCP server + embeddable AI widget" />
 
     <div class="article-body">
 
-<p><em>This is the fourth and most ambitious project in the Talent Global portfolio series. The previous three (research agent, multi-agent reviewer, RAG with memory) were standalone Next.js apps. This one is a <strong>protocol implementation, a multi-package monorepo, and a piece of JavaScript that has to embed itself into someone else's HTML page</strong> — my own portfolio.</em></p>
+<p><em>Este es el cuarto y más ambicioso proyecto de la serie de portfolio Talent Global. Los tres anteriores (research agent, revisor multi-agente, RAG con memoria) eran apps Next.js independientes. Este es una <strong>implementación de protocolo, un monorepo multi-paquete y una pieza de JavaScript que tiene que incrustarse en la página HTML de otra persona</strong> — mi propio portfolio.</em></p>
 
-<p>If you opened this post from the bottom-right corner of <a href="../">neryc.github.io/nery-cano-portfolio</a>, you already clicked the FAB. That little 💬 button loads <code>widget.js</code>, mounts a Preact component, opens an iframe pointing at a Next.js page, and from there talks to a Model Context Protocol server that exposes a structured view of my entire professional history.</p>
+<p>Si abriste este post desde la esquina inferior derecha de <a href="../../">neryc.github.io/nery-cano-portfolio</a>, ya hiciste clic en el FAB. Ese pequeño botón 💬 carga <code>widget.js</code>, monta un componente Preact, abre un iframe que apunta a una página Next.js y desde ahí habla con un servidor Model Context Protocol que expone una vista estructurada de toda mi trayectoria profesional.</p>
 
-<p>The fun part: it took ten minutes to design and several hours to debug. Six production bugs separated "passes all 115 tests locally" from "actually works on Vercel." This is the long version of what's inside.</p>
+<p>Lo divertido: diseñarlo tomó diez minutos y depurarlo, varias horas. Seis bugs de producción separaban «pasa los 115 tests en local» de «de verdad funciona en Vercel». Esta es la versión larga de lo que hay dentro.</p>
 
-<p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong> · <a href="https://talk-to-my-portfolio.vercel.app">live demo</a> · <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">MCP endpoint</a></p>
+<p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong> · <a href="https://talk-to-my-portfolio.vercel.app">demo en vivo</a> · <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">endpoint MCP</a></p>
 
 <hr />
 
-<h2>What it is, in one paragraph</h2>
+<h2>Qué es, en un párrafo</h2>
 
-<p>An <strong>MCP server</strong> exposes 9 tools, 4 resources, and 3 prompts that read from JSON/Markdown files describing my CV, my projects, my work experience, my skills, and 164 real Platzi diplomas scraped via Playwright. Any MCP-compatible client (Claude Desktop, ChatGPT desktop, your own agent) can connect over Streamable HTTP and ask things like <em>"What projects has Nery built with TypeScript and Anthropic Claude?"</em>. Answers come from the structured data, not from the model's training set — so there are no hallucinations about my background.</p>
+<p>Un <strong>servidor MCP</strong> expone 9 tools, 4 resources y 3 prompts que leen de archivos JSON/Markdown que describen mi CV, mis proyectos, mi experiencia laboral, mis skills y 164 diplomas reales de Platzi extraídos con Playwright. Cualquier cliente compatible con MCP (Claude Desktop, ChatGPT desktop, tu propio agente) puede conectarse por Streamable HTTP y preguntar cosas como <em>«¿Qué proyectos ha construido Nery con TypeScript y Anthropic Claude?»</em>. Las respuestas vienen de los datos estructurados, no del set de entrenamiento del modelo — así que no hay alucinaciones sobre mi perfil.</p>
 
-<p>The same server also feeds a chat widget that I embed on this very portfolio. That gives recruiters a one-click way to ask anything about me without scrolling through 1,500 lines of HTML.</p>
+<p>El mismo servidor también alimenta un widget de chat que embebo en este mismo portfolio. Eso le da a quien recluta una forma, a un clic, de preguntar lo que sea sobre mí sin tener que scrollear 1.500 líneas de HTML.</p>
 
 <div class="figure">
 <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
@@ -416,35 +416,35 @@
   <line x1="100" y1="198" x2="100" y2="132" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
   <text x="62" y="170" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">build</text>
 </svg>
-<p class="figure-caption">Figure 1 · <strong>Big picture.</strong> The portfolio loads <code>widget.js</code>, which mounts a FAB and an iframe pointing at <code>/widget</code> on Vercel. From there everything is one Next.js deployment — the MCP server runs in-process alongside the agent.</p>
+<p class="figure-caption">Figura 1 · <strong>Panorama general.</strong> El portfolio carga <code>widget.js</code>, que monta un FAB y un iframe apuntando a <code>/widget</code> en Vercel. De ahí en adelante todo es un único despliegue de Next.js — el servidor MCP corre in-process junto al agente.</p>
 </div>
 
-<h2>The monorepo, briefly</h2>
+<h2>El monorepo, en breve</h2>
 
-<p>Four pnpm workspace packages:</p>
+<p>Cuatro paquetes del workspace de pnpm:</p>
 
 <ul>
-<li><strong><code>apps/web</code></strong> — Next.js 16 (App Router, Turbopack). Hosts <code>/widget</code> (the iframe UI), <code>/demo</code> (the standalone chat), <code>/api/agent</code> (streaming agent route), and <code>/api/mcp</code> (Streamable HTTP MCP transport).</li>
-<li><strong><code>packages/mcp-server</code></strong> — <code>@neryc/portfolio-mcp</code>. Pure TypeScript that registers tools/resources/prompts against the MCP SDK. Has its own CLI binary for stdio mode (so Claude Desktop can launch it locally).</li>
-<li><strong><code>packages/shared</code></strong> — Zod schemas + typed data loaders + the JSON/Markdown seed files. Both apps and the MCP server import from here.</li>
-<li><strong><code>packages/widget</code></strong> — The Preact + esbuild bundle that becomes <code>widget.js</code>. Output is dropped into <code>apps/web/public/</code> so Vercel serves it at the public origin.</li>
+<li><strong><code>apps/web</code></strong> — Next.js 16 (App Router, Turbopack). Aloja <code>/widget</code> (la UI del iframe), <code>/demo</code> (el chat independiente), <code>/api/agent</code> (la ruta del agente con streaming) y <code>/api/mcp</code> (el transporte MCP por Streamable HTTP).</li>
+<li><strong><code>packages/mcp-server</code></strong> — <code>@neryc/portfolio-mcp</code>. TypeScript puro que registra tools/resources/prompts contra el SDK de MCP. Tiene su propio binario de CLI para el modo stdio (para que Claude Desktop pueda lanzarlo en local).</li>
+<li><strong><code>packages/shared</code></strong> — schemas de Zod + cargadores de datos tipados + los archivos semilla JSON/Markdown. Tanto las apps como el servidor MCP importan de aquí.</li>
+<li><strong><code>packages/widget</code></strong> — El bundle de Preact + esbuild que se convierte en <code>widget.js</code>. La salida se deja en <code>apps/web/public/</code> para que Vercel lo sirva desde el origen público.</li>
 </ul>
 
-<p>Plus <code>scripts/sync-platzi</code> — a Playwright scraper that logs into Platzi once, walks the public profile + learning dashboard, and dumps 164 real courses with diploma URLs into <code>packages/shared/data/courses.json</code>. That data is what the MCP server returns when an agent asks <em>"show me Nery's Python certificates."</em></p>
+<p>Más <code>scripts/sync-platzi</code> — un scraper de Playwright que inicia sesión en Platzi una vez, recorre el perfil público + el dashboard de aprendizaje y vuelca 164 cursos reales con sus URLs de diploma en <code>packages/shared/data/courses.json</code>. Esos datos son los que devuelve el servidor MCP cuando un agente pide <em>«muéstrame los certificados de Python de Nery».</em></p>
 
 <hr />
 
-<h2>What's MCP, and why use it for this?</h2>
+<h2>¿Qué es MCP y por qué usarlo para esto?</h2>
 
-<p>The Model Context Protocol is a small JSON-RPC protocol Anthropic published in late 2024 to standardize the conversation between an LLM client and a tool/data backend. A server exposes:</p>
+<p>El Model Context Protocol es un pequeño protocolo JSON-RPC que Anthropic publicó a finales de 2024 para estandarizar la conversación entre un cliente LLM y un backend de tools/datos. Un servidor expone:</p>
 
 <ul>
-<li><strong>Tools</strong> — callable functions with Zod (or JSON Schema) parameters. Same role as OpenAI's function calling, except portable across providers.</li>
-<li><strong>Resources</strong> — read-only URIs the client can fetch. Think files, but addressable by scheme (<code>portfolio://cv/full</code>, <code>portfolio://projects/research-agent/case-study</code>).</li>
-<li><strong>Prompts</strong> — parametrized prompt templates that bundle instructions + arguments + sampling preferences.</li>
+<li><strong>Tools</strong> — funciones invocables con parámetros Zod (o JSON Schema). El mismo rol que el function calling de OpenAI, salvo que es portable entre proveedores.</li>
+<li><strong>Resources</strong> — URIs de solo lectura que el cliente puede traer. Piensa en archivos, pero direccionables por esquema (<code>portfolio://cv/full</code>, <code>portfolio://projects/research-agent/case-study</code>).</li>
+<li><strong>Prompts</strong> — plantillas de prompt parametrizadas que agrupan instrucciones + argumentos + preferencias de sampling.</li>
 </ul>
 
-<p>It also supports <strong>sampling</strong> (the server asking the client to run an LLM call) and <strong>elicitation</strong> (the server asking the client to collect structured input from the user). These are the bits that make MCP feel different from "just function calling."</p>
+<p>También soporta <strong>sampling</strong> (el servidor le pide al cliente que ejecute una llamada al LLM) y <strong>elicitation</strong> (el servidor le pide al cliente que recoja input estructurado del usuario). Estas son las piezas que hacen que MCP se sienta distinto de «solo function calling».</p>
 
 <div class="figure">
 <svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
@@ -484,24 +484,24 @@
     <text x="360" y="237" text-anchor="middle" fill="rgba(125,211,252,0.7)">sampling/elicitation (server → client)</text>
   </g>
 </svg>
-<p class="figure-caption">Figure 2 · <strong>The MCP handshake.</strong> The client initializes with its capabilities; the server replies with what it can do; tool calls flow back and forth; sampling and elicitation requests go the <em>other</em> way too — server asks the client.</p>
+<p class="figure-caption">Figura 2 · <strong>El handshake de MCP.</strong> El cliente inicializa con sus capabilities; el servidor responde con lo que puede hacer; las llamadas a tools van y vienen; las peticiones de sampling y elicitation van también en el <em>otro</em> sentido — el servidor le pregunta al cliente.</p>
 </div>
 
-<p>The wire format is plain JSON-RPC 2.0. The transport can be <strong>stdio</strong> (local subprocess, used by Claude Desktop) or <strong>Streamable HTTP</strong> (one-shot POST that returns either JSON or an SSE stream, used by remote clients). The SDK ships both server- and client-side transports for each.</p>
+<p>El formato de transmisión es JSON-RPC 2.0 plano. El transporte puede ser <strong>stdio</strong> (subproceso local, usado por Claude Desktop) o <strong>Streamable HTTP</strong> (un POST único que devuelve o bien JSON o un stream SSE, usado por clientes remotos). El SDK trae los transportes de servidor y de cliente para cada uno.</p>
 
-<p>So why bother with MCP for a portfolio chatbot? I could have written a plain Next.js API route. Three answers:</p>
+<p>Entonces, ¿por qué molestarse con MCP para el chatbot de un portfolio? Podría haber escrito una simple ruta de API en Next.js. Tres respuestas:</p>
 
 <ol>
-<li><strong>Portability.</strong> The same server runs locally over stdio (so a hiring manager could add it to Claude Desktop and ask questions in their existing tool) and remotely over HTTP (so I can power a public widget). One code path, two transports.</li>
-<li><strong>It's the project, not just a means.</strong> The role I'm targeting (LLM/AI Full-Stack Engineer) cares that I can implement protocols, not just call them. MCP is the closest thing to a "standard" in agent tooling right now; doing it well is the demo.</li>
-<li><strong>Sampling and elicitation.</strong> Without these, "book a call" would be a server-side stub that just emails Cal.com. <em>With</em> them, the booking flow can ask the client for the user's name + preferred slot via a structured form, then ask the client's LLM to draft a personalized confirmation message. The server orchestrates; the client renders.</li>
+<li><strong>Portabilidad.</strong> El mismo servidor corre en local por stdio (para que un hiring manager pueda añadirlo a Claude Desktop y preguntar desde su herramienta de siempre) y en remoto por HTTP (para que yo pueda alimentar un widget público). Un solo camino de código, dos transportes.</li>
+<li><strong>Es el proyecto, no solo un medio.</strong> Al rol que apunto (LLM/AI Full-Stack Engineer) le importa que sepa implementar protocolos, no solo llamarlos. MCP es lo más parecido a un «estándar» en tooling de agentes ahora mismo; hacerlo bien es la demo.</li>
+<li><strong>Sampling y elicitation.</strong> Sin esto, «agendar una llamada» sería un stub del lado del servidor que solo manda un email a Cal.com. <em>Con</em> ellos, el flujo de reserva puede pedirle al cliente el nombre del usuario + su horario preferido vía un formulario estructurado, y luego pedirle al LLM del cliente que redacte un mensaje de confirmación personalizado. El servidor orquesta; el cliente renderiza.</li>
 </ol>
 
 <hr />
 
-<h2>The MCP server: 9 tools, 4 resources, 3 prompts</h2>
+<h2>El servidor MCP: 9 tools, 4 resources, 3 prompts</h2>
 
-<p>Every tool is a tiny object: a Zod input schema and an <code>execute</code> async function. The same pattern as Vercel AI SDK's <code>tool()</code>, just transport-agnostic.</p>
+<p>Cada tool es un objeto diminuto: un input schema de Zod y una función async <code>execute</code>. El mismo patrón que <code>tool()</code> del Vercel AI SDK, solo que agnóstico al transporte.</p>
 
 <pre><code class="language-ts">// packages/mcp-server/src/tools/list-projects.ts
 import { z } from 'zod';
@@ -526,24 +526,24 @@ export const listProjectsTool = {
   },
 };</code></pre>
 
-<p>The full tool registry:</p>
+<p>El registro completo de tools:</p>
 
 <table>
-<thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+<thead><tr><th>Tool</th><th>Qué hace</th></tr></thead>
 <tbody>
-<tr><td><code>listProjects</code></td><td>All projects, summary view</td></tr>
-<tr><td><code>getProject</code></td><td>Full project detail by slug</td></tr>
-<tr><td><code>searchByTech</code></td><td>Search projects + courses + experience by tech keyword</td></tr>
-<tr><td><code>searchCourses</code></td><td>Search 164 Platzi certificates by topic</td></tr>
-<tr><td><code>getCourse</code></td><td>One course with verifiable diploma URL</td></tr>
-<tr><td><code>getExperience</code></td><td>Full work history (companies, roles, impact)</td></tr>
-<tr><td><code>getSkills</code></td><td>Skills grouped by area (languages, frameworks, infra, AI)</td></tr>
-<tr><td><code>getAvailability</code></td><td>Cal.com availability for a date range</td></tr>
-<tr><td><code>bookCall</code></td><td>Book a 30-minute call (elicits name + email + slot)</td></tr>
+<tr><td><code>listProjects</code></td><td>Todos los proyectos, vista resumen</td></tr>
+<tr><td><code>getProject</code></td><td>Detalle completo de un proyecto por slug</td></tr>
+<tr><td><code>searchByTech</code></td><td>Busca proyectos + cursos + experiencia por palabra clave de tecnología</td></tr>
+<tr><td><code>searchCourses</code></td><td>Busca entre 164 certificados de Platzi por tema</td></tr>
+<tr><td><code>getCourse</code></td><td>Un curso con URL de diploma verificable</td></tr>
+<tr><td><code>getExperience</code></td><td>Historial laboral completo (empresas, roles, impacto)</td></tr>
+<tr><td><code>getSkills</code></td><td>Skills agrupadas por área (lenguajes, frameworks, infra, IA)</td></tr>
+<tr><td><code>getAvailability</code></td><td>Disponibilidad de Cal.com para un rango de fechas</td></tr>
+<tr><td><code>bookCall</code></td><td>Agenda una llamada de 30 minutos (solicita nombre + email + horario)</td></tr>
 </tbody>
 </table>
 
-<p>Resources expose readable URIs that LLM clients can fetch directly:</p>
+<p>Los resources exponen URIs legibles que los clientes LLM pueden traer directamente:</p>
 
 <pre><code class="language-ts">// portfolio://cv/full                       → text/markdown, the full CV
 // portfolio://projects/{slug}/readme         → text/markdown, project README
@@ -551,30 +551,30 @@ export const listProjectsTool = {
 // portfolio://courses/{slug}/certificate     → application/json, diploma metadata
 </code></pre>
 
-<p>And the prompts encode three reusable agent flows. Each gets pulled with <code>prompts/get</code> and applied to the conversation:</p>
+<p>Y los prompts codifican tres flujos de agente reutilizables. Cada uno se obtiene con <code>prompts/get</code> y se aplica a la conversación:</p>
 
 <pre><code class="language-ts">// pitch-for-role          → tailored pitch for a job description (uses sampling)
 // tech-deep-dive          → focused walkthrough of one technology (uses sampling)
 // compare-with-jd         → side-by-side fit analysis (uses sampling + elicitation)</code></pre>
 
-<p>The "uses sampling" annotation is real: <code>pitch-for-role</code> first asks the server for tool-grounded facts, then issues a sampling request back to the client to <em>compose</em> the pitch using the client's LLM. The server never calls Anthropic itself — it just orchestrates.</p>
+<p>La anotación «uses sampling» es real: <code>pitch-for-role</code> primero le pide al servidor hechos respaldados por tools y luego emite una petición de sampling de vuelta al cliente para <em>componer</em> el pitch usando el LLM del cliente. El servidor nunca llama a Anthropic por sí mismo — solo orquesta.</p>
 
 <div class="callout">
-<div class="callout-label">Pattern · Sampling</div>
-<p>Sampling means the <strong>server</strong> asks the <strong>client</strong> to run an LLM call. The client decides which model, applies its own rate-limits and safety filters, and returns the completion. For a portfolio server this is free: I don't pay for tokens, the client (Claude Desktop, my agent, etc.) does. For internal tooling it's how you let a server compose summaries without giving it its own API key.</p>
+<div class="callout-label">Patrón · Sampling</div>
+<p>Sampling significa que el <strong>servidor</strong> le pide al <strong>cliente</strong> que ejecute una llamada al LLM. El cliente decide qué modelo, aplica sus propios rate-limits y filtros de seguridad, y devuelve la completion. Para un servidor de portfolio esto sale gratis: yo no pago por tokens, paga el cliente (Claude Desktop, mi agente, etc.). Para tooling interno es cómo dejas que un servidor componga resúmenes sin darle su propia API key.</p>
 </div>
 
 <hr />
 
-<h2>The chat agent: AI SDK v6 + in-process MCP</h2>
+<h2>El agente de chat: AI SDK v6 + MCP in-process</h2>
 
-<p>The widget chat (<code>/widget</code> page) talks to <code>/api/agent</code>. That route builds a <code>ToolLoopAgent</code> from the AI SDK v6, hands it the MCP-discovered tools, and streams the response back as a UI Message Stream.</p>
+<p>El chat del widget (la página <code>/widget</code>) habla con <code>/api/agent</code>. Esa ruta construye un <code>ToolLoopAgent</code> del AI SDK v6, le pasa las tools descubiertas por MCP y devuelve la respuesta en streaming como un UI Message Stream.</p>
 
-<p>The clever bit is <em>how</em> it discovers the tools. There are two MCP clients in this codebase:</p>
+<p>Lo ingenioso es <em>cómo</em> descubre las tools. Hay dos clientes MCP en este codebase:</p>
 
 <ol>
-<li>An <strong>HTTP client</strong> for external MCP servers (e.g. GitHub MCP, if you wanted to bolt that in).</li>
-<li>An <strong>in-process client</strong> for the portfolio MCP server, since it lives in the same Node process as the agent route.</li>
+<li>Un <strong>cliente HTTP</strong> para servidores MCP externos (p. ej. GitHub MCP, si quisieras enchufarlo).</li>
+<li>Un <strong>cliente in-process</strong> para el servidor MCP del portfolio, ya que vive en el mismo proceso de Node que la ruta del agente.</li>
 </ol>
 
 <div class="figure">
@@ -589,8 +589,8 @@ export const listProjectsTool = {
   </defs>
 
   <!-- Title -->
-  <text x="60" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Before: HTTP self-call</text>
-  <text x="400" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">After: InMemoryTransport</text>
+  <text x="60" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Antes: auto-llamada HTTP</text>
+  <text x="400" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">Después: InMemoryTransport</text>
 
   <!-- BEFORE -->
   <g transform="translate(40, 60)">
@@ -611,10 +611,10 @@ export const listProjectsTool = {
 
     <!-- pain points -->
     <g transform="translate(0, 90)" font-family="JetBrains Mono, monospace" font-size="10" fill="#FCA5A5">
-      <text x="0" y="0">× Two cold starts per request</text>
-      <text x="0" y="18">× Stateful session pinned per worker</text>
-      <text x="0" y="36">× Resolve own URL (VERCEL_URL)</text>
-      <text x="0" y="54">× Doubles serverless cost</text>
+      <text x="0" y="0">× Dos cold starts por petición</text>
+      <text x="0" y="18">× Sesión con estado fijada por worker</text>
+      <text x="0" y="36">× Resolver su propia URL (VERCEL_URL)</text>
+      <text x="0" y="54">× Duplica el costo serverless</text>
     </g>
   </g>
 
@@ -645,17 +645,17 @@ export const listProjectsTool = {
 
     <!-- wins -->
     <g transform="translate(0, 190)" font-family="JetBrains Mono, monospace" font-size="10" fill="#86EFAC">
-      <text x="0" y="0">✓ One cold start (just /api/agent)</text>
-      <text x="0" y="18">✓ Session state in one process</text>
-      <text x="0" y="36">✓ No URL resolution needed</text>
-      <text x="0" y="54">✓ Sub-ms client ↔ server roundtrip</text>
+      <text x="0" y="0">✓ Un cold start (solo /api/agent)</text>
+      <text x="0" y="18">✓ Estado de sesión en un proceso</text>
+      <text x="0" y="36">✓ Sin resolver URLs</text>
+      <text x="0" y="54">✓ Roundtrip cliente ↔ servidor sub-ms</text>
     </g>
   </g>
 </svg>
-<p class="figure-caption">Figure 3 · <strong>The fix that mattered most.</strong> The first version of <code>/api/agent</code> made an HTTP self-call to <code>/api/mcp</code>. That works locally but on Vercel the two functions land on different workers, the MCP transport is stateful, and the second call fails with <em>"Server not initialized."</em> The fix: link client and server with the SDK's <code>InMemoryTransport</code>, all in the same process.</p>
+<p class="figure-caption">Figura 3 · <strong>El arreglo que más importó.</strong> La primera versión de <code>/api/agent</code> hacía una auto-llamada HTTP a <code>/api/mcp</code>. Eso funciona en local pero en Vercel las dos funciones caen en workers distintos, el transporte MCP tiene estado, y la segunda llamada falla con <em>«Server not initialized».</em> El arreglo: enlazar cliente y servidor con el <code>InMemoryTransport</code> del SDK, todo en el mismo proceso.</p>
 </div>
 
-<p>The in-process bridge is twelve lines:</p>
+<p>El puente in-process son doce líneas:</p>
 
 <pre><code class="language-ts">// apps/web/lib/mcp-client.ts
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -674,7 +674,7 @@ export async function connectInProcessPortfolio(name: string) {
   return { name, client };
 }</code></pre>
 
-<p>The agent itself is short. Discover the tools, wrap them so the AI SDK can call them, hand them to <code>ToolLoopAgent</code>:</p>
+<p>El agente en sí es corto. Descubre las tools, las envuelve para que el AI SDK pueda llamarlas y se las pasa a <code>ToolLoopAgent</code>:</p>
 
 <pre><code class="language-ts">// apps/web/lib/agent.ts
 export function buildAgent(discovered: DiscoveredTool[]) {
@@ -706,7 +706,7 @@ export function buildAgent(discovered: DiscoveredTool[]) {
   });
 }</code></pre>
 
-<p>And the route is twenty lines, mostly rate-limiting and message conversion:</p>
+<p>Y la ruta son veinte líneas, en su mayoría rate-limiting y conversión de mensajes:</p>
 
 <pre><code class="language-ts">// apps/web/app/api/agent/route.ts
 export const runtime = 'nodejs';
@@ -736,21 +736,21 @@ export async function POST(req: NextRequest) {
   return result.toUIMessageStreamResponse();
 }</code></pre>
 
-<p>The agent context is memoized at module scope, so warm invocations re-use the in-process MCP client. On Vercel the worker recycles every few minutes; cold-start cost is ~50 ms.</p>
+<p>El contexto del agente está memoizado a nivel de módulo, así que las invocaciones en caliente reutilizan el cliente MCP in-process. En Vercel el worker se recicla cada pocos minutos; el costo de cold-start es de ~50 ms.</p>
 
 <hr />
 
-<h2>The embeddable widget: Preact + esbuild + a single &lt;script&gt; tag</h2>
+<h2>El widget embebible: Preact + esbuild + una sola etiqueta &lt;script&gt;</h2>
 
-<p>For the FAB to drop into any HTML page (including my static GitHub Pages portfolio), the widget bundle has three constraints:</p>
+<p>Para que el FAB encaje en cualquier página HTML (incluyendo mi portfolio estático en GitHub Pages), el bundle del widget tiene tres restricciones:</p>
 
 <ol>
-<li><strong>It has to fit on a budget.</strong> 13 KB minified, no React, no Tailwind shipped to the host.</li>
-<li><strong>It has to isolate styles.</strong> If the host page has aggressive CSS resets or its own utility classes, the widget can't break. Putting the heavy UI inside an iframe sidesteps that problem entirely.</li>
-<li><strong>It has to know its own origin.</strong> The script is hosted at <code>talk-to-my-portfolio.vercel.app/widget.js</code>; the iframe needs to load from the same host. Hardcoding the URL is fragile, so the bundle reads <code>document.currentScript.src</code> at load time and trims off <code>/widget.js</code>.</li>
+<li><strong>Tiene que caber en un presupuesto.</strong> 13 KB minificado, sin React, sin Tailwind enviado al host.</li>
+<li><strong>Tiene que aislar los estilos.</strong> Si la página host tiene resets de CSS agresivos o sus propias clases utilitarias, el widget no puede romperse. Meter la UI pesada dentro de un iframe esquiva ese problema por completo.</li>
+<li><strong>Tiene que conocer su propio origen.</strong> El script se aloja en <code>talk-to-my-portfolio.vercel.app/widget.js</code>; el iframe necesita cargar desde el mismo host. Hardcodear la URL es frágil, así que el bundle lee <code>document.currentScript.src</code> al cargar y recorta el <code>/widget.js</code>.</li>
 </ol>
 
-<p>The full source is &lt;100 lines:</p>
+<p>El código completo tiene &lt;100 líneas:</p>
 
 <pre><code class="language-tsx">// packages/widget/src/index.tsx
 import { h, render } from 'preact';
@@ -793,7 +793,7 @@ mount.id = 'portfolio-widget-root';
 document.body.appendChild(mount);
 render(&lt;FAB /&gt;, mount);</code></pre>
 
-<p>esbuild bundles this as an IIFE, aliases <code>react</code> and <code>react-dom</code> to <code>preact/compat</code>, and writes the output directly into <code>apps/web/public/widget.js</code> so Vercel serves it under the public origin:</p>
+<p>esbuild lo empaqueta como un IIFE, hace alias de <code>react</code> y <code>react-dom</code> a <code>preact/compat</code>, y escribe la salida directamente en <code>apps/web/public/widget.js</code> para que Vercel lo sirva bajo el origen público:</p>
 
 <pre><code class="language-js">// packages/widget/esbuild.config.mjs
 await build({
@@ -809,25 +809,25 @@ await build({
   alias: { react: 'preact/compat', 'react-dom': 'preact/compat' },
 });</code></pre>
 
-<p>On the host (this portfolio), the integration is exactly one line above <code>&lt;/body&gt;</code>:</p>
+<p>En el host (este portfolio), la integración es exactamente una línea encima de <code>&lt;/body&gt;</code>:</p>
 
 <pre><code class="language-html">&lt;script src="https://talk-to-my-portfolio.vercel.app/widget.js" async defer&gt;&lt;/script&gt;</code></pre>
 
-<p>Two bytes of work for the host, one CDN-cached file, no framework lock-in.</p>
+<p>Dos bytes de trabajo para el host, un archivo cacheado en CDN, sin lock-in de framework.</p>
 
 <hr />
 
-<h2>The six bugs that broke production</h2>
+<h2>Los seis bugs que rompieron producción</h2>
 
-<p>Local tests passed. <code>pnpm test</code> reported 115 green. <code>pnpm build</code> compiled. I pushed to Vercel and opened <code>/api/mcp</code> from <code>curl</code> — and got a 500. Then <code>/api/agent</code> also 500'd. Six bugs separated "works locally" from "live."</p>
+<p>Los tests locales pasaban. <code>pnpm test</code> reportaba 115 en verde. <code>pnpm build</code> compilaba. Hice push a Vercel y abrí <code>/api/mcp</code> desde <code>curl</code> — y obtuve un 500. Luego <code>/api/agent</code> también dio 500. Seis bugs separaban «funciona en local» de «está en vivo».</p>
 
-<p>What follows is the chronology, in the order they surfaced. Each one is the kind of thing that doesn't show up in unit tests because it's about how the platform <em>bundles</em> and <em>runs</em> the code, not about logic.</p>
+<p>Lo que sigue es la cronología, en el orden en que aparecieron. Cada uno es del tipo de cosa que no sale en los unit tests porque tiene que ver con cómo la plataforma <em>empaqueta</em> y <em>ejecuta</em> el código, no con la lógica.</p>
 
 <div class="bug-row">
 <div class="bug-num">BUG 1</div>
 <div>
-  <div class="bug-title"><code>ENOENT</code>: cannot open <code>/var/task/packages/mcp-server/package.json</code></div>
-  <div class="bug-desc">The MCP server's <code>buildServer()</code> reads its own <code>package.json</code> at module-evaluation time to get its name and version. Locally that file exists. On Vercel, Turbopack bundles every route module into a single chunk in <code>.next/server/...</code>, and the original relative path <code>../package.json</code> resolves to nowhere. The serverless function throws on <em>import</em>, so the route never even runs.</div>
+  <div class="bug-title"><code>ENOENT</code>: no puede abrir <code>/var/task/packages/mcp-server/package.json</code></div>
+  <div class="bug-desc">El <code>buildServer()</code> del servidor MCP lee su propio <code>package.json</code> al evaluar el módulo para obtener su nombre y versión. En local ese archivo existe. En Vercel, Turbopack empaqueta cada módulo de ruta en un único chunk en <code>.next/server/...</code>, y la ruta relativa original <code>../package.json</code> no resuelve a ningún lado. La función serverless lanza una excepción en el <em>import</em>, así que la ruta ni siquiera llega a ejecutarse.</div>
 </div>
 </div>
 
@@ -842,18 +842,18 @@ import pkg from '../package.json' with { type: 'json' };</code></pre>
 <div class="bug-row">
 <div class="bug-num">BUG 2</div>
 <div>
-  <div class="bug-title">HTTP self-call falls over on serverless workers</div>
-  <div class="bug-desc">The first cut of <code>/api/agent</code> built an HTTP MCP client pointing at its own <code>/api/mcp</code> route. Locally everything is one Node process. On Vercel the two routes live in separate serverless functions. The <code>initialize</code> request hits worker A and creates a session there; the follow-up <code>tools/list</code> hits worker B, which has no session for that ID and returns <em>"Bad Request: Server not initialized."</em></div>
+  <div class="bug-title">La auto-llamada HTTP se cae en los workers serverless</div>
+  <div class="bug-desc">La primera versión de <code>/api/agent</code> construía un cliente MCP por HTTP apuntando a su propia ruta <code>/api/mcp</code>. En local todo es un solo proceso de Node. En Vercel las dos rutas viven en funciones serverless separadas. La petición <code>initialize</code> llega al worker A y crea una sesión ahí; el <code>tools/list</code> siguiente llega al worker B, que no tiene sesión para ese ID y devuelve <em>«Bad Request: Server not initialized».</em></div>
 </div>
 </div>
 
-<p>The fix is the in-process MCP client shown in Figure 3 above: <code>InMemoryTransport.createLinkedPair()</code> wires a client and a server inside the same V8 isolate. No HTTP, no session-loss, no second cold start.</p>
+<p>El arreglo es el cliente MCP in-process que se ve en la Figura 3 de arriba: <code>InMemoryTransport.createLinkedPair()</code> conecta un cliente y un servidor dentro del mismo isolate de V8. Sin HTTP, sin pérdida de sesión, sin un segundo cold start.</p>
 
 <div class="bug-row">
 <div class="bug-num">BUG 3</div>
 <div>
   <div class="bug-title"><code>Invalid prompt: messages do not match the ModelMessage[] schema</code></div>
-  <div class="bug-desc">The client uses <code>useChat</code> from <code>@ai-sdk/react</code>, which sends <code>UIMessage[]</code> (parts-based, with <code>{ type: 'text', text: '…' }</code> shaped tokens). <code>ToolLoopAgent.stream()</code> wants <code>ModelMessage[]</code>. AI SDK v6 exposes <code>convertToModelMessages()</code> as the conversion bridge — I had forgotten to call it.</div>
+  <div class="bug-desc">El cliente usa <code>useChat</code> de <code>@ai-sdk/react</code>, que envía <code>UIMessage[]</code> (basado en parts, con tokens con forma <code>{ type: 'text', text: '…' }</code>). <code>ToolLoopAgent.stream()</code> quiere <code>ModelMessage[]</code>. El AI SDK v6 expone <code>convertToModelMessages()</code> como el puente de conversión — se me había olvidado llamarlo.</div>
 </div>
 </div>
 
@@ -863,8 +863,8 @@ const result = await agent.stream({ messages: modelMessages });</code></pre>
 <div class="bug-row">
 <div class="bug-num">BUG 4</div>
 <div>
-  <div class="bug-title"><code>TypeError: e is not a function</code> during tool execution</div>
-  <div class="bug-desc">The MCP server returns tool input schemas as JSON Schema objects. The AI SDK's <code>tool()</code> expects either a Zod schema (which has <code>.parse</code>) or a <code>Schema</code> created via the SDK's <code>jsonSchema()</code> wrapper. Passing the raw JSON Schema worked at compile time but blew up at runtime when the SDK tried to validate the inputs.</div>
+  <div class="bug-title"><code>TypeError: e is not a function</code> durante la ejecución de una tool</div>
+  <div class="bug-desc">El servidor MCP devuelve los input schemas de las tools como objetos JSON Schema. El <code>tool()</code> del AI SDK espera o bien un schema de Zod (que tiene <code>.parse</code>) o un <code>Schema</code> creado con el wrapper <code>jsonSchema()</code> del SDK. Pasar el JSON Schema crudo funcionaba en tiempo de compilación pero explotaba en runtime cuando el SDK intentaba validar los inputs.</div>
 </div>
 </div>
 
@@ -877,8 +877,8 @@ inputSchema: jsonSchema(t.inputSchema) as never,</code></pre>
 <div class="bug-row">
 <div class="bug-num">BUG 5</div>
 <div>
-  <div class="bug-title">Direct Anthropic SDK without an API key</div>
-  <div class="bug-desc">The agent originally pinned a model with <code>anthropic('claude-sonnet-4-6')</code>, which calls Anthropic directly and needs <code>ANTHROPIC_API_KEY</code>. The whole portfolio runs through Vercel AI Gateway (one key, automatic provider failover, usage dashboard). Switching to the string-model form lets AI SDK v6 route through the Gateway whenever <code>AI_GATEWAY_API_KEY</code> is set.</div>
+  <div class="bug-title">SDK de Anthropic directo sin una API key</div>
+  <div class="bug-desc">El agente originalmente fijaba un modelo con <code>anthropic('claude-sonnet-4-6')</code>, que llama a Anthropic directamente y necesita <code>ANTHROPIC_API_KEY</code>. Todo el portfolio corre a través de Vercel AI Gateway (una key, failover automático de proveedor, dashboard de uso). Cambiar a la forma de modelo-string deja que el AI SDK v6 enrute por el Gateway siempre que <code>AI_GATEWAY_API_KEY</code> esté configurada.</div>
 </div>
 </div>
 
@@ -891,8 +891,8 @@ model: 'anthropic/claude-sonnet-4-6',</code></pre>
 <div class="bug-row">
 <div class="bug-num">BUG 6</div>
 <div>
-  <div class="bug-title"><code>ENOENT</code>: cannot open <code>packages/shared/data/projects/_index.json</code></div>
-  <div class="bug-desc">The data loader reads JSON and Markdown files from <code>packages/shared/data/</code> via <code>readFileSync</code>. Next.js's dependency tracer follows static imports, so it ships every <em>imported</em> JS file — but raw <code>readFileSync</code> calls are opaque to the tracer, and the data directory got left out of the deployment bundle.</div>
+  <div class="bug-title"><code>ENOENT</code>: no puede abrir <code>packages/shared/data/projects/_index.json</code></div>
+  <div class="bug-desc">El cargador de datos lee archivos JSON y Markdown de <code>packages/shared/data/</code> vía <code>readFileSync</code>. El rastreador de dependencias de Next.js sigue los imports estáticos, así que envía cada archivo JS <em>importado</em> — pero las llamadas crudas a <code>readFileSync</code> son opacas para el rastreador, y el directorio de datos quedó fuera del bundle de despliegue.</div>
 </div>
 </div>
 
@@ -905,18 +905,18 @@ const nextConfig: NextConfig = {
   },
 };</code></pre>
 
-<p>Six fixes, six commits, all live. The full diff is roughly 80 lines of code across the six commits, but each line is the difference between "deploys" and "produces a 500 on first request."</p>
+<p>Seis arreglos, seis commits, todos en vivo. El diff completo son unas 80 líneas de código repartidas entre los seis commits, pero cada línea es la diferencia entre «despliega» y «produce un 500 en la primera petición».</p>
 
 <div class="callout">
-<div class="callout-label">Takeaway</div>
-<p>Production tests aren't a substitute for unit tests; they're orthogonal. Of these six bugs, <strong>zero</strong> were detectable from <code>pnpm test</code> because they all live at the boundary between the application code and the platform — file-system layout, serverless worker boundaries, bundler tracing, env-var contracts. The cheapest way to catch them is to deploy a preview <em>early</em> and hit the endpoints with <code>curl</code>.</p>
+<div class="callout-label">Para llevar</div>
+<p>Los tests de producción no sustituyen a los unit tests; son ortogonales. De estos seis bugs, <strong>cero</strong> eran detectables desde <code>pnpm test</code> porque todos viven en la frontera entre el código de la aplicación y la plataforma — layout del sistema de archivos, fronteras de los workers serverless, tracing del bundler, contratos de variables de entorno. La forma más barata de cazarlos es desplegar un preview <em>pronto</em> y golpear los endpoints con <code>curl</code>.</p>
 </div>
 
 <hr />
 
-<h2>The UX polish loop</h2>
+<h2>El bucle de pulido de UX</h2>
 
-<p>Once the API worked, the widget itself looked nothing like a finished product. The first cut had Geist for typography, raw JSON tool output rendered inline, table cells breaking mid-word at 360 px width, and a generic light theme that clashed with the dark portfolio. Six more iterations got it to the version embedded in this page.</p>
+<p>Una vez que la API funcionaba, el widget en sí no se parecía en nada a un producto terminado. La primera versión tenía Geist como tipografía, la salida JSON cruda de las tools renderizada inline, celdas de tabla partiéndose a mitad de palabra a 360 px de ancho, y un tema claro genérico que chocaba con el portfolio oscuro. Seis iteraciones más lo llevaron a la versión embebida en esta página.</p>
 
 <div class="figure">
 <svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
@@ -933,7 +933,7 @@ const nextConfig: NextConfig = {
 
   <!-- Before -->
   <g transform="translate(40, 30)">
-    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Before</text>
+    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Antes</text>
     <rect width="260" height="260" rx="14" fill="url(#evoBefore)" stroke="#D1D5DB"/>
     <!-- raw json -->
     <rect x="14" y="14" width="232" height="60" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
@@ -965,7 +965,7 @@ const nextConfig: NextConfig = {
 
   <!-- After -->
   <g transform="translate(420, 30)">
-    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">After</text>
+    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">Después</text>
     <rect width="260" height="260" rx="14" fill="url(#evoAfter)" stroke="rgba(148,163,184,0.18)"/>
     <!-- Header -->
     <rect x="14" y="14" width="232" height="30" rx="8" fill="rgba(46,117,182,0.08)"/>
@@ -999,26 +999,26 @@ const nextConfig: NextConfig = {
     </g>
   </g>
 </svg>
-<p class="figure-caption">Figure 4 · <strong>Before / after.</strong> Same data, same model, same prompt. The left is the first deploy: raw JSON in chat, broken table wrapping, mid-character word breaks, and Geist falling back to the browser default serif because <code>--font-sans: var(--font-sans)</code> was a circular CSS variable. The right is the version live today: Inter typography, hidden tool internals, full-width assistant card, cyan-glow inline tech tokens.</p>
+<p class="figure-caption">Figura 4 · <strong>Antes / después.</strong> Mismos datos, mismo modelo, mismo prompt. La izquierda es el primer despliegue: JSON crudo en el chat, tabla rota al ajustarse, cortes de palabra a mitad de carácter, y Geist cayendo al serif por defecto del navegador porque <code>--font-sans: var(--font-sans)</code> era una variable CSS circular. La derecha es la versión en vivo hoy: tipografía Inter, internos de las tools ocultos, tarjeta del asistente a ancho completo, tokens de tecnología inline con brillo cian.</p>
 </div>
 
-<h3>1 · Fix typography</h3>
-<p><code>globals.css</code> had <code>--font-sans: var(--font-sans);</code> — a self-reference. Tailwind was happily emitting CSS that resolved to nothing, so the browser fell back to Times. Switched to Inter + JetBrains Mono via <code>next/font/google</code> with proper system-font fallback stacks. Done in two lines.</p>
+<h3>1 · Arreglar la tipografía</h3>
+<p><code>globals.css</code> tenía <code>--font-sans: var(--font-sans);</code> — una auto-referencia. Tailwind emitía tan campante un CSS que resolvía a nada, así que el navegador caía a Times. Cambié a Inter + JetBrains Mono vía <code>next/font/google</code> con stacks de fallback de fuentes de sistema apropiados. Resuelto en dos líneas.</p>
 
-<h3>2 · Hide the tool internals</h3>
-<p>The first cut rendered every tool call as a card with the raw JSON output below it. Useful for debugging, terrible UX. Now <code>MessageList</code> filters out <code>dynamic-tool</code> and <code>tool-*</code> parts entirely. The agent still calls the tools — visitors just don't see the plumbing.</p>
+<h3>2 · Ocultar los internos de las tools</h3>
+<p>La primera versión renderizaba cada llamada a tool como una tarjeta con la salida JSON cruda debajo. Útil para depurar, UX pésima. Ahora <code>MessageList</code> filtra por completo las parts <code>dynamic-tool</code> y <code>tool-*</code>. El agente sigue llamando a las tools — quien visita simplemente no ve la fontanería.</p>
 
-<h3>3 · Tables that don't crush words</h3>
-<p>At 360 px width, <code>overflow-wrap: anywhere</code> on <code>td</code>/<code>th</code> broke single words at character boundaries: "Proficient" became "Profic / ient." Switched to default word-boundary wrapping plus <code>prose-table:block prose-table:overflow-x-auto</code> so tables wider than the column scroll horizontally instead of being squashed.</p>
+<h3>3 · Tablas que no aplastan las palabras</h3>
+<p>A 360 px de ancho, <code>overflow-wrap: anywhere</code> en <code>td</code>/<code>th</code> partía palabras sueltas en los límites de carácter: «Proficient» se volvía «Profic / ient». Cambié al ajuste por límite de palabra por defecto más <code>prose-table:block prose-table:overflow-x-auto</code> para que las tablas más anchas que la columna scrolleen en horizontal en vez de quedar aplastadas.</p>
 
-<h3>4 · Match the parent portfolio's palette</h3>
-<p>The widget had to feel like part of the portfolio, not a foreign element. Lifted the portfolio's CSS variables verbatim — <code>#06101F</code> deep navy, <code>#2E75B6</code> primary blue, <code>#7DD3FC</code> accent glow — into the chat's dark theme. Inline <code>&lt;code&gt;</code> now picks up the same cyan-glow + tinted background as on the portfolio's project cards.</p>
+<h3>4 · Igualar la paleta del portfolio padre</h3>
+<p>El widget tenía que sentirse como parte del portfolio, no como un elemento ajeno. Levanté las variables CSS del portfolio tal cual — <code>#06101F</code> azul marino profundo, <code>#2E75B6</code> azul primario, <code>#7DD3FC</code> brillo de acento — al tema oscuro del chat. El <code>&lt;code&gt;</code> inline ahora toma el mismo brillo cian + fondo tintado que en las tarjetas de proyecto del portfolio.</p>
 
-<h3>5 · Empty state with suggested questions</h3>
-<p>Before, opening the FAB gave you a blank textarea. After, you get four clickable suggestion chips that seed the conversation in one tap. Recruiters tend to ask the same four things in different words ("what's his stack?", "AI projects?", "where does he work?", "is he available?"), so making them buttons removes the cold-start problem.</p>
+<h3>5 · Estado vacío con preguntas sugeridas</h3>
+<p>Antes, abrir el FAB te daba un textarea en blanco. Después, obtienes cuatro chips de sugerencia clicables que siembran la conversación en un toque. Quien recluta tiende a preguntar las mismas cuatro cosas con otras palabras («¿cuál es su stack?», «¿proyectos de IA?», «¿dónde trabaja?», «¿está disponible?»), así que convertirlas en botones elimina el problema del arranque en frío.</p>
 
-<h3>6 · Trim incomplete markdown while streaming</h3>
-<p>The agent emits tokens one-by-one through <code>ReactMarkdown</code>. For a frame or two each cycle, the model emits partial markdown like <code>[Ver diploma]</code> before <code>(https://drive.google.com/...)</code> lands. ReactMarkdown renders the raw text, then snaps to a styled link a moment later — visible as a flicker on every link. A small <code>trimIncompleteMarkdown()</code> helper shaves off any trailing unfinished link/code/emphasis on the last text part of the still-streaming assistant message. The link appears in one shot once the closing token arrives.</p>
+<h3>6 · Recortar el markdown incompleto durante el streaming</h3>
+<p>El agente emite tokens uno a uno a través de <code>ReactMarkdown</code>. Durante un frame o dos en cada ciclo, el modelo emite markdown parcial como <code>[Ver diploma]</code> antes de que aterrice <code>(https://drive.google.com/...)</code>. ReactMarkdown renderiza el texto crudo y un instante después salta a un enlace con estilo — visible como un parpadeo en cada enlace. Un pequeño helper <code>trimIncompleteMarkdown()</code> recorta cualquier enlace/código/énfasis sin terminar al final de la última text part del mensaje del asistente que aún está en streaming. El enlace aparece de una sola vez en cuanto llega el token de cierre.</p>
 
 <pre><code class="language-ts">function trimIncompleteMarkdown(text: string): string {
   let result = text;
@@ -1039,16 +1039,16 @@ const nextConfig: NextConfig = {
 
 <hr />
 
-<h2>What the data layer looks like</h2>
+<h2>Cómo se ve la capa de datos</h2>
 
-<p>164 Platzi courses are a lot of structured data to maintain by hand, so I didn't. <code>scripts/sync-platzi</code> is a Playwright bot that logs into Platzi once (interactive, stores the session in <code>.platzi-session/</code>), then on subsequent runs walks the public profile <em>and</em> the learning dashboard, merges both views (the public profile lists completed courses with diplomas; the dashboard has accurate completion dates), and writes the merged result into <code>packages/shared/data/courses.json</code>.</p>
+<p>164 cursos de Platzi son muchos datos estructurados para mantener a mano, así que no lo hice. <code>scripts/sync-platzi</code> es un bot de Playwright que inicia sesión en Platzi una vez (interactivo, guarda la sesión en <code>.platzi-session/</code>), y en las corridas siguientes recorre el perfil público <em>y</em> el dashboard de aprendizaje, fusiona ambas vistas (el perfil público lista los cursos completados con diplomas; el dashboard tiene las fechas de finalización exactas) y escribe el resultado fusionado en <code>packages/shared/data/courses.json</code>.</p>
 
 <pre><code class="language-bash">pnpm --filter sync-platzi exec playwright install chromium  # first run only
 pnpm --filter sync-platzi sync                              # subsequent runs are headless</code></pre>
 
-<p>The merge is the interesting part. Public-profile entries are authoritative for <em>which</em> courses I've done; dashboard entries are authoritative for <em>when</em>. Joining them gives me a single record per course with both fields, plus the diploma URL extracted from the public profile's link element.</p>
+<p>La fusión es la parte interesante. Las entradas del perfil público son la autoridad sobre <em>qué</em> cursos he hecho; las del dashboard son la autoridad sobre <em>cuándo</em>. Unirlas me da un único registro por curso con ambos campos, más la URL del diploma extraída del elemento de enlace del perfil público.</p>
 
-<p>Every record validates against a Zod schema in <code>packages/shared/src/schemas/course.ts</code>, so the MCP server can return type-safe data without re-validating on every call:</p>
+<p>Cada registro valida contra un schema de Zod en <code>packages/shared/src/schemas/course.ts</code>, así que el servidor MCP puede devolver datos con tipos seguros sin re-validar en cada llamada:</p>
 
 <pre><code class="language-ts">export const CourseSchema = z.object({
   slug: z.string(),
@@ -1059,61 +1059,61 @@ pnpm --filter sync-platzi sync                              # subsequent runs ar
   category: z.enum(['frontend','backend','ai','data','devops','soft-skills','other']),
 });</code></pre>
 
-<p>If Platzi changes their HTML, the scraper breaks loudly with a Zod parse error instead of silently returning junk data. That's been a useful guard rail twice already.</p>
+<p>Si Platzi cambia su HTML, el scraper se rompe ruidosamente con un error de parseo de Zod en vez de devolver datos basura en silencio. Eso ya ha sido una baranda de seguridad útil dos veces.</p>
 
 <hr />
 
-<h2>Tests and CI</h2>
+<h2>Tests y CI</h2>
 
-<p>The project ships with 115 tests across four packages. The interesting split is between the <strong>full suite</strong> and the <strong>@critical subset</strong>:</p>
+<p>El proyecto trae 115 tests repartidos en cuatro paquetes. La división interesante es entre la <strong>suite completa</strong> y el <strong>subconjunto @critical</strong>:</p>
 
 <pre><code class="language-bash">pnpm test            # full: 115 tests (3 skipped)
 pnpm test:critical   # @critical only: 27 tests (sampling, elicitation, capabilities)</code></pre>
 
-<p>Critical tests are tagged by wrapping their <code>describe</code> block with <code>@critical</code>:</p>
+<p>Los tests críticos se etiquetan envolviendo su bloque <code>describe</code> con <code>@critical</code>:</p>
 
 <pre><code class="language-ts">describe('@critical pitch-for-role with sampling', () =&gt; {
   // ...
 });</code></pre>
 
-<p>CI runs <code>pnpm test:critical</code> as a separate step <em>before</em> the full suite. If the MCP contract regresses (sampling stops working, elicitation breaks, capability negotiation fails), the pipeline stops at the gate step with an obvious message — instead of burying the failure inside a 115-test run.</p>
+<p>CI ejecuta <code>pnpm test:critical</code> como un paso separado <em>antes</em> de la suite completa. Si el contrato de MCP sufre una regresión (el sampling deja de funcionar, la elicitation se rompe, la negociación de capabilities falla), el pipeline se detiene en el paso de control con un mensaje obvio — en vez de enterrar el fallo dentro de una corrida de 115 tests.</p>
 
-<p>The actual CI workflow is also where two production-y bugs surfaced that didn't show up locally:</p>
+<p>El workflow real de CI es también donde aparecieron dos bugs de tipo producción que no se veían en local:</p>
 
 <ol>
-<li><strong>Workspace consumers can't typecheck before build.</strong> <code>scripts/sync-platzi</code> depends on <code>@neryc/portfolio-shared</code>, which exports from <code>./dist/index.js</code>. A fresh CI checkout has no <code>dist/</code> directory, so <code>tsc</code> fails with <code>TS2307</code>. Reordered the workflow to run <code>pnpm build</code> before <code>pnpm typecheck</code>; <code>pnpm -r build</code> respects dependency topology so <code>shared</code> finishes before its consumers.</li>
-<li><strong>pnpm version conflict.</strong> The workflow had <code>version: 9</code> on <code>pnpm/action-setup@v4</code>; <code>package.json</code> had <code>packageManager: pnpm@9.12.0</code>. Both set → <code>ERR_PNPM_BAD_PM_VERSION</code>. Removed the action-level version so the <code>packageManager</code> field is the single source of truth.</li>
+<li><strong>Los consumidores del workspace no pueden hacer typecheck antes del build.</strong> <code>scripts/sync-platzi</code> depende de <code>@neryc/portfolio-shared</code>, que exporta desde <code>./dist/index.js</code>. Un checkout limpio de CI no tiene directorio <code>dist/</code>, así que <code>tsc</code> falla con <code>TS2307</code>. Reordené el workflow para correr <code>pnpm build</code> antes de <code>pnpm typecheck</code>; <code>pnpm -r build</code> respeta la topología de dependencias, así que <code>shared</code> termina antes que sus consumidores.</li>
+<li><strong>Conflicto de versión de pnpm.</strong> El workflow tenía <code>version: 9</code> en <code>pnpm/action-setup@v4</code>; <code>package.json</code> tenía <code>packageManager: pnpm@9.12.0</code>. Ambos puestos → <code>ERR_PNPM_BAD_PM_VERSION</code>. Quité la versión a nivel de action para que el campo <code>packageManager</code> sea la única fuente de verdad.</li>
 </ol>
 
 <hr />
 
-<h2>What I'd do differently</h2>
+<h2>Qué haría distinto</h2>
 
-<p>Three things I'd change if I were starting over today:</p>
+<p>Tres cosas que cambiaría si empezara de cero hoy:</p>
 
 <ol>
-<li><strong>Deploy on day zero.</strong> All six production bugs would have surfaced a week earlier if I'd put a Vercel preview behind a draft PR from the first commit. Local + tests is necessary, not sufficient.</li>
-<li><strong>Don't read files at module-load time.</strong> <code>readFileSync</code> at the top of a server module is a footgun on bundled serverless. JSON imports + <code>outputFileTracingIncludes</code> for the small handful of dynamic reads (Markdown files by slug) is more declarative and survives bundler tracing.</li>
-<li><strong>Adopt <code>InMemoryTransport</code> from the start.</strong> The HTTP self-call pattern looks correct in a diagram but loses against the realities of serverless worker boundaries. Co-located clients should use the SDK's in-memory transport. The hosted MCP endpoint is still exposed for external consumers (Claude Desktop, etc.); my own agent just doesn't go through it.</li>
+<li><strong>Desplegar en el día cero.</strong> Los seis bugs de producción habrían aparecido una semana antes si hubiera puesto un preview de Vercel detrás de un PR en borrador desde el primer commit. Local + tests es necesario, no suficiente.</li>
+<li><strong>No leer archivos al cargar el módulo.</strong> <code>readFileSync</code> arriba de un módulo de servidor es un disparo al pie en serverless empaquetado. Imports de JSON + <code>outputFileTracingIncludes</code> para el puñado de lecturas dinámicas (archivos Markdown por slug) es más declarativo y sobrevive al tracing del bundler.</li>
+<li><strong>Adoptar <code>InMemoryTransport</code> desde el principio.</strong> El patrón de auto-llamada HTTP se ve correcto en un diagrama pero pierde contra las realidades de las fronteras de los workers serverless. Los clientes co-ubicados deberían usar el transporte en memoria del SDK. El endpoint MCP alojado sigue expuesto para consumidores externos (Claude Desktop, etc.); mi propio agente simplemente no pasa por él.</li>
 </ol>
 
 <hr />
 
-<h2>The pattern, generalized</h2>
+<h2>El patrón, generalizado</h2>
 
-<p>This project is a useful template for any "embeddable AI feature" you want to bolt onto a static site or someone else's host. The shape is:</p>
+<p>Este proyecto es una plantilla útil para cualquier «feature de IA embebible» que quieras enchufar a un sitio estático o al host de otra persona. La forma es:</p>
 
 <ol>
-<li><strong>Backend</strong> exposes a structured data model via MCP (tools / resources / prompts). Lives behind a single HTTP endpoint <em>and</em> a stdio binary; one code path, two transports.</li>
-<li><strong>Agent</strong> runs on the same Vercel deployment, talks to the MCP server in-process via <code>InMemoryTransport</code>, streams responses to the browser.</li>
-<li><strong>Widget</strong> is a tiny Preact + esbuild bundle that loads from your origin, mounts a FAB, and opens an iframe at <code>/widget</code> for the heavy UI. One <code>&lt;script&gt;</code> tag on the host.</li>
+<li>El <strong>backend</strong> expone un modelo de datos estructurado vía MCP (tools / resources / prompts). Vive detrás de un único endpoint HTTP <em>y</em> un binario stdio; un camino de código, dos transportes.</li>
+<li>El <strong>agente</strong> corre en el mismo despliegue de Vercel, habla con el servidor MCP in-process vía <code>InMemoryTransport</code>, y envía las respuestas en streaming al navegador.</li>
+<li>El <strong>widget</strong> es un bundle diminuto de Preact + esbuild que carga desde tu origen, monta un FAB y abre un iframe en <code>/widget</code> para la UI pesada. Una etiqueta <code>&lt;script&gt;</code> en el host.</li>
 </ol>
 
-<p>~ 2,400 lines of TypeScript total. Five evenings of work. The MCP contract is portable — Claude Desktop can connect to the exact same server tomorrow, no changes needed.</p>
+<p>~ 2.400 líneas de TypeScript en total. Cinco tardes de trabajo. El contrato de MCP es portable — Claude Desktop puede conectarse al mismísimo servidor mañana, sin cambios.</p>
 
 <p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong><br />
-🔗 <strong>Live:</strong> talk-to-my-portfolio.vercel.app · <strong>MCP endpoint:</strong> /api/mcp · <strong>Demo UI:</strong> /demo<br />
-🔗 The FAB you see in the bottom-right corner of this very page is the production widget — try it.</p>
+🔗 <strong>En vivo:</strong> talk-to-my-portfolio.vercel.app · <strong>Endpoint MCP:</strong> /api/mcp · <strong>UI de demo:</strong> /demo<br />
+🔗 El FAB que ves en la esquina inferior derecha de esta misma página es el widget de producción — pruébalo.</p>
 
     </div>
     <div class="tag-pills">
@@ -1125,17 +1125,17 @@ pnpm test:critical   # @critical only: 27 tests (sampling, elicitation, capabili
       <span class="tag-pill">Preact</span>
     </div>
     <div class="footer-cta">
-      <h3>About this project</h3>
-      <p>The full source code, README, and live demo:</p>
+      <h3>Sobre este proyecto</h3>
+      <p>El código fuente completo, el README y la demo en vivo:</p>
       <div class="links">
         <a href="https://github.com/NeryC/talk-to-my-portfolio">💻 github.com/NeryC/talk-to-my-portfolio ↗</a>
-        <a href="https://talk-to-my-portfolio.vercel.app">🔗 Live demo ↗</a>
-        <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">🔌 MCP endpoint ↗</a>
+        <a href="https://talk-to-my-portfolio.vercel.app">🔗 Demo en vivo ↗</a>
+        <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">🔌 Endpoint MCP ↗</a>
       </div>
-      <h3 style="margin-top:24px;">About the author</h3>
-      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
+      <h3 style="margin-top:24px;">Sobre el autor</h3>
+      <p>Soy Nery Cano, ingeniero full-stack senior radicado en Paraguay, construyo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / de ingeniería de IA.</p>
       <div class="links">
-        <a href="../">Portfolio ↗</a>
+        <a href="../../">Portfolio ↗</a>
         <a href="https://github.com/NeryC">GitHub ↗</a>
         <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
         <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
@@ -1143,7 +1143,7 @@ pnpm test:critical   # @critical only: 27 tests (sampling, elicitation, capabili
     </div>
   </article>
   <footer class="site-footer">
-    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+    © 2026 Nery Cano · Pensado con Next.js en mente · Servido como HTML plano porque es 200 ms más rápido
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
