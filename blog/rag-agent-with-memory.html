@@ -306,9 +306,12 @@
   
     /* ── Layout ancho (≥1240px) ────────────────────────────────────────────
        La columna de prosa crece a 820px (~75 car./línea, aún legible).
-       Banner, figuras, código y tablas hacen "full-bleed" a 1180px con
-       márgenes negativos: no se toca el flujo del texto ni sus márgenes,
-       así que nada se desalinea. Debajo de 1240px, comportamiento original. */
+       Sangran a 1180px solo los bloques que REFLOWEAN con el ancho extra:
+       grids de figuras, código y tablas. Se hace con márgenes negativos, sin
+       tocar el flujo del texto, así que nada se desalinea.
+       Las figuras que son solo un <svg> NO sangran: su viewBox es fijo, de modo
+       que ensancharlas escala el texto ~2x sin agregar información.
+       Debajo de 1240px, comportamiento original. */
     @media (min-width: 1240px) {
       .header-nav, .site-footer, .article { max-width: 868px; }
       .banner-img,
@@ -319,6 +322,15 @@
         max-width: none;
         margin-left: calc((100% - 1180px) / 2);
         margin-right: 0;
+      }
+      .article-body > .figure:has(> svg) {
+        width: auto;
+        max-width: 100%;
+        margin-left: 0;
+        margin-right: 0;
+      }
+      @supports not (selector(:has(*))) {
+        .figure svg { max-width: 820px; margin-left: auto; margin-right: auto; }
       }
     }
   </style>
