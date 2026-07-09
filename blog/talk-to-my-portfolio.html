@@ -307,36 +307,120 @@
       .figure { margin: 32px -8px; padding: 16px; }
     }
   
-    /* ── Layout ancho (≥1240px) ────────────────────────────────────────────
-       La columna de prosa crece a 820px (~75 car./línea, aún legible).
-       Sangran a 1180px solo los bloques que REFLOWEAN con el ancho extra:
-       grids de figuras, código y tablas. Se hace con márgenes negativos, sin
-       tocar el flujo del texto, así que nada se desalinea.
-       Las figuras cuyo unico hijo es un elemento svg NO sangran: su viewBox es fijo, de modo
-       que ensancharlas escala el texto ~2x sin agregar información.
+    /* ── Layout ancho y tipografía fluida ─────────────────────────────────
+       En pantallas grandes el problema no es la columna: es que 19px de
+       cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
+       de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
+       columna crece en proporción y la medida se mantiene entre 92 y 97
+       caracteres. Banner, figuras con grid, código y tablas hacen full-bleed
+       mucho más ancho. Las figuras cuyo unico hijo es un elemento svg NO
+       sangran: su viewBox es fijo y ensancharlas solo escala el dibujo.
        Debajo de 1240px, comportamiento original. */
     @media (min-width: 1240px) {
-      .header-nav, .site-footer, .article { max-width: 868px; }
+      .header-nav, .site-footer, .article { max-width: 920px; }
+      .article { font-size: 20px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .callout p { font-size: 0.9em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
       .banner-img,
       .article-body > .figure,
       .article-body > pre,
       .article-body > table {
-        width: 1180px;
+        width: min(1360px, 94vw);
         max-width: none;
-        margin-left: calc((100% - 1180px) / 2);
+        margin-left: calc((100% - min(1360px, 94vw)) / 2);
         margin-right: 0;
       }
       .article-body > .figure:has(> svg) {
-        width: auto;
-        max-width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-      }
-      @supports not (selector(:has(*))) {
-        .figure svg { max-width: 820px; margin-left: auto; margin-right: auto; }
+        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
       }
     }
-  </style>
+    @media (min-width: 1600px) {
+      .header-nav, .site-footer, .article { max-width: 1000px; }
+      .article { font-size: 21.5px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .callout p { font-size: 0.9em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .banner-img,
+      .article-body > .figure,
+      .article-body > pre,
+      .article-body > table {
+        width: min(1520px, 94vw);
+        max-width: none;
+        margin-left: calc((100% - min(1520px, 94vw)) / 2);
+        margin-right: 0;
+      }
+      .article-body > .figure:has(> svg) {
+        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
+      }
+    }
+    @media (min-width: 2000px) {
+      .header-nav, .site-footer, .article { max-width: 1090px; }
+      .article { font-size: 23px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .callout p { font-size: 0.9em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .banner-img,
+      .article-body > .figure,
+      .article-body > pre,
+      .article-body > table {
+        width: min(1700px, 94vw);
+        max-width: none;
+        margin-left: calc((100% - min(1700px, 94vw)) / 2);
+        margin-right: 0;
+      }
+      .article-body > .figure:has(> svg) {
+        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
+      }
+    }
+    @media (min-width: 2400px) {
+      .header-nav, .site-footer, .article { max-width: 1200px; }
+      .article { font-size: 25px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .callout p { font-size: 0.9em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .banner-img,
+      .article-body > .figure,
+      .article-body > pre,
+      .article-body > table {
+        width: min(1880px, 94vw);
+        max-width: none;
+        margin-left: calc((100% - min(1880px, 94vw)) / 2);
+        margin-right: 0;
+      }
+      .article-body > .figure:has(> svg) {
+        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
+      }
+    }
+</style>
 </head>
 <body>
   <nav class="header-nav">
