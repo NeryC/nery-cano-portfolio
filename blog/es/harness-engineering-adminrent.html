@@ -324,7 +324,7 @@
 
   <article class="article">
     <!-- structure: experiment-report — el "proyecto" es un experimento sobre un SaaS privado; no hay repo público ni live demo, así que los quick-links apuntan a la Parte 1 y al portfolio. -->
-    <div class="article-meta">9 de julio, 2026 · 14 min de lectura · Parte 2 de 2</div>
+    <div class="article-meta">9 de julio, 2026 · 18 min de lectura · Parte 2 de 2</div>
     <h1 class="article-title">Harness engineering en un SaaS real: medí, escribí las reglas, volví a medir</h1>
     <p class="article-subtitle">Le di a un agente cinco commits reales de mi SaaS multi-tenant y no le dije nada sobre el dominio. Inventó una política de permisos, la equivocó, y escribió seis tests que la blindaban en verde.</p>
     <div class="byline">
@@ -538,11 +538,35 @@ def get_unit_members(unit_id):
 
       <p>Acá el experimento se me dio vuelta.</p>
 
-      <p>En T02, el agente guiado agregó una restricción que mi oráculo <strong>no tiene</strong>: owner y tenant solo pueden ver los miembros de <em>su propia</em> unidad. Fui a mirar <code>main</code>. Hoy, en producción, cualquier propietario puede listar los miembros —con email— de cualquier unidad de su residencial. Es una fuga de privacidad entre vecinos, y estaba ahí desde que escribí el endpoint.</p>
+      <p>En T02, el agente guiado agregó una restricción que mi oráculo <strong>no tenía</strong>: owner y tenant solo pueden ver los miembros de <em>su propia</em> unidad. Fui a mirar <code>main</code>. En ese momento, en producción, cualquier propietario podía listar los miembros —con email— de cualquier unidad de su residencial. Una fuga de privacidad entre vecinos, ahí desde que escribí el endpoint.</p>
 
-      <p>En la tarea de búsqueda por chapa, lo mismo: el agente le dio acceso a <code>admin</code> / <code>super_admin</code> / <code>portero</code>. Mi código real se lo da a owner y tenant. Cuando me senté a decidir cuál de las dos políticas era la correcta, la respuesta fue incómoda: la del agente.</p>
+      <p>En la tarea de búsqueda por chapa, lo mismo: el agente le dio acceso a <code>admin</code> / <code>super_admin</code> / <code>portero</code>. Mi código real se lo daba a owner y tenant. Cuando me senté a decidir cuál de las dos políticas era la correcta, la respuesta fue incómoda: la del agente.</p>
 
-      <p>Dos veces, el agente guiado escribió mejor política de seguridad que la que hay en mi <code>main</code>. Y eso rompe mi propia rúbrica, que definía el éxito como <em>"equivalente al commit oráculo"</em>. Cuando el agente supera al oráculo, la rúbrica lo puntúa como fallo. <strong>El oráculo no es la verdad; es una referencia.</strong> Tuve que redefinir la métrica en medio del experimento, que es exactamente lo que un buen experimento no debería necesitar — y exactamente el tipo de cosa que solo descubrís midiendo.</p>
+      <p>Dos veces, el agente guiado escribió mejor política de seguridad que la que había en mi <code>main</code>. Y eso rompe mi propia rúbrica, que definía el éxito como <em>"equivalente al commit oráculo"</em>. Cuando el agente supera al oráculo, la rúbrica lo puntúa como fallo. <strong>El oráculo no es la verdad; es una referencia.</strong> Tuve que redefinir la métrica en medio del experimento, que es exactamente lo que un buen experimento no debería necesitar — y exactamente el tipo de cosa que solo descubrís midiendo.</p>
+
+      <p>Los dos bugs están arreglados. Y el fix no fue solo el parche: <code>list_members</code> es fail-closed, y su docstring cita la línea del <code>AGENTS.md</code> que la justifica. La búsqueda por chapa terminó en un lugar que ni el agente ni yo habíamos propuesto — un <em>privacy gate</em> por residencial, donde los residentes pueden buscar solo si el edificio tiene el modo privacidad apagado, y el portero queda exento porque el control de acceso es su función. La política escrita no ganó: forzó una decisión que nunca se había tomado.</p>
+
+      <p>Las dos fugas tienen hoy un test con su nombre:</p>
+
+      <pre><code class="language-python">test_owner_cannot_list_members_of_other_unit       # el bug de T02
+test_comunicado_target_unit_ids_hidden_by_default  # el fail-closed de T07</code></pre>
+
+      <p>Ese es el ciclo entero: el harness encontró el bug, el bug se arregló, y ahora un sensor impide que vuelva. Política → código → test, trazable de punta a punta.</p>
+
+      <hr />
+
+      <h2>De guías a sensores: lo que se ganó su lugar</h2>
+
+      <p>Una guía le dice al agente qué hacer. Un sensor hace que el repo lo haga cumplir sin depender de que un humano mire cada PR. La regla que me puse fue que un sensor entra solo si ataca un fallo que el baseline produjo de verdad — y si, corrido contra el código malo del baseline, <em>falla</em>.</p>
+
+      <p>Cuatro pasaron el corte. Un hook de pre-commit (errores reales de lint, escaneo de secretos, sintaxis) porque es lo más barato que existe y previene en vez de diagnosticar. Un contrato de <code>import-linter</code> para las capas, escrito contra la arquitectura que <em>existe</em> —<code>services</code> nunca importa Flask; <code>api</code> puede leer models— y no contra una idealizada, porque un sensor que reporta doscientas violaciones preexistentes es ruido, no señal. El guardián de dominio, que son los dos tests de arriba. Y un gate de CI para que todo eso corra en cada PR y no en mi laptop cuando me acuerdo.</p>
+
+      <p>El quinto no estaba en la lista, y es el que más cambió las cosas. El backend y el frontend eran dos repos, y cada cambio de contrato eran dos commits que se desincronizaban — una clase de bug que el agente producía con puntualidad, porque el tipo contra el que programaba era mentira la mitad del tiempo. Los consolidé en un monorepo donde el schema genera el contrato y el contrato genera los tipos del frontend, con un check de CI que falla si te olvidaste de regenerar. Un cambio de contrato es hoy un commit atómico.</p>
+
+      <div class="callout">
+        <div class="callout-label">Pattern</div>
+        <p>El sensor más valioso no es una herramienta que instalás: es el que convierte una <em>convención</em> en una <em>regla que falla sola</em>. Y a veces la forma más barata de construirlo es cambiar la forma del repo hasta que el error sea imposible de expresar.</p>
+      </div>
 
       <hr />
 
@@ -585,6 +609,25 @@ def get_unit_members(unit_id):
 
       <hr />
 
+      <h2>La escalera de autonomía, y el escalón que me salteé</h2>
+
+      <p>Con los sensores puestos, el paso obvio era subir. Nivel 1 es: el agente abre un PR, yo lo leo, yo lo mergeo. Nivel 2 es: el agente abre un PR, el gate lo revisa, y se mergea sin mí. Es un umbral real — es el momento en que sacás tu propio ojo del camino que hay entre un cambio y los datos de tus usuarios.</p>
+
+      <p>Así que escribí primero el criterio de promoción, que es lo correcto. Seis semanas de observación. Un log donde cada captura genuina de un sensor deja una línea. Subir solo si hay <strong>cero</strong> sorpresas en las superficies sensibles —RBAC, aislamiento multi-tenant, el contrato de tipos backend↔frontend— porque en un SaaS multi-tenant la clase de bug cara es <em>irreversible</em>: los datos de un cliente vistos por otro. Y un alcance: auto-merge solo para diffs periféricos. Nunca para lo que toca los endpoints, la lógica de negocio, los modelos o las migraciones. Nunca para la superficie donde ya había sangrado.</p>
+
+      <p>Después, el mismo día, activé auto-merge en todos los pull requests. La ventana de observación tenía cero entradas. El alcance existía solo como un párrafo en un markdown; el workflow que efectivamente mergea no leía ese párrafo, porque los párrafos no se ejecutan.</p>
+
+      <p>No pasó nada. Los pull requests que entraron tocaban documentación y tests, así que ninguno cayó en la superficie que el criterio protegía. Pero eso es el reparto de la baraja, no el guardrail. Si el siguiente PR hubiera tocado <code>services/</code>, se habría ido a producción sin que nadie lo leyera, y la política que había escrito tres horas antes lo habría visto pasar.</p>
+
+      <div class="callout">
+        <div class="callout-label">Takeaway</div>
+        <p>Escribí, en este mismo post, que escribir un criterio y no aplicarlo es peor que no tenerlo. Lo escribí sobre una tasa de éxito que nunca calculé. Resulta que también aplica al camino de merge de un sistema en producción con los datos de mis vecinos — y ahí, "la sensación de rigor sin el rigor" no es un problema epistemológico. Es un incidente esperando el pull request adecuado.</p>
+      </div>
+
+      <p>El arreglo llevó quince minutos: el workflow ahora lee el diff y se niega a auto-mergear cualquier cosa que toque los endpoints, los services, los modelos, las migraciones o el propio CI. Todo lo periférico sigue mergeándose en verde. Lo interesante no es el arreglo — es que había construido cuatro sensores para impedir que el agente hiciera exactamente esto, y ninguno apuntaba hacia mí.</p>
+
+      <hr />
+
       <h2>Lo que este experimento no prueba</h2>
 
       <p>Si llegaste hasta acá esperando una tasa de éxito, no la vas a encontrar, y prefiero decirlo yo antes de que lo diga un comentario.</p>
@@ -595,6 +638,7 @@ def get_unit_members(unit_id):
         <li><strong>El par T02/T03 no es una contraprueba.</strong> Lo vendí como "lo único que cambió fue si la regla estaba escrita". Es falso: cambió el endpoint, el prompt y la tarea entera. Es la señal que me hizo formular la hipótesis, no la que la prueba. La prueba limpia es T02 sin harness contra T02 con harness — misma tarea, mismo prompt, única variable el archivo.</li>
         <li><strong>Contaminé T08</strong> nombrando <code>net_balance</code> en el prompt, y la conté como éxito igual.</li>
         <li><strong>Yo era el juez y conocía los oráculos.</strong> Mitigado corriendo al agente en sesiones frías y separadas, y usando siempre comandos en la máquina como fuente de verdad. Mitigado, no eliminado.</li>
+        <li><strong>La ventana de autonomía sigue abierta.</strong> Las seis semanas de observación que debían justificar el nivel 2 no transcurrieron. Estoy corriendo con auto-merge en superficies periféricas y un log vacío. Preguntame en agosto.</li>
       </ul>
 
       <p>Nada de esto invalida el hallazgo cualitativo —el delta de T02 y T07 es nítido y direccional— pero sí acota cuánto podés apoyarte en él. Un experimento que solo confirma lo que querías encontrar no es evidencia; es una anécdota bien vestida.</p>
@@ -602,7 +646,7 @@ def get_unit_members(unit_id):
       <h2>Qué haría diferente</h2>
 
       <ol>
-        <li><strong>Definir el número antes de empezar, y calcularlo.</strong> Escribí en el plan que la tasa de éxito era "el número que el harness tiene que mover", con un criterio de muerte de 10 puntos porcentuales. Después nunca lo calculé. Escribir el criterio y no aplicarlo es peor que no tenerlo: te da la sensación de rigor sin el rigor.</li>
+        <li><strong>Definir el número antes de empezar, y calcularlo.</strong> Escribí en el plan que la tasa de éxito era "el número que el harness tiene que mover", con un criterio de muerte de 10 puntos porcentuales. Después nunca lo calculé. Escribir el criterio y no aplicarlo es peor que no tenerlo: te da la sensación de rigor sin el rigor. Después hice exactamente lo mismo con la escalera de autonomía, lo cual sugiere que la lección no me entró a la primera.</li>
         <li><strong>Incluir controles negativos.</strong> Dos de las diez tareas del plan original —paginación, escribir tests— no tienen ninguna decisión de dominio implícita. Si el harness también las "mejora", el que está midiendo mal soy yo. Un harness que mejora todo probablemente esté midiendo mi expectativa, no el código.</li>
         <li><strong>Arreglar los sensores antes de agregar sensores.</strong> El plan de la Fase 2 tenía cuatro herramientas nuevas. La lección del baseline es que ninguna de las cuatro vale nada hasta que la suite deje de mentir. Determinismo primero, cobertura después.</li>
       </ol>
@@ -616,6 +660,8 @@ def get_unit_members(unit_id):
       <p>El experimento sugiere tres cosas, ninguna sorprendente en retrospectiva y todas invisibles antes de medir. Primero: <strong>el presupuesto del harness va a dominio y postura, no a andamiaje técnico.</strong> Segundo: <strong>codificar principios generaliza; codificar respuestas, no.</strong> Y tercero, la que más me costó aceptar: <strong>escribir las reglas para el agente es escribirlas para vos.</strong> Dos bugs de privacidad reales en producción no aparecieron porque el agente fuera brillante. Aparecieron porque, por primera vez en dos años, alguien me obligó a escribir en una tabla quién puede ver qué.</p>
 
       <p>El harness no reemplaza tu criterio. Te obliga a tenerlo por escrito. Ese, y no la productividad, terminó siendo el retorno.</p>
+
+      <p>Con un asterisco que me costó caro: escribirlo no es lo mismo que hacerlo cumplir. Una política en un markdown gobierna al agente, que la lee. No te gobierna a vos, que la escribiste. Cualquier regla que de verdad te importe —el criterio de promoción, el alcance del merge, la tasa de éxito— tiene que vivir en algún lugar que se ejecute.</p>
 
       <p>🔗 <strong><a href="harness-engineering.html">Parte 1 · Qué es harness engineering y cómo se arma</a></strong> · <a href="../../">portfolio</a> · <a href="https://github.com/NeryC">github.com/NeryC</a></p>
 

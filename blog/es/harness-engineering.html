@@ -344,6 +344,11 @@
         <p class="figure-caption">Figura 5 · <strong>La tabla de autonomía.</strong> Ajustala a tu radio de explosión.</p>
       </div>
       <p>Y va de la mano de una <strong>escalera</strong>: empezás en el nivel más bajo (el agente abre un PR, vos revisás y mergeás) y subís un escalón solo cuando los sensores dejan de sorprenderte. No saltes niveles por entusiasmo; cada salto se gana cuando el harness te da confianza medida, no ganas.</p>
+      <p>Tres cosas hacen que esa escalera sea real, y las tres son fáciles de saltear. <strong>Escribí el criterio de promoción antes de querer subir</strong> — si lo escribís el día que te pica sacarte del camino del merge, vas a escribir uno que ya cumplís. <strong>Hacé cumplir el alcance en código, no en un documento</strong>: "el auto-merge solo toca archivos periféricos" es un deseo hasta que el workflow lee el diff y se niega. Y <strong>tené una forma documentada de bajar</strong> antes de subir: un opt-out por cambio, un kill-switch global, y un disparador escrito que te devuelve al escalón anterior.</p>
+      <div class="callout warn reveal">
+        <div class="callout-label">La que muerde</div>
+        <p>El harness gobierna al agente, porque el agente lo lee. No te gobierna a <em>vos</em>, porque vos lo escribiste. Cada regla que de verdad te importa —el criterio de promoción, el alcance del merge, la tasa de éxito que juraste calcular— tiene que vivir en algún lugar que se ejecute, o se convierte, calladita, en decoración.</p>
+      </div>
 
       <h3>05 · Trazas — poder ver qué pasó</h3>
       <p>Lo último: observabilidad. Dos capas. La primera es hacer que la observabilidad de <em>runtime</em> sea legible para el agente —que pueda consultar logs y métricas <em>durante</em> una tarea, no solo vos después en un dashboard—. La segunda son las trazas de la <em>trayectoria</em> del agente: prompts, llamadas a herramientas, diffs. Eso es lo que te deja responder "¿por qué carajo hizo eso?" cuando algo sale raro, y alimentar el steering loop con datos en vez de corazonadas.</p>

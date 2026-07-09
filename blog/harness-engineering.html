@@ -161,7 +161,7 @@
   </nav>
   <article class="article">
     <!-- structure: pattern-essay — no project of its own and no postmortem; architecture figure and bug section omitted per BLOG_STRUCTURE §10. -->
-    <div class="article-meta">June 26, 2026 · Part 1 of 2 · 16 min read</div>
+    <div class="article-meta">June 26, 2026 · Part 1 of 2 · 17 min read</div>
     <h1 class="article-title">Harness Engineering: how to design repos where AI doesn't screw up</h1>
     <p class="article-subtitle">Guides, sensors, context, evals and autonomy limits: the harness that turns an AI agent from a chaotic intern into a reliable colleague. Spoiler: the problem isn't the model — it's your repo.</p>
     <div class="byline">
@@ -339,6 +339,11 @@
         <p class="figure-caption">Figure 5 · <strong>The autonomy table.</strong> Tune it to your blast radius.</p>
       </div>
       <p>And it goes hand in hand with a <strong>ladder</strong>: you start on the lowest rung (the agent opens a PR, you review and merge) and climb one step only when the sensors stop surprising you. Don't skip rungs out of enthusiasm; each step is earned when the harness gives you measured confidence, not vibes.</p>
+      <p>Three things make that ladder real, and all three are easy to skip. <strong>Write the promotion criterion before you want to climb</strong> — if you write it the day you're itching to remove yourself from the merge path, you'll write one you already pass. <strong>Enforce the scope in code, not in a document</strong>: "auto-merge only touches peripheral files" is a wish until the workflow reads the diff and refuses. And <strong>have a documented way back down</strong> before you go up — a per-change opt-out, a global kill-switch, and a written trigger that sends you back to the previous rung.</p>
+      <div class="callout warn reveal">
+        <div class="callout-label">The one that bites</div>
+        <p>The harness governs the agent, because the agent reads it. It does not govern <em>you</em>, because you wrote it. Every rule you actually care about — the promotion criterion, the merge scope, the success rate you swore you'd compute — has to live somewhere that executes, or it will quietly become decoration.</p>
+      </div>
 
       <h3>05 · Traces — being able to see what happened</h3>
       <p>Last: observability. Two layers. The first is making <em>runtime</em> observability legible to the agent — so it can query logs and metrics <em>during</em> a task, not just you afterward in a dashboard. The second is traces of the agent's <em>trajectory</em>: prompts, tool calls, diffs. That's what lets you answer "why on earth did it do that?" when something goes sideways, and feed the steering loop with data instead of hunches.</p>

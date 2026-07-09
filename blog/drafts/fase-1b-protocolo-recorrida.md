@@ -1,5 +1,12 @@
 # Fase 1b — Protocolo de re-corrida: cerrar el número
 
+> **Aviso de paths (2026-07-09).** El backend se consolidó en el monorepo `adminrent-mono/` (el viejo
+> `AdminRent-backend` está en `.archive/`). La historia de commits se preservó en el merge, así que los
+> hashes de oráculo de abajo siguen siendo válidos — pero los worktrees se crean desde la raíz del
+> monorepo y los comandos corren en `backend/`. Verificá con `git cat-file -t <ORACLE>` antes de arrancar.
+> Además: los sensores de la Fase 2 (pre-commit, import-linter, guardian de dominio, CI) **ya existen**;
+> este protocolo mide el harness, no lo construye.
+
 > **Por qué existe este doc.** La Fase 1 midió solo las tareas que habían fallado (T02, T07) más una nueva (T05). Eso demuestra que el harness **cura**, pero no que no **rompe**. Y nunca se calculó el X% que el propio `fase-0-baseline-kit.md` define como "el número que el harness tiene que mover".
 >
 > Este doc es la lista de corridas exactas que faltan, en orden de ROI. Nada acá inventa metodología nueva: corrige tres defectos concretos del diseño anterior.
@@ -112,7 +119,7 @@ Si T02-baseline sale ✅ en 1 de 3 corridas, la historia sigue siendo cierta per
 ## Protocolo por corrida
 
 ```bash
-cd AdminRent-backend
+cd adminrent-mono/backend
 
 ORACLE=17c3316          # ← cambiar por tarea
 TAG=T01-conharness      # ← T01-baseline | T01-conharness
@@ -127,7 +134,7 @@ python -m venv .venv && . .venv/bin/activate
 pip install -q -r requirements.txt
 
 # 3. SOLO en la condición "conharness": inyectar el harness
-cp ../nery-cano-portfolio/blog/drafts/AGENTS.md ./AGENTS.md   # extraer el bloque del draft
+cp ../adminrent-mono/backend/AGENTS.md ./AGENTS.md   # el AGENTS.md real, no el draft del blog
 
 # 4. Correr el agente con el prompt FIJO de la tarea.
 #    NO le muestres el commit oráculo. NO le agregues convenciones al prompt.
@@ -136,11 +143,11 @@ cp ../nery-cano-portfolio/blog/drafts/AGENTS.md ./AGENTS.md   # extraer el bloqu
 bash score.sh
 
 # 6. Comparar con el oráculo — solo para TU veredicto
-git -C ../AdminRent-backend show $ORACLE
+git -C ../adminrent-mono show $ORACLE
 git diff $BASE            # qué hizo realmente el agente
 
 # 7. Anotar en la tabla, y recién ahí, teardown
-cd ../AdminRent-backend && git worktree remove ../wt-$TAG --force
+cd ../adminrent-mono && git worktree remove ../wt-$TAG --force
 ```
 
 **Anotá antes de comparar con el oráculo.** El baseline perdió un veredicto por cantar "éxito rotundo" antes de mirar `git show`. Escribí tu impresión, después mirá, después puntuá.
@@ -214,14 +221,16 @@ Regresiones (éxito→fallo): ____        I3=mejor que el oráculo: ____ casos
 
 ---
 
-## Antes de publicar: los dos bugs reales
+## Los dos bugs reales: cerrados
 
-La Fase 1 destapó dos bugs vivos en `main`. Publicar "el harness encontró un bug de privacidad" con el bug todavía en producción es un riesgo de credibilidad gratuito.
+La Fase 1 destapó dos bugs vivos en `main`. **Los dos están arreglados** (verificado el 2026-07-09 contra `adminrent-mono`):
 
-1. **Aislamiento de miembros** — `GET /units/<id>/members` deja que cualquier owner/tenant vea los miembros de cualquier unidad del residencial. Portar el `has_access` por unidad que el agente escribió en T02.
-2. **RBAC de búsqueda por chapa** — hoy en `search_units` con acceso owner/tenant. La política validada es `admin` / `super_admin` / `portero`.
+1. **Aislamiento de miembros** — `unit_contact_service.list_members` es fail-closed y su docstring cita `AGENTS.md L35/L42`. Guardián: `test_owner_cannot_list_members_of_other_unit`.
+2. **RBAC de búsqueda por chapa** — no quedó en `admin/super_admin/portero` como proponía la Fase 1, sino en un *privacy gate* por residencial (`privacy_mode_default`); portero exento.
 
-Arreglarlos, y **linkear los commits del fix desde el post**. Eso convierte el hallazgo en evidencia verificable.
+El fail-closed de T07 también tiene guardián: `test_comunicado_target_unit_ids_hidden_by_default`.
+
+**Consecuencia para el Bloque A:** los oráculos de T02/T07 ya no representan el estado de `main`. Al puntuar `I3` (relación con el oráculo), compará contra el commit oráculo original — no contra `main` de hoy, que incorpora las mejoras que el propio agente sugirió. Si no, medís el harness contra sí mismo.
 
 ---
 
