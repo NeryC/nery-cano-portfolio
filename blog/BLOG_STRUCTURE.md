@@ -173,6 +173,32 @@ Inline SVG (preferred) or raster image, with a caption underneath.
 - Caption format: **`Figure N · <strong>{Short title}.</strong> {Explanation in one sentence.}`** Always numbered. Bold the short title. Italics are reserved for `<em>` emphasis inside the explanation.
 - SVG conventions: use the existing palette tokens (`#7DD3FC`, `#2E75B6`, `#94A3B8`, `#F1F5F9`) and the same font stack as the rest of the page. Background of figure cards: `linear-gradient(#122845, #0E1F3A)` with `rgba(148,163,184,0.3)` stroke.
 
+### Animated figures
+
+Animate a figure only when the idea **is** a motion: a loop, a sequence, a before/after, a thing that flows. Never animate decoration. A static diagram that explains the point is better than a moving one that distracts from it.
+
+Rules:
+
+- **SMIL or CSS inside the inline `<svg>`.** No JS, no libraries. The posts ship as static HTML.
+- **Loop slowly.** 3-6 second cycles. Anything faster pulls the eye off the prose.
+- **The figure must read correctly frozen.** If a reader screenshots it, or `prefers-reduced-motion` kills the animation, the diagram still has to make its point. Test by deleting the `<animate>` tags.
+- **Always honor reduced motion.** Wrap every animation:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .figure svg * { animation: none !important; }
+  .figure svg animate,
+  .figure svg animateMotion,
+  .figure svg animateTransform { display: none; }
+}
+```
+
+- **One animated figure per two static ones**, roughly. A post where everything moves is a post nobody reads.
+
+Good candidates: a control loop with a token traveling the path; a sequence that reveals stages in order; a counter that ticks from the before-number to the after-number; a diff that crossfades. Bad candidates: pulsing borders, floating icons, anything that loops under a paragraph the reader is still reading.
+
+Caption an animated figure the same way as a static one, and say what moves: `Figure 3 · **The steering loop.** The sensor's output travels back into the agent's context — watch the token.`
+
 ### `<div class="callout"><div class="callout-label">Label</div><p>…</p></div>`
 
 Use callouts sparingly — once or twice per post — to spotlight a reusable insight or warning.
@@ -296,12 +322,28 @@ The author voice is: **senior engineer writing for other senior engineers in a w
 - **Concrete > abstract.** Always name the file, the function, the SDK version, the actual error. Replace "a library" with `pdfjs-dist`. Replace "a serverless platform" with "Vercel Hobby plan with a 10s function cap."
 - **Numbers in headlines.** "9 tools, 4 resources, 3 prompts" beats "many tools and resources." "The six bugs that broke production" beats "Some production issues."
 - **No emoji as decoration.** Use them only as anchors: 🔗 for link blocks, sometimes 💡 inside a callout, ❌/✅ if comparing. Never in headings or prose.
-- **Em-dashes (`—`) for parenthetical asides** in prose. Not hyphens.
+- **Em-dashes (`—`): at most one per 1,000 words.** They read as an AI tell when they stack up. Prefer a comma, a period, parentheses, or two sentences. Count them before publishing (`grep -o "—" post.html | wc -l`). This rule supersedes earlier drafts of this spec, which encouraged them; the posts written under that guidance ran 10x over budget.
 - **Inline `<code>` for everything that's a literal symbol** in the codebase: function names, types, error messages, URL paths, env var names, npm packages.
 - **Italics** (`<em>`) for emphasis on a regular word, and for the opening lede. Not for code or technical names.
 - **Headings end without punctuation** unless they're a question or an embedded code reference.
-- **Avoid AI-blogspeak:** no "delve into," no "in today's fast-paced world," no "let's explore." No emoji-bulleted lists at the top of a section. No "Conclusion" heading — use "What I learned" or "What I'd do differently."
+- **Avoid AI-blogspeak:** no "delve into," no "in today's fast-paced world," no "let's explore." No emoji-bulleted lists at the top of a section. No "Conclusion" heading; use "What I learned" or "What I'd do differently."
+- **No negative parallelism.** "It's not X, it's Y" and "The problem was never X. It was Y" are the single most recognizable LLM sentence shape. State the positive claim directly.
+- **No hollow intensifiers.** Cut `genuinely`, `truly`, `really`, `actually`, `literally`, and their Spanish equivalents (`de verdad`, `realmente`, `literalmente`). If the fact needs an intensifier, the fact is too weak.
+- **Bold sparingly.** One bolded phrase per major section, or none. If it deserves bold, restructure the sentence to lead with it.
+- **Watch the structural tics:** "That's the whole thing," "This is where it gets interesting," "the one that mattered," "what changed is." One per post, maximum. They are voice when rare and filler when repeated.
+- **Vary the rhythm.** Uniform paragraph length and 15-25 word sentences everywhere is a detector signal. Mix short with long. Fragments are allowed.
 - **British vs American spelling:** American (`color`, `optimize`, `behavior`).
+
+### Sensor, not vibes
+
+Before publishing, run the deterministic detector from the `avoid-ai-writing` skill against the post's prose:
+
+```bash
+node ~/.claude/skills/avoid-ai-writing/detector/patterns.js   # engine
+# or use blog/tools/audit.js, which strips <style>/<script>/<svg>/<pre> first
+```
+
+A score above 10/100 means fix it before shipping. Two carve-outs, both verified against this blog: **low type-token ratio** fires on every post here because the vocabulary is narrow by design (the same six technical nouns recur), and the word **`harness`** sits on the skill's Tier 2 list while being the subject of two posts. Neither is a defect. Everything else is.
 
 ---
 

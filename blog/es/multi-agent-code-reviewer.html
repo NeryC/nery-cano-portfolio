@@ -309,7 +309,7 @@
        Sangran a 1180px solo los bloques que REFLOWEAN con el ancho extra:
        grids de figuras, código y tablas. Se hace con márgenes negativos, sin
        tocar el flujo del texto, así que nada se desalinea.
-       Las figuras que son solo un <svg> NO sangran: su viewBox es fijo, de modo
+       Las figuras cuyo unico hijo es un elemento svg NO sangran: su viewBox es fijo, de modo
        que ensancharlas escala el texto ~2x sin agregar información.
        Debajo de 1240px, comportamiento original. */
     @media (min-width: 1240px) {
