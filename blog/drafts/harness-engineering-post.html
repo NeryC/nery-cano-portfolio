@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harness Engineering: cómo diseñar repos donde la IA no la caga — Nery Cano</title>
+  <meta name="description" content="Qué es harness engineering y cómo se implementa, paso a paso: el arnés de guías, sensores, contexto, evals y autonomía que hace que un agente de IA escriba código fiable. Guía ilustrada y animada." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Harness Engineering: cómo diseñar repos donde la IA no la caga" />
+  <meta property="og:description" content="Guías, sensores, contexto, evals y autonomía: el arnés que convierte a un agente de IA en un colega fiable." />
+  <meta property="article:published_time" content="2026-06-26" />
+  <meta property="article:tag" content="Harness Engineering" />
+  <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="Developer Tooling" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <nav class="header-nav">
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todo lo que escribo</a>
+    <a href="#">English ↗</a>
+  </nav>
+  <article class="article">
+    <div class="article-meta">26 jun 2026 · Parte 1 de 2 · ~16 min</div>
+    <h1 class="article-title">Harness Engineering: cómo diseñar repos donde la IA no la caga</h1>
+    <p class="article-subtitle">Guías, sensores, contexto, evals y límites de autonomía: el arnés que convierte a un agente de IA de pasante caótico en colega fiable. Spoiler: el problema no es el modelo — es tu repo.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+    </div>
+
+    <div class="article-body">
+      <p><em>Esta es la primera de dos partes. Acá te explico qué es harness engineering y cómo se arma, de cero. En la <strong>parte 2</strong> te muestro cómo lo apliqué a un SaaS real, multi-tenant, en producción — con baseline, números y un par de momentos vergonzosos. Empecemos por la teoría, que en este caso es sorprendentemente práctica.</em></p>
+
+      <p>Le pedís a tu agente de IA que arregle un bug de una línea. Vuelve con catorce archivos modificados, un <code>README</code> que nadie pidió, un refactor "de yapa" y —por las dudas— te borró dos tests que le molestaban. Pasa todos los checks. Lo mergeás. El lunes, un usuario te avisa que la app explota. ¿Te suena?</p>
+
+      <p>Los agentes de codificación ya no son un juguete: escriben código de verdad, a una velocidad que asusta. El problema es <em>cómo</em> lo escriben. Trabajan como un pasante brillante en su primer día: rapidísimos, con una confianza inquebrantable, y sin la más mínima idea de las reglas no escritas de tu casa. ¿Que el campo <code>email</code> nunca se expone a ese rol? No lo sabían. ¿Que esa función ya existe en otro módulo? La reescribieron. ¿Que esos tests son load-bearing? Eran un obstáculo para el verde, así que volaron.</p>
+
+      <p>La reacción instintiva es pelearse con el modelo: prompts más largos, más "por favor", más mayúsculas. No funciona, y es la pista de que estamos mirando el lugar equivocado.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">La tesis</div>
+        <p>No vas a arreglar a un agente pidiéndole que se porte bien. Lo arreglás <strong>diseñando el entorno donde trabaja</strong>: las instrucciones que lee, los tests que lo atrapan, los límites que no puede cruzar. A esa disciplina se la llama <strong>harness engineering</strong>, y es, cada vez más, un rol propio.</p>
+      </div>
+
+      <h2>Esto no es una moda de blog</h2>
+      <p>Antes de seguir, una dosis de realidad para los escépticos (yo era uno). En febrero de 2026, un equipo de OpenAI contó que construyó y desplegó un producto interno con <strong>cero líneas de código escritas a mano</strong> — del orden de un millón de líneas, ~1.500 pull requests, con un equipo de tres a siete ingenieros. ¿Su conclusión textual? Que sus desafíos más difíciles ya no son escribir código, sino <em>"diseñar entornos, bucles de feedback y sistemas de control"</em>.</p>
+
+      <p>No es un caso aislado. Anthropic publica sobre "harnesses efectivos para agentes de larga duración". En Thoughtworks, Birgitta Böckeler escribe el marco conceptual que vamos a usar acá. Y <code>AGENTS.md</code> —el archivo de instrucciones para agentes— se volvió un estándar abierto entre OpenAI, Google, Cursor y compañía en agosto de 2025. Cuando empresas que compiten entre sí se ponen de acuerdo en un formato de archivo, algo real está pasando.</p>
+
+      <p>La buena noticia: no necesitás un millón de líneas ni siete ingenieros para aprovecharlo. Los principios escalan hacia abajo. Vamos a ellos.</p>
+
+      <hr/>
+
+      <h2>La idea central: Agente = Modelo + Harness</h2>
+      <p>Acá está el cambio de mentalidad del que todo lo demás se desprende. Un agente de codificación <strong>no es "el modelo"</strong>. Es el modelo <em>más todo lo que lo rodea</em>: el system prompt, las herramientas que puede llamar, el contexto que se le inyecta, los tests que corren, los límites de lo que puede tocar. A todo ese envoltorio se lo llama <strong>harness</strong> — el arnés.</p>
+
+      <p>La fórmula, que tomo prestada de LangChain, es simple: <strong>Agente = Modelo + Harness</strong>. Y tiene una consecuencia liberadora. El modelo no lo controlás vos: lo entrenó otra empresa, cuesta cientos de millones, y no lo vas a mejorar desde tu laptop. Pero el harness es <strong>enteramente tuyo</strong>. Es la única palanca que de verdad podés mover.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>El agente como capas: modelo en el núcleo, harness del fabricante, y harness del usuario</title>
+          <!-- anillo externo: harness del usuario (lo tuyo) -->
+          <circle class="ring2" cx="300" cy="175" r="150" fill="rgba(125,211,252,.05)" stroke="var(--accent-glow)" stroke-width="1.5" stroke-dasharray="3 9"/>
+          <text x="300" y="48" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#7DD3FC">HARNESS DEL USUARIO · lo tuyo</text>
+          <!-- anillo medio: harness del fabricante -->
+          <circle class="ring1" cx="300" cy="175" r="100" fill="rgba(46,117,182,.08)" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="2 7"/>
+          <text x="300" y="98" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#4FA9E8">harness del fabricante</text>
+          <!-- núcleo: modelo -->
+          <circle class="core" cx="300" cy="175" r="52" fill="rgba(31,58,104,.7)" stroke="var(--text-strong)" stroke-width="1.5"/>
+          <text x="300" y="170" text-anchor="middle" font-size="30">🧠</text>
+          <text x="300" y="200" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#E2E8F0">Modelo</text>
+          <!-- etiquetas de lo que pones tú -->
+          <text x="300" y="300" text-anchor="middle" font-family="Inter" font-size="13" fill="#94A3B8">AGENTS.md · tests · linters · esquemas · límites · contexto</text>
+        </svg>
+        <p class="figure-caption">Lo único que controlás es <strong>el anillo de afuera</strong> · y alcanza</p>
+      </div>
+
+      <p>Fijate la trampa del lenguaje: cuando alguien dice "el agente alucinó" o "el agente es malo", casi siempre se refiere al modelo. Pero el modelo es la capa que <em>no</em> podés cambiar. La pregunta útil no es "¿cómo consigo un modelo mejor?", sino <strong>"¿qué le falta a mi harness para que este modelo no necesite adivinar?"</strong>. Ese reencuadre es, literalmente, el trabajo.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">En una frase</div>
+        <p>Harness engineering es diseñar el entorno —documentación, herramientas, feedback y restricciones— para que un agente haga trabajo fiable con la mínima supervisión humana.</p>
+      </div>
+
+      <hr/>
+
+      <h2>El mapa mental: dos ejes, cuatro cuadrantes</h2>
+      <p>Si te llevás un solo diagrama de todo el post, que sea este. Cualquier control que pongas en un harness se ubica en una grilla de dos ejes. Memorizala y ya entendiste la mayor parte.</p>
+
+      <p>El primer eje es <strong>cuándo</strong> actúa el control:</p>
+      <ul>
+        <li><strong>Guías</strong> (<em>feedforward</em>): orientan al agente <em>antes</em> de que escriba una línea. Suben la probabilidad de que la pegue a la primera.</li>
+        <li><strong>Sensores</strong> (<em>feedback</em>): observan <em>después</em> de que actuó y lo dejan corregirse. Atrapan lo que la guía no previó.</li>
+      </ul>
+      <p>El segundo eje es <strong>cómo</strong> funciona:</p>
+      <ul>
+        <li><strong>Computacional</strong>: determinista, instantáneo, baratísimo. Un test, un linter, un type-checker. Nunca alucina.</li>
+        <li><strong>Inferencial</strong>: usa otro modelo para juzgar con criterio semántico. Entiende lo que <em>quisiste</em> decir, pero es lento, cuesta plata y a veces inventa.</li>
+      </ul>
+
+      <div class="figure reveal">
+        <div class="axis">◀ barato y confiable · COMPUTACIONAL &nbsp;&nbsp;|&nbsp;&nbsp; INFERENCIAL · caro y con criterio ▶</div>
+        <div class="mtx">
+          <div class="mcell g"><div class="mlbl">Guía · computacional</div><h4>Orienta antes · gratis</h4><ul><li>Esquemas y tipos</li><li>Plantillas / scaffolds</li><li>Codemods</li></ul></div>
+          <div class="mcell g"><div class="mlbl">Guía · inferencial</div><h4>Orienta antes · con criterio</h4><ul><li>AGENTS.md</li><li>Skills</li><li>Convenciones escritas</li></ul></div>
+          <div class="mcell s"><div class="mlbl">Sensor · computacional</div><h4>Atrapa después · gratis</h4><ul><li>Tests</li><li>Linters / type-checkers</li><li>Escaneo de secretos</li></ul></div>
+          <div class="mcell s"><div class="mlbl">Sensor · inferencial</div><h4>Atrapa después · con criterio</h4><ul><li>Revisión de código por IA</li><li>"LLM como juez"</li></ul></div>
+        </div>
+        <p class="figure-caption"><strong>Guías</strong> orientan antes (feedforward) · <strong>Sensores</strong> atrapan después (feedback)</p>
+      </div>
+
+      <p>De acá sale la <strong>regla de oro</strong>: preferí siempre el cuadrante computacional cuando exista. Un test que corre en milisegundos y da un resultado fiable vale más que un juez-LLM caro que a veces inventa. Lo inferencial se reserva para lo que <em>ningún</em> test puede juzgar: ¿esto está sobre-diseñado? ¿malinterpretó el pedido? ¿"esto no se hace así acá"?</p>
+
+      <p>Y la segunda lección, igual de importante: necesitás <strong>las dos filas</strong>. Solo guías, y tenés un agente que codifica reglas pero nunca se entera de si funcionaron. Solo sensores, y tenés un agente que tropieza con la misma piedra para siempre. El valor está en combinarlas.</p>
+
+      <div class="callout warn reveal">
+        <div class="callout-label">Toque de realidad</div>
+        <p>Sí, técnicamente podrías poner un LLM a revisar cada coma de cada commit. También podrías contratar a alguien para que te lea los typos en voz alta. Una de esas dos ideas cuesta menos. Ninguna de las dos es buena.</p>
+      </div>
+
+      <h2>El bucle: orientar → actuar → atrapar → corregir</h2>
+      <p>Las guías y los sensores no son dos listas sueltas: forman un <strong>bucle de control</strong>. La guía orienta, el agente actúa, el sensor mide, y —acá está la magia— el resultado del sensor vuelve al agente para que se corrija <em>solo</em>, antes de que vos veas nada.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 640 280" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>Bucle de control: guías orientan al agente, el agente produce un diff, los sensores lo miden y devuelven feedback para autocorregir</title>
+          <defs>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#4FA9E8"/></marker>
+          </defs>
+          <!-- guías -->
+          <rect x="20" y="100" width="120" height="64" rx="10" fill="rgba(125,211,252,.10)" stroke="var(--guia)" stroke-width="1.3"/>
+          <text x="80" y="128" text-anchor="middle" font-family="Inter" font-size="14" fill="#E2E8F0">Guías</text>
+          <text x="80" y="146" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7DD3FC">feedforward</text>
+          <!-- agente -->
+          <circle cx="320" cy="132" r="48" fill="rgba(31,58,104,.6)" stroke="var(--text-strong)" stroke-width="1.3"/>
+          <text x="320" y="126" text-anchor="middle" font-size="26">🤖</text>
+          <text x="320" y="152" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#E2E8F0">Agente</text>
+          <!-- sensores -->
+          <rect x="500" y="100" width="120" height="64" rx="10" fill="rgba(79,169,232,.10)" stroke="var(--sensor)" stroke-width="1.3"/>
+          <text x="560" y="128" text-anchor="middle" font-family="Inter" font-size="14" fill="#E2E8F0">Sensores</text>
+          <text x="560" y="146" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#4FA9E8">feedback</text>
+          <!-- flechas -->
+          <line class="flow" x1="142" y1="132" x2="266" y2="132" stroke="#4FA9E8" stroke-width="2" marker-end="url(#ar)"/>
+          <line class="flow" x1="372" y1="132" x2="496" y2="132" stroke="#4FA9E8" stroke-width="2" marker-end="url(#ar)"/>
+          <text x="204" y="122" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#94A3B8">actúa</text>
+          <text x="434" y="122" text-anchor="middle" font-family="JetBrains Mono" font-size="9" fill="#94A3B8">diff / PR</text>
+          <!-- retorno (autocorrección) -->
+          <path class="flow" d="M540,170 C540,235 100,235 100,170" fill="none" stroke="#7DD3FC" stroke-width="2" marker-end="url(#ar)"/>
+          <text x="320" y="250" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7DD3FC">se autocorrige (sin que lo veas)</text>
+        </svg>
+        <p class="figure-caption">El sensor no solo dice "mal" · le dice al agente <strong>cómo arreglarlo</strong></p>
+      </div>
+
+      <p>El mejor truco de este bucle es sutil: un buen sensor no solo grita "¡error!", sino que <strong>inyecta la instrucción de arreglo</strong> en el contexto del agente. Un mensaje de linter que dice "usá <code>X</code> en vez de <code>Y</code>, así: …" es feedback optimizado para que el modelo se corrija solo. Böckeler lo llama, con humor, "una inyección de prompt de las buenas".</p>
+
+      <p>¿Y el humano? Su rol cambia por completo. Ya no escribís el código: <strong>dirigís el bucle</strong>. Cada vez que un problema aparece dos veces, mejorás una guía o un sensor para que la próxima sea menos probable. A eso se le llama <em>steering loop</em>, y es la diferencia entre un harness vivo y un montón de configs muertas.</p>
+
+      <hr/>
+
+      <h2>Cómo se arma un harness real</h2>
+      <p>Hasta acá, la teoría. Ahora lo concreto: ¿qué ponés, exactamente, en ese anillo de afuera? Cinco piezas. Cada una llena un hueco distinto, y juntas son el sistema.</p>
+
+      <div class="figure reveal">
+        <div class="comp-grid">
+          <div class="comp"><div class="n">01</div><h4>Contexto</h4><p>Que no tenga que adivinar: instrucciones, docs y esquemas que el agente lee.</p></div>
+          <div class="comp"><div class="n">02</div><h4>Sensores</h4><p>Que se atrape solo: tests, linters, type-checkers, hooks.</p></div>
+          <div class="comp"><div class="n">03</div><h4>Evals</h4><p>Medir si el agente acierta de forma fiable sobre una clase de tareas.</p></div>
+          <div class="comp"><div class="n">04</div><h4>Autonomía</h4><p>Qué hace siempre, qué pregunta primero, qué no toca nunca.</p></div>
+          <div class="comp full"><div class="n">05</div><h4>Trazas</h4><p>Observabilidad: poder mirar qué hizo el agente y por qué, para depurar y mejorar el bucle.</p></div>
+        </div>
+        <p class="figure-caption">Los cinco componentes de un harness · ninguno es opcional, todos son incrementales</p>
+      </div>
+
+      <h3>01 · Contexto — que no tenga que adivinar</h3>
+      <p>El principio que ordena todo este componente lo resumió OpenAI en una frase brutal: <strong>"lo que el agente no puede ver, no existe."</strong> Esa decisión de arquitectura que tomaron en una reunión, ese "acá los porteros sí ven X" que vive en tu cabeza, ese contrato de API que está implícito — para el agente, nada de eso existe a menos que esté escrito en un archivo que pueda leer.</p>
+      <p>En la práctica, son tres cosas: un <code>AGENTS.md</code> corto que funciona como índice (no como enciclopedia: un manual de 1.000 líneas entierra lo importante), un directorio <code>docs/</code> que es el sistema de registro de decisiones y planes, y <strong>esquemas generados desde el código</strong> (la base de datos, el contrato de la API) para que el agente nunca infiera una forma de dato. Cada vez que el agente adivina, introducís una clase de bug. El contexto es lo que elimina la adivinación.</p>
+
+      <h3>02 · Sensores — que se atrape solo</h3>
+      <p>Acá viven los tests, los linters, los type-checkers y los hooks. Pero el sensor más valioso es el que convierte una <em>convención</em> en una <em>regla que falla sola</em>. Tu arquitectura por capas es solo una costumbre simpática hasta que un test de imports hace fallar el build cuando alguien la cruza. "Los campos sensibles no se exponen por defecto" es un deseo hasta que un test lo verifica en cada serialización.</p>
+      <p>La táctica que más rinde se llama <em>shift-left</em>: correr lo barato lo más temprano posible (un hook de pre-commit que tarda un segundo) en vez de esperar al CI o, peor, a producción. Cuanto antes atrapás el error, más barato es.</p>
+      <div class="callout warn reveal">
+        <div class="callout-label">La regla que más cuesta aprender</div>
+        <p>Un sensor que <strong>miente</strong> es peor que no tener sensor. Un test flaky, un check que pasa por la razón equivocada, una métrica que no mide lo que creés: te dan <em>falsa</em> confianza, y la falsa confianza te hace mergear con una sonrisa. Antes de agregar sensores nuevos, asegurate de que los que tenés no te están mintiendo.</p>
+      </div>
+
+      <h3>03 · Evals — medir si de verdad acierta</h3>
+      <p>Esta es la distinción que más gente confunde, así que despacio. Un <strong>test</strong> verifica el <em>código</em>: dada esta entrada, esta salida; pasa o falla. Un <strong>eval</strong> verifica al <em>agente</em>: dado este tipo de tarea, ¿produce un buen resultado de forma fiable? Se mide como una tasa —8 de 10—, no como verde o rojo.</p>
+      <p>¿Por qué importa? Porque sin evals, cada cambio que le hacés a tu <code>AGENTS.md</code> es fe ciega: no sabés si mejoró o empeoró al agente. Con un set chico de tareas representativas y una rúbrica, el <em>steering loop</em> deja de ser intuición y se vuelve medible. Cambiás una guía, re-corrés los evals, mirás si la tasa subió. Eso es ingeniería; lo otro es astrología.</p>
+      <div class="callout reveal">
+        <div class="callout-label">Honestidad intelectual</div>
+        <p>Los evals <strong>reducen incertidumbre</strong>, no prueban corrección. El "harness de comportamiento" —garantizar que la app hace funcionalmente lo correcto— sigue sin estar resuelto en la industria. Cualquiera que te venda certeza total te está vendiendo algo.</p>
+      </div>
+
+      <h3>04 · Autonomía — siempre, preguntar, nunca</h3>
+      <p>El componente más subestimado, y el que más te salva de un desastre. Consiste en declarar, explícitamente, qué puede hacer el agente sin permiso, qué tiene que consultar primero, y qué no debe tocar jamás. Sin esta tabla, el agente "ayuda" tocando una migración de base de datos un viernes a las 18:00, con toda la buena intención del mundo.</p>
+      <div class="figure reveal">
+        <div class="sem">
+          <div class="always"><div class="h">SIEMPRE</div><ul><li>Agregar tests</li><li>Arreglar tests rotos</li><li>Refactor dentro de una capa</li><li>Fixes de formato/lint</li></ul></div>
+          <div class="ask"><div class="h">PREGUNTAR</div><ul><li>Endpoint o página nueva</li><li>Cambio de esquema / migración</li><li>Nueva dependencia</li><li>Tocar permisos / auth</li></ul></div>
+          <div class="never"><div class="h">NUNCA</div><ul><li>Migrar datos en producción</li><li>Tocar PII / cifrado</li><li>Borrar datos</li><li>Push directo a main</li></ul></div>
+        </div>
+        <p class="figure-caption">La tabla de autonomía · ajustala a tu radio de explosión</p>
+      </div>
+      <p>Y va de la mano de una <strong>escalera</strong>: empezás en el nivel más bajo (el agente abre un PR, vos revisás y mergeás) y subís un escalón solo cuando los sensores dejan de sorprenderte. No saltes niveles por entusiasmo; cada salto se gana cuando el harness te da confianza medida, no ganas.</p>
+
+      <h3>05 · Trazas — poder ver qué pasó</h3>
+      <p>Lo último: observabilidad. Dos capas. La primera es hacer que la observabilidad de <em>runtime</em> sea legible para el agente —que pueda consultar logs y métricas <em>durante</em> una tarea, no solo vos después en un dashboard—. La segunda son las trazas de la <em>trayectoria</em> del agente: prompts, llamadas a herramientas, diffs. Eso es lo que te deja responder "¿por qué carajo hizo eso?" cuando algo sale raro, y alimentar el steering loop con datos en vez de corazonadas.</p>
+
+      <hr/>
+
+      <h2>No lo construyas todo de una</h2>
+      <p>El error clásico, ahora que viste las cinco piezas, es querer construirlas todas el mismo fin de semana. No lo hagas. Un harness no se diseña de una; <strong>se cultiva</strong>, y cada pieza se gana su lugar demostrando que te ahorra tiempo.</p>
+      <div class="figure reveal">
+        <svg viewBox="0 0 660 130" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>El método incremental: medir un baseline, agregar guías, agregar sensores, volver a medir</title>
+          <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7DD3FC"/></marker></defs>
+          <g font-family="Inter" font-size="13" fill="#E2E8F0" text-anchor="middle">
+            <rect x="10" y="42" width="130" height="46" rx="9" fill="rgba(8,16,31,.6)" stroke="var(--border)"/><text x="75" y="62">1 · Baseline</text><text x="75" y="79" font-family="JetBrains Mono" font-size="9" fill="#94A3B8">medí sin harness</text>
+            <rect x="180" y="42" width="130" height="46" rx="9" fill="rgba(8,16,31,.6)" stroke="var(--guia)"/><text x="245" y="62">2 · Guías</text><text x="245" y="79" font-family="JetBrains Mono" font-size="9" fill="#7DD3FC">AGENTS.md</text>
+            <rect x="350" y="42" width="130" height="46" rx="9" fill="rgba(8,16,31,.6)" stroke="var(--sensor)"/><text x="415" y="62">3 · Sensores</text><text x="415" y="79" font-family="JetBrains Mono" font-size="9" fill="#4FA9E8">tests, linters</text>
+            <rect x="520" y="42" width="130" height="46" rx="9" fill="rgba(8,16,31,.6)" stroke="var(--accent-glow)"/><text x="585" y="62">4 · Medí</text><text x="585" y="79" font-family="JetBrains Mono" font-size="9" fill="#94A3B8">¿subió la tasa?</text>
+          </g>
+          <line class="flow" x1="142" y1="65" x2="178" y2="65" stroke="#7DD3FC" stroke-width="2" marker-end="url(#ar2)"/>
+          <line class="flow" x1="312" y1="65" x2="348" y2="65" stroke="#7DD3FC" stroke-width="2" marker-end="url(#ar2)"/>
+          <line class="flow" x1="482" y1="65" x2="518" y2="65" stroke="#7DD3FC" stroke-width="2" marker-end="url(#ar2)"/>
+          <path class="flow" d="M585,92 C585,118 75,118 75,92" fill="none" stroke="#7DD3FC" stroke-width="1.5" stroke-dasharray="4 6" marker-end="url(#ar2)"/>
+        </svg>
+        <p class="figure-caption">Cada vuelta del bucle, una pieza más · si no mueve la aguja, sobra</p>
+      </div>
+      <p>Medí primero un baseline (cómo le va al agente sin nada). Agregá la capa de guías y volvé a medir. Después los sensores, y medí de nuevo. Si una pieza no mueve el número, sacala — no todo repo necesita todo. Este enfoque, además de ahorrarte semanas, es el que distingue a un harness engineer con criterio de uno que coleccionó herramientas porque las vio en un blog.</p>
+
+      <h2>Las trampas (porque no es magia)</h2>
+      <p>Para cerrar, las cuatro cosas que más fácil te hacen tropezar:</p>
+      <ul>
+        <li><strong>Cargo cult.</strong> OpenAI tenía un problema de throughput y siete ingenieros. Vos quizás sos uno. No copies su infraestructura completa; copiá los principios y dimensioná a tu escala.</li>
+        <li><strong>El sensor mentiroso.</strong> Ya lo dijimos, lo repetimos porque cuesta caro: confiar en un check que no mide lo que creés es peor que volar a ciegas.</li>
+        <li><strong>Confundir "tests verdes" con "correcto".</strong> Un agente puede escribir el código <em>y</em> el test que blinda su propia decisión equivocada. El verde no te protege del criterio.</li>
+        <li><strong>Creer que el humano sobra.</strong> El harness no elimina tu juicio; lo concentra donde más vale. Seguís siendo el que dirige.</li>
+      </ul>
+
+      <h2>El patrón, generalizado</h2>
+      <p>¿Cuándo aplica todo esto? En el instante en que dejás que un agente toque tu repo con algo de autonomía, <strong>ya estás haciendo harness engineering</strong> — la única pregunta es si lo hacés a propósito o por accidente. No hace falta apuntar a "un millón de líneas sin código humano" para que rinda. Un <code>AGENTS.md</code> de cien líneas, dos sensores que atrapan tus errores más frecuentes y una tabla de autonomía ya te cambian la relación con la herramienta: de rezarle a cada PR, a confiar en el sistema que lo rodea.</p>
+      <p>Porque al final, la frase con la que abrimos era una trampa. El problema nunca fue el modelo. Tampoco eras vos. Era el <strong>vacío</strong> entre los dos — todo lo que sabías y nunca escribiste. Harness engineering es, simplemente, llenar ese vacío a propósito.</p>
+
+      <div class="footer-cta reveal">
+        <h3>En la parte 2: de la teoría al barro</h3>
+        <p>Tomé un SaaS real, multi-tenant, en producción, y le apliqué exactamente esto: medí un baseline, escribí el harness, y volví a medir. El agente pasó de inventar políticas de permisos a <em>superar mi propio código</em> — dos veces. Con números, diffs y un par de momentos en los que el que medía (yo) quedó en ridículo.</p>
+        <div class="links">
+          <a href="#">Parte 2 · Harness engineering en un SaaS real → (próximamente)</a>
+          <a href="https://github.com/NeryC">github.com/NeryC</a>
+        </div>
+      </div>
+
+      <div class="tag-pills">
+        <span class="tag-pill">Harness Engineering</span>
+        <span class="tag-pill">AI Agents</span>
+        <span class="tag-pill">AGENTS.md</span>
+        <span class="tag-pill">Developer Tooling</span>
+        <span class="tag-pill">LLM Systems</span>
+      </div>
+    </div>
+  </article>
+
+  <footer class="site-footer">
+    Nery Cano · Senior Full-Stack Engineer · Escrito a mano (con un harness al lado)
+  </footer>
+
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+</body>
+</html>

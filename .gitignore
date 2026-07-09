@@ -1,0 +1,7 @@
+# FUSE mount artifacts (appear when a file is deleted while still open)
+.fuse_hidden*
+
+# OS junk
+Thumbs.db
+.DS_Store
+desktop.ini

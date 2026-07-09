@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harness Engineering: domando agentes de IA — Nery Cano</title>
+  <meta name="description" content="Qué es harness engineering y cómo se implementa: el arnés que hace que un agente de IA escriba código fiable. Guía ilustrada." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:48px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:48px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.88em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .figure{margin:40px -8px;padding:24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+
+    /* ---- animaciones (lo que agrego) ---- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes pulse{0%,100%{r:38;opacity:1}50%{r:42;opacity:.85}}
+    @keyframes dash{to{stroke-dashoffset:0}}
+    @keyframes flow{to{stroke-dashoffset:-28}}
+    .ring{transform-box:fill-box;transform-origin:center;animation:spin 16s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .pulse{animation:pulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:6 8;animation:flow 1s linear infinite}
+    /* matriz */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .5s ease}
+    .in .mcell{opacity:1;transform:none}
+    .in .mcell:nth-child(1){transition-delay:.05s}.in .mcell:nth-child(2){transition-delay:.18s}
+    .in .mcell:nth-child(3){transition-delay:.31s}.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:14px;color:var(--muted)}
+    .g{border-top:3px solid var(--accent-glow)} .g .mlbl{color:var(--accent-glow)}
+    .s{border-top:3px solid var(--accent)} .s .mlbl{color:var(--accent-light)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    @media (max-width:600px){h1.article-title{font-size:32px}.article-subtitle{font-size:18px}.article-body{font-size:17px}}
+  </style>
+</head>
+<body>
+  <nav class="header-nav">
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todo lo que escribo</a>
+    <a href="#">English ↗</a>
+  </nav>
+  <article class="article">
+    <div class="article-meta">Borrador · Parte 1 de 2 · 12 min de lectura</div>
+    <h1 class="article-title">Harness Engineering: domando agentes de IA</h1>
+    <p class="article-subtitle">Cómo lograr que un agente de IA escriba código que no tengas que rezar para que funcione. Spoiler: el problema no es el modelo — es tu repo.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+    </div>
+
+    <div class="article-body">
+      <p reveal><em>Esta es la primera de dos partes. Acá: qué es harness engineering y cómo se arma. En la parte 2 te muestro cómo lo apliqué a un SaaS real — con números.</em></p>
+
+      <p reveal>Le pedís a tu agente de IA que arregle un bug de una línea. Vuelve con 14 archivos modificados, un README que nadie pidió y, por las dudas, te borró dos tests. ¿Te suena?</p>
+
+      <p reveal>Los agentes ya escriben código de verdad. El tema es que escriben como un pasante brillante en su primer día: rapidísimo, con confianza absoluta, y sin la menor idea de las reglas no escritas de tu casa.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">La tesis</div>
+        <p>No los vas a arreglar pidiéndoles "por favor portate bien". Los arreglás diseñando el entorno donde trabajan. Eso es <strong>harness engineering</strong>.</p>
+      </div>
+
+      <h2 reveal>Agente = Modelo + Harness</h2>
+      <p reveal>Un agente no es "el modelo". Es el modelo <strong>más todo lo que lo rodea</strong>: instrucciones, herramientas, tests, límites, contexto. Al modelo no lo podés cambiar (lo entrenó otro). El <strong>harness —el arnés— es 100% tuyo</strong>. Es la palanca real.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 720 220" xmlns="http://www.w3.org/2000/svg" role="img">
+          <title>Agente igual a modelo más harness</title>
+          <!-- Modelo -->
+          <circle cx="120" cy="110" r="38" fill="rgba(46,117,182,.18)" stroke="var(--accent)" stroke-width="1.5" class="pulse"/>
+          <text x="120" y="104" text-anchor="middle" font-family="Inter" font-size="26">🧠</text>
+          <text x="120" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#94A3B8">Modelo</text>
+          <text x="120" y="186" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748B">no lo controlás</text>
+          <text x="250" y="118" text-anchor="middle" font-family="Inter" font-size="34" fill="#64748B">+</text>
+          <!-- Harness -->
+          <circle cx="380" cy="110" r="52" fill="none" stroke="var(--accent-glow)" stroke-width="2" stroke-dasharray="5 7" class="ring"/>
+          <circle cx="380" cy="110" r="34" fill="rgba(125,211,252,.12)" stroke="var(--accent-glow)" stroke-width="1.5"/>
+          <text x="380" y="104" text-anchor="middle" font-size="24">🦮</text>
+          <text x="380" y="178" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#94A3B8">Harness</text>
+          <text x="380" y="194" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7DD3FC">100% tuyo</text>
+          <text x="510" y="118" text-anchor="middle" font-family="Inter" font-size="30" fill="#64748B">=</text>
+          <!-- Agente -->
+          <circle cx="630" cy="110" r="40" fill="rgba(31,58,104,.5)" stroke="var(--border)" stroke-width="1.5"/>
+          <text x="630" y="104" text-anchor="middle" font-size="26">🤖</text>
+          <text x="630" y="170" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#94A3B8">Agente</text>
+          <text x="630" y="186" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#64748B">fiable</text>
+        </svg>
+        <p class="figure-caption">Harness engineering = diseñar <strong>el único factor que controlás</strong></p>
+      </div>
+
+      <h2 reveal>Dos ejes, cuatro cuadrantes</h2>
+      <p reveal>Todo control de un harness cae en esta grilla. Entendela y entendiste el 80% del tema.</p>
+
+      <div class="figure reveal">
+        <div class="axis">◀ barato y confiable · COMPUTACIONAL &nbsp;|&nbsp; INFERENCIAL · caro y con criterio ▶</div>
+        <div class="mtx">
+          <div class="mcell g"><div class="mlbl">Guía · computacional</div><h4>Orienta antes · gratis</h4><ul><li>Esquemas y tipos</li><li>Plantillas</li><li>Codemods</li></ul></div>
+          <div class="mcell g"><div class="mlbl">Guía · inferencial</div><h4>Orienta antes · con criterio</h4><ul><li>AGENTS.md</li><li>Skills</li><li>Convenciones</li></ul></div>
+          <div class="mcell s"><div class="mlbl">Sensor · computacional</div><h4>Atrapa después · gratis</h4><ul><li>Tests</li><li>Linters / tipos</li><li>Escaneo de secretos</li></ul></div>
+          <div class="mcell s"><div class="mlbl">Sensor · inferencial</div><h4>Atrapa después · con criterio</h4><ul><li>Revisión por IA</li><li>"LLM como juez"</li></ul></div>
+        </div>
+        <p class="figure-caption"><strong>Guías</strong> (feedforward) orientan antes · <strong>Sensores</strong> (feedback) atrapan después</p>
+      </div>
+
+      <p reveal>La regla de oro: usá el cuadrante <strong>barato</strong> siempre que puedas, y reservá el caro para lo que ningún test puede juzgar.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">Toque de realidad</div>
+        <p>Sí, podrías poner un LLM a revisar cada coma. También podrías pagar un sueldo por corregir typos. No lo hagas.</p>
+      </div>
+
+      <hr reveal/>
+      <h2 reveal>Hasta acá la muestra</h2>
+      <p reveal>Faltan el bucle de autocorrección, los componentes de un harness real (contexto, sensores, evals, autonomía, trazas) y cómo se arma de a poco sin volverte loco. Si el estilo y el tono te cierran, sigo con el post completo.</p>
+    </div>
+  </article>
+
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.15});
+    document.querySelectorAll('[reveal],.figure,.callout').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+</body>
+</html>
