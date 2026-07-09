@@ -157,7 +157,6 @@
   </nav>
   <article class="article">
     <!-- structure: pattern-essay — sin proyecto propio ni postmortem; se omiten figura de arquitectura y sección de bugs, según BLOG_STRUCTURE §10. -->
-    <!-- destino de publicación: blog/es/harness-engineering.html -->
     <div class="article-meta">26 jun 2026 · Parte 1 de 2 · ~16 min</div>
     <h1 class="article-title">Harness Engineering: cómo diseñar repos donde la IA no la caga</h1>
     <p class="article-subtitle">Guías, sensores, contexto, evals y límites de autonomía: el arnés que convierte a un agente de IA de pasante caótico en colega fiable. Spoiler: el problema no es el modelo — es tu repo.</p>
@@ -215,7 +214,7 @@
           <!-- etiquetas de lo que pones tú -->
           <text x="300" y="300" text-anchor="middle" font-family="Inter" font-size="13" fill="#94A3B8">AGENTS.md · tests · linters · esquemas · límites · contexto</text>
         </svg>
-        <p class="figure-caption">Lo único que controlás es <strong>el anillo de afuera</strong> · y alcanza</p>
+        <p class="figure-caption">Figura 1 · <strong>El único anillo que controlás.</strong> Es el de afuera — y alcanza.</p>
       </div>
 
       <p>Fijate la trampa del lenguaje: cuando alguien dice "el agente alucinó" o "el agente es malo", casi siempre se refiere al modelo. Pero el modelo es la capa que <em>no</em> podés cambiar. La pregunta útil no es "¿cómo consigo un modelo mejor?", sino <strong>"¿qué le falta a mi harness para que este modelo no necesite adivinar?"</strong>. Ese reencuadre es, literalmente, el trabajo.</p>
@@ -249,7 +248,7 @@
           <div class="mcell s"><div class="mlbl">Sensor · computacional</div><h4>Atrapa después · gratis</h4><ul><li>Tests</li><li>Linters / type-checkers</li><li>Escaneo de secretos</li></ul></div>
           <div class="mcell s"><div class="mlbl">Sensor · inferencial</div><h4>Atrapa después · con criterio</h4><ul><li>Revisión de código por IA</li><li>"LLM como juez"</li></ul></div>
         </div>
-        <p class="figure-caption"><strong>Guías</strong> orientan antes (feedforward) · <strong>Sensores</strong> atrapan después (feedback)</p>
+        <p class="figure-caption">Figura 2 · <strong>Dos ejes, cuatro cuadrantes.</strong> Las guías orientan antes (feedforward); los sensores atrapan después (feedback).</p>
       </div>
 
       <p>De acá sale la <strong>regla de oro</strong>: preferí siempre el cuadrante computacional cuando exista. Un test que corre en milisegundos y da un resultado fiable vale más que un juez-LLM caro que a veces inventa. Lo inferencial se reserva para lo que <em>ningún</em> test puede juzgar: ¿esto está sobre-diseñado? ¿malinterpretó el pedido? ¿"esto no se hace así acá"?</p>
@@ -291,7 +290,7 @@
           <path class="flow" d="M540,170 C540,235 100,235 100,170" fill="none" stroke="#7DD3FC" stroke-width="2" marker-end="url(#ar)"/>
           <text x="320" y="250" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#7DD3FC">se autocorrige (sin que lo veas)</text>
         </svg>
-        <p class="figure-caption">El sensor no solo dice "mal" · le dice al agente <strong>cómo arreglarlo</strong></p>
+        <p class="figure-caption">Figura 3 · <strong>El bucle de dirección.</strong> Un sensor no solo dice "mal" — le dice al agente <em>cómo</em> arreglarlo.</p>
       </div>
 
       <p>El mejor truco de este bucle es sutil: un buen sensor no solo grita "¡error!", sino que <strong>inyecta la instrucción de arreglo</strong> en el contexto del agente. Un mensaje de linter que dice "usá <code>X</code> en vez de <code>Y</code>, así: …" es feedback optimizado para que el modelo se corrija solo. Böckeler lo llama, con humor, "una inyección de prompt de las buenas".</p>
@@ -311,7 +310,7 @@
           <div class="comp"><div class="n">04</div><h4>Autonomía</h4><p>Qué hace siempre, qué pregunta primero, qué no toca nunca.</p></div>
           <div class="comp full"><div class="n">05</div><h4>Trazas</h4><p>Observabilidad: poder mirar qué hizo el agente y por qué, para depurar y mejorar el bucle.</p></div>
         </div>
-        <p class="figure-caption">Los cinco componentes de un harness · ninguno es opcional, todos son incrementales</p>
+        <p class="figure-caption">Figura 4 · <strong>Los cinco componentes.</strong> Ninguno es opcional; todos son incrementales.</p>
       </div>
 
       <h3>01 · Contexto — que no tenga que adivinar</h3>
@@ -342,7 +341,7 @@
           <div class="ask"><div class="h">PREGUNTAR</div><ul><li>Endpoint o página nueva</li><li>Cambio de esquema / migración</li><li>Nueva dependencia</li><li>Tocar permisos / auth</li></ul></div>
           <div class="never"><div class="h">NUNCA</div><ul><li>Migrar datos en producción</li><li>Tocar PII / cifrado</li><li>Borrar datos</li><li>Push directo a main</li></ul></div>
         </div>
-        <p class="figure-caption">La tabla de autonomía · ajustala a tu radio de explosión</p>
+        <p class="figure-caption">Figura 5 · <strong>La tabla de autonomía.</strong> Ajustala a tu radio de explosión.</p>
       </div>
       <p>Y va de la mano de una <strong>escalera</strong>: empezás en el nivel más bajo (el agente abre un PR, vos revisás y mergeás) y subís un escalón solo cuando los sensores dejan de sorprenderte. No saltes niveles por entusiasmo; cada salto se gana cuando el harness te da confianza medida, no ganas.</p>
 
@@ -368,7 +367,7 @@
           <line class="flow" x1="482" y1="65" x2="518" y2="65" stroke="#7DD3FC" stroke-width="2" marker-end="url(#ar2)"/>
           <path class="flow" d="M585,92 C585,118 75,118 75,92" fill="none" stroke="#7DD3FC" stroke-width="1.5" stroke-dasharray="4 6" marker-end="url(#ar2)"/>
         </svg>
-        <p class="figure-caption">Cada vuelta del bucle, una pieza más · si no mueve la aguja, sobra</p>
+        <p class="figure-caption">Figura 6 · <strong>Una pieza por vuelta.</strong> Si no mueve el número, sobra.</p>
       </div>
       <p>Medí primero un baseline (cómo le va al agente sin nada). Agregá la capa de guías y volvé a medir. Después los sensores, y medí de nuevo. Si una pieza no mueve el número, sacala — no todo repo necesita todo. Este enfoque, además de ahorrarte semanas, es el que distingue a un harness engineer con criterio de uno que coleccionó herramientas porque las vio en un blog.</p>
 
