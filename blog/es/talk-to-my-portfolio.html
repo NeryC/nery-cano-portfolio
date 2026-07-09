@@ -313,10 +313,10 @@
        de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
        columna crece en proporción y la medida se mantiene entre 91 y 96
        caracteres. Todo lo que vive dentro de .article se expresa en em para
-       que siga la escala (metadata, captions, callouts, bug-rows, código).
-       Sangran solo las figuras con grid, el código y las tablas, y apenas
-       1.3x la columna: más que eso desconecta el bloque del texto. El banner
-       y las figuras cuyo unico hijo es un elemento svg NO sangran.
+       que siga la escala: metadata, captions, callouts, bug-rows, código y
+       el interior de las figuras.
+       NADA sangra fuera de la columna. Un bloque más ancho que el texto al
+       que pertenece se lee como un error de maquetado, no como jerarquía.
        Debajo de 1240px, comportamiento original. */
     @media (min-width: 1240px) {
       .header-nav, .site-footer, .article { max-width: 920px; }
@@ -339,19 +339,17 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
-         ambos se ve rota. Se alinea con la columna. */
-      .article-body > .figure,
-      .article-body > pre,
-      .article-body > table {
-        width: min(1200px, 94vw);
-        max-width: none;
-        margin-left: calc((100% - min(1200px, 94vw)) / 2);
-        margin-right: 0;
-      }
-      .article-body > .figure:has(> svg) {
-        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
-      }
+      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .figure { padding: 1em 0.8em; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
     }
     @media (min-width: 1600px) {
       .header-nav, .site-footer, .article { max-width: 1000px; }
@@ -374,19 +372,17 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
-         ambos se ve rota. Se alinea con la columna. */
-      .article-body > .figure,
-      .article-body > pre,
-      .article-body > table {
-        width: min(1320px, 94vw);
-        max-width: none;
-        margin-left: calc((100% - min(1320px, 94vw)) / 2);
-        margin-right: 0;
-      }
-      .article-body > .figure:has(> svg) {
-        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
-      }
+      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .figure { padding: 1em 0.8em; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
     }
     @media (min-width: 2000px) {
       .header-nav, .site-footer, .article { max-width: 1090px; }
@@ -409,19 +405,17 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
-         ambos se ve rota. Se alinea con la columna. */
-      .article-body > .figure,
-      .article-body > pre,
-      .article-body > table {
-        width: min(1440px, 94vw);
-        max-width: none;
-        margin-left: calc((100% - min(1440px, 94vw)) / 2);
-        margin-right: 0;
-      }
-      .article-body > .figure:has(> svg) {
-        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
-      }
+      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .figure { padding: 1em 0.8em; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
     }
     @media (min-width: 2400px) {
       .header-nav, .site-footer, .article { max-width: 1200px; }
@@ -444,19 +438,17 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
-         ambos se ve rota. Se alinea con la columna. */
-      .article-body > .figure,
-      .article-body > pre,
-      .article-body > table {
-        width: min(1580px, 94vw);
-        max-width: none;
-        margin-left: calc((100% - min(1580px, 94vw)) / 2);
-        margin-right: 0;
-      }
-      .article-body > .figure:has(> svg) {
-        width: auto; max-width: 100%; margin-left: 0; margin-right: 0;
-      }
+      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .figure { padding: 1em 0.8em; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
     }
 </style>
 </head>
