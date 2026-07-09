@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Harness Engineering en un SaaS real: medí, escribí las reglas, volví a medir — Nery Cano</title>
+  <meta name="description" content="Le di a un agente 5 commits reales de mi SaaS multi-tenant sin decirle nada. Inventó una política de permisos y escribió 6 tests que la blindaban." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Harness Engineering en un SaaS real — Nery Cano" />
+  <meta property="og:description" content="Le di a un agente 5 commits reales de mi SaaS multi-tenant sin decirle nada. Inventó una política de permisos y escribió 6 tests que la blindaban." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_6_harness_adminrent_banner.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/harness-engineering-adminrent.html" />
+  <meta property="article:published_time" content="2026-07-09" />
+  <meta property="article:tag" content="Harness Engineering" />
+  <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="AGENTS.md" />
+  <meta property="article:tag" content="Evals" />
+  <meta property="article:tag" content="RBAC" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Harness Engineering en un SaaS real" />
+  <meta name="twitter:description" content="Le di a un agente 5 commits reales de mi SaaS multi-tenant sin decirle nada. Inventó una política de permisos y escribió 6 tests que la blindaban." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_6_harness_adminrent_banner.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/harness-engineering-adminrent.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/harness-engineering-adminrent.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/harness-engineering-adminrent.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root {
+      --primary: #1F3A68;
+      --accent: #2E75B6;
+      --accent-light: #4FA9E8;
+      --accent-glow: #7DD3FC;
+      --ink: #0F172A;
+      --bg-deep: #06101F;
+      --bg-mid: #0E1F3A;
+      --muted: #94A3B8;
+      --text: #E2E8F0;
+      --text-strong: #F1F5F9;
+      --border: rgba(148, 163, 184, 0.18);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: "Source Serif 4", Georgia, serif;
+      font-size: 19px;
+      line-height: 1.7;
+      color: var(--text);
+      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
+                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
+                  var(--bg-deep);
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+    a { color: var(--accent-light); text-decoration: none; }
+    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
+    .header-nav {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 24px 0;
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .header-nav a { color: var(--muted); }
+    .header-nav a:hover { color: var(--accent-glow); }
+    .article {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    .article-meta {
+      margin-top: 56px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+    }
+    h1.article-title {
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -1.2px;
+      line-height: 1.15;
+      color: var(--text-strong);
+      margin: 14px 0 12px;
+    }
+    .article-subtitle {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-style: italic;
+      font-size: 22px;
+      line-height: 1.4;
+      color: var(--muted);
+      margin: 0 0 32px;
+    }
+    .byline {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .byline-name {
+      font-family: "Inter", system-ui, sans-serif;
+      font-weight: 600;
+      color: var(--text-strong);
+      font-size: 15px;
+    }
+    .byline-meta {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .banner-img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 8px 0 40px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+    .article-body {
+      font-size: 19px;
+      line-height: 1.75;
+      color: var(--text);
+    }
+    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
+      font-family: "Inter", system-ui, sans-serif;
+      color: var(--text-strong);
+      margin: 48px 0 14px;
+      letter-spacing: -0.4px;
+      line-height: 1.25;
+    }
+    .article-body h1 { font-size: 32px; font-weight: 800; }
+    .article-body h2 { font-size: 26px; font-weight: 700; }
+    .article-body h3 { font-size: 21px; font-weight: 700; }
+    .article-body p { margin: 18px 0; }
+    .article-body strong { color: var(--text-strong); font-weight: 700; }
+    .article-body em { color: var(--text); }
+    .article-body ul, .article-body ol { padding-left: 28px; }
+    .article-body li { margin: 8px 0; }
+    .article-body blockquote {
+      border-left: 3px solid var(--accent);
+      margin: 24px 0;
+      padding: 4px 24px;
+      color: var(--muted);
+      font-style: italic;
+    }
+    .article-body code {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 0.88em;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(46,117,182,0.25);
+    }
+    .article-body pre {
+      background: #1a1f2e !important;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px !important;
+      overflow-x: auto;
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 24px 0;
+    }
+    .article-body pre code {
+      background: transparent;
+      border: none;
+      color: inherit;
+      padding: 0;
+      font-size: 14px;
+    }
+    .article-body hr {
+      border: none;
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+    .article-body img { max-width: 100%; border-radius: 6px; }
+    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .article-body th, .article-body td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
+
+    /* Didactic figures */
+    .figure {
+      margin: 40px -8px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
+    }
+    .figure svg { display: block; width: 100%; height: auto; }
+    .figure-caption {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 18px;
+      text-align: center;
+    }
+    .figure-caption strong {
+      color: var(--accent-glow);
+      letter-spacing: 1.4px;
+    }
+    .callout {
+      margin: 32px 0;
+      padding: 18px 22px;
+      border-radius: 10px;
+      background: rgba(46,117,182,0.10);
+      border: 1px solid rgba(46,117,182,0.30);
+      border-left: 3px solid var(--accent-glow);
+    }
+    .callout-label {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent-glow);
+      margin-bottom: 6px;
+    }
+    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
+    .bug-row {
+      display: flex;
+      gap: 14px;
+      align-items: baseline;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .bug-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--accent-glow);
+      flex-shrink: 0;
+      width: 48px;
+    }
+    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
+    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
+
+    .footer-cta {
+      margin-top: 56px;
+      padding: 32px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
+    }
+    .footer-cta h3 {
+      margin: 0 0 12px;
+      font-family: "Inter", system-ui, sans-serif;
+      font-size: 20px;
+      color: var(--text-strong);
+    }
+    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
+    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
+    .footer-cta .links a {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      letter-spacing: 1px;
+      color: var(--accent-glow);
+    }
+    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-pill {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 14px;
+      background: rgba(46,117,182,0.15);
+      color: var(--accent-glow);
+      border: 1px solid rgba(46,117,182,0.3);
+      letter-spacing: 1px;
+    }
+    .site-footer {
+      max-width: 760px;
+      margin: 60px auto 40px;
+      padding: 24px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 1px;
+      border-top: 1px solid var(--border);
+    }
+    @media (max-width: 600px) {
+      body { font-size: 17px; }
+      h1.article-title { font-size: 32px; }
+      .article-subtitle { font-size: 18px; }
+      .article-body { font-size: 17px; }
+      .article-body h1 { font-size: 26px; }
+      .article-body h2 { font-size: 22px; }
+      .figure { margin: 32px -8px; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- destino de publicación: blog/es/harness-engineering-adminrent.html -->
+  <nav class="header-nav">
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todos los artículos</a>
+    <a href="../harness-engineering-adminrent.html">English ↗</a>
+  </nav>
+
+  <article class="article">
+    <!-- structure: experiment-report — el "proyecto" es un experimento sobre un SaaS privado; no hay repo público ni live demo, así que los quick-links apuntan a la Parte 1 y al portfolio. -->
+    <div class="article-meta">9 de julio, 2026 · 14 min de lectura · Parte 2 de 2</div>
+    <h1 class="article-title">Harness engineering en un SaaS real: medí, escribí las reglas, volví a medir</h1>
+    <p class="article-subtitle">Le di a un agente cinco commits reales de mi SaaS multi-tenant y no le dije nada sobre el dominio. Inventó una política de permisos, la equivocó, y escribió seis tests que la blindaban en verde.</p>
+    <div class="byline">
+      <div>
+        <div class="byline-name">Nery Cano</div>
+        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+      </div>
+    </div>
+    <img class="banner-img" src="../post_6_harness_adminrent_banner.png" alt="Harness engineering en un SaaS real: baseline, AGENTS.md, delta" />
+
+    <div class="article-body">
+
+      <p><em>En la Parte 1 conté qué es un harness y cómo se arma. Acá lo pongo a prueba sobre AdminRent, un SaaS multi-tenant en producción: medí un baseline sin harness, escribí las reglas que vivían en mi cabeza, y volví a medir. Lo que encontré no fue lo que esperaba — ni sobre el agente, ni sobre mí.</em></p>
+
+      <p>La tarea era de manual: <em>"agregá <code>GET /units/&lt;id&gt;/members</code> que devuelva los miembros de la unidad con su email"</em>. El agente volvió con código que yo habría aprobado en un PR sin pestañear. RBAC con decorador, chequeo de acceso por unidad, filtro multi-tenant correcto, la lógica en el service y no en el endpoint. Seis tests, incluyendo los negativos.</p>
+
+      <pre><code class="language-python">@require_role("admin", "owner", "tenant")
+def get_unit_members(unit_id):
+    ...</code></pre>
+
+      <p>Falta el <code>portero</code>. En AdminRent el portero <strong>necesita</strong> ver los miembros de una unidad: es literalmente su trabajo, identificar a quién deja pasar. El agente, razonando sobre privacidad, decidió que un guardia no debería ver emails de residentes. Es una conclusión sensata. Es también, exactamente, lo contrario de lo que mi producto decidió hace dos años.</p>
+
+      <p>Y después escribió esto:</p>
+
+      <pre><code class="language-python">def test_portero_is_forbidden(client, portero_token):
+    r = client.get(f"/units/{unit_id}/members", headers=portero_token)
+    assert r.status_code == 403</code></pre>
+
+      <p>Un test que afirma su propia decisión equivocada como si fuera la especificación. Si eso se mergeaba: portero roto en producción, y seis tests en verde jurando que todo está bien. El agente no falló como programador. Falló porque una regla que vive en mi cabeza no vivía en mi repo.</p>
+
+      <p>🔗 <strong><a href="harness-engineering.html">Parte 1 · Qué es harness engineering y cómo se arma</a></strong> · <a href="../../">portfolio</a> · <a href="https://github.com/NeryC">github.com/NeryC</a></p>
+
+      <hr />
+
+      <h2>Qué es esto, en un párrafo</h2>
+
+      <p>Tomé <strong>AdminRent-backend</strong> —una API Flask multi-tenant para administrar condominios, en producción, con 458 tests— y corrí un experimento en tres actos. <strong>Acto 1:</strong> medir cómo resuelve un agente cinco tareas reales <em>sin</em> ninguna ayuda. <strong>Acto 2:</strong> escribir un <code>AGENTS.md</code> que ataque exactamente los fallos que el acto 1 encontró. <strong>Acto 3:</strong> re-correr las mismas tareas y mirar el delta. La conclusión, adelantada: el agente <em>ya es</em> un buen programador. Lo que le falta no es capacidad — es contexto. Y dos veces, con el contexto puesto, escribió mejor política de seguridad que la que hay hoy en mi <code>main</code>.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+          <defs>
+            <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto">
+              <path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/>
+            </marker>
+          </defs>
+
+          <rect x="14" y="26" width="150" height="62" rx="9" fill="#122845" stroke="rgba(148,163,184,0.3)"/>
+          <text x="89" y="50" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="600">commit padre</text>
+          <text x="89" y="70" text-anchor="middle" fill="#94A3B8" font-size="11" font-family="JetBrains Mono, monospace">BASE = oráculo^</text>
+
+          <line x1="164" y1="57" x2="222" y2="57" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
+
+          <rect x="226" y="16" width="180" height="82" rx="9" fill="#122845" stroke="rgba(125,211,252,0.45)"/>
+          <text x="316" y="40" text-anchor="middle" fill="#7DD3FC" font-size="13" font-weight="600">worktree aislado</text>
+          <text x="316" y="60" text-anchor="middle" fill="#94A3B8" font-size="11">agente + prompt mínimo</text>
+          <text x="316" y="80" text-anchor="middle" fill="#94A3B8" font-size="11">(nunca ve el oráculo)</text>
+
+          <line x1="406" y1="57" x2="464" y2="57" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
+
+          <rect x="468" y="26" width="150" height="62" rx="9" fill="#122845" stroke="rgba(148,163,184,0.3)"/>
+          <text x="543" y="50" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="600">diff del agente</text>
+          <text x="543" y="70" text-anchor="middle" fill="#94A3B8" font-size="11" font-family="JetBrains Mono, monospace">score.sh → C0 C1 C2</text>
+
+          <rect x="14" y="196" width="150" height="62" rx="9" fill="#0E1F3A" stroke="rgba(148,163,184,0.3)"/>
+          <text x="89" y="220" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="600">commit oráculo</text>
+          <text x="89" y="240" text-anchor="middle" fill="#94A3B8" font-size="11">lo que mergeé de verdad</text>
+
+          <path d="M89,88 L89,196" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <text x="99" y="145" fill="#94A3B8" font-size="10" font-family="JetBrains Mono, monospace">historial real</text>
+
+          <path d="M164,227 L360,227 L360,150" stroke="#94A3B8" stroke-width="1.2" fill="none"/>
+          <path d="M543,88 L543,150" stroke="#94A3B8" stroke-width="1.2" fill="none"/>
+          <rect x="300" y="150" width="303" height="1" fill="none"/>
+
+          <rect x="330" y="150" width="240" height="56" rx="9" fill="rgba(46,117,182,0.16)" stroke="rgba(125,211,252,0.45)"/>
+          <text x="450" y="172" text-anchor="middle" fill="#7DD3FC" font-size="13" font-weight="600">comparación (juez humano)</text>
+          <text x="450" y="192" text-anchor="middle" fill="#94A3B8" font-size="11">¿cumple la intención? ¿scope creep?</text>
+
+          <text x="450" y="240" text-anchor="middle" fill="#94A3B8" font-size="11">el oráculo es <tspan fill="#F1F5F9">referencia</tspan>, no verdad absoluta</text>
+          <text x="450" y="262" text-anchor="middle" fill="#94A3B8" font-size="11">— dos veces el agente lo superó —</text>
+        </svg>
+        <p class="figure-caption">Figure 1 · <strong>Replay de commits.</strong> Por cada tarea se levanta un worktree en el commit <em>anterior</em> al cambio, se le da al agente la intención sin la solución, y se compara su diff contra el commit que realmente mergeé.</p>
+      </div>
+
+      <h2>Replay de commits: por qué no inventé las tareas</h2>
+
+      <p>La tentación es escribir diez tareas sintéticas y medir sobre eso. Es un error: las tareas inventadas se parecen a lo que te imaginás que hace el agente, no a lo que hace tu equipo. Y no tenés respuesta correcta contra la cual comparar.</p>
+
+      <p>En vez de eso reviví commits que ya había mergeado. Por cada tarea: el <strong>base</strong> es el commit padre del cambio; el <strong>prompt</strong> es la intención redactada como se la pedirías a un colega; el <strong>oráculo</strong> es el commit real. El ground-truth sale gratis, las tareas son representativas por construcción, y el mismo set sirve para re-medir en cada fase — el delta es justo porque nada más cambió.</p>
+
+      <p>El detalle que más costó respetar: <strong>el prompt de la Fase 0 es mínimo.</strong> Nada de "respetá las capas", nada de "filtrá por <code>residential_id</code>". Meter esas reglas en el prompt es hacer a mano el trabajo del harness, y garantiza que el delta salga plano. Si querés medir cuánto vale escribir el contexto, primero tenés que medir el mundo sin él.</p>
+
+      <hr />
+
+      <h2>El baseline: cinco tareas, ninguna ayuda</h2>
+
+      <p>Cinco tareas, cada una probando una dimensión distinta. Una corrida por tarea. Rúbrica fija: compila, suite verde, cubre con test, cumple la intención, sin scope creep, con a lo sumo una intervención mía.</p>
+
+      <div class="bug-row">
+        <div class="bug-num">T01</div>
+        <div>
+          <div class="bug-title">Agregar dos campos a un match de búsqueda — <span style="color:#7DD3FC">éxito</span></div>
+          <div class="bug-desc">Cuatro líneas. Idéntico al oráculo, dos asserts nuevos en el test. Sin ambigüedad de dominio, el agente la clava. <em>Esto importa: confirma que el harness no aporta donde no hay decisión implícita.</em></div>
+        </div>
+      </div>
+
+      <div class="bug-row">
+        <div class="bug-num">T02</div>
+        <div>
+          <div class="bug-title">Endpoint de miembros + RBAC — <span style="color:#F87171">fallo</span></div>
+          <div class="bug-desc">Código de calidad senior. Política inventada, y equivocada: excluyó al <code>portero</code>. Seis tests que blindan el error. El criterio de aceptación decía "restringido a quien corresponde" — y "quien corresponde" no estaba escrito en ningún lado.</div>
+        </div>
+      </div>
+
+      <div class="bug-row">
+        <div class="bug-num">T03</div>
+        <div>
+          <div class="bug-title">Endpoint <code>units-lookup</code> "para admin y portero" — <span style="color:#7DD3FC">éxito</span></div>
+          <div class="bug-desc">Misma dimensión que T02, pero esta vez el prompt nombraba la política. Puso <code>@require_role("admin","portero")</code> y tres tests. La regla, escrita, se cumple.</div>
+        </div>
+      </div>
+
+      <div class="bug-row">
+        <div class="bug-num">T07</div>
+        <div>
+          <div class="bug-title">Ocultar <code>target_unit_ids</code> a no-admin — <span style="color:#FBBF24">con reservas</span></div>
+          <div class="bug-desc">Funcionalmente equivalente al oráculo, pero eligió <code>default=True</code> (fail-open) y omitió la key en vez de devolverla vacía, rompiendo el contrato de la API. Volvemos a esto abajo — es el hallazgo más incómodo del baseline.</div>
+        </div>
+      </div>
+
+      <div class="bug-row">
+        <div class="bug-num">T08</div>
+        <div>
+          <div class="bug-title">Doble conteo de multas en el estado de cuenta — <span style="color:#7DD3FC">éxito (con pista)</span></div>
+          <div class="bug-desc">El bug más sutil, y lo entendió de verdad: explicó que la multa ya crea una <code>Transaction</code> espejo, así que restar <code>pending_amount</code> la duplicaba. Llegó al fix exacto. Caveat honesto: mi prompt nombraba <code>net_balance</code>, que era parte de la solución. Contaminé la tarea.</div>
+        </div>
+      </div>
+
+      <p>Tres éxitos, uno con reservas, un fallo. Pero el número importa mucho menos que el <strong>patrón</strong>: lo técnico sale solo; lo implícito de dominio y seguridad, no.</p>
+
+      <hr />
+
+      <h2>Los dos modos de fallo</h2>
+
+      <p><strong>Modo 1 — política de dominio implícita.</strong> Ante un criterio ambiguo, el agente <em>inventa</em> la regla de negocio. La inventa de forma razonable, pero razonable ≠ lo que tu producto decidió. Y como escribe tests que afirman su propia decisión, el error queda blindado en verde. El verde no te protege del criterio.</p>
+
+      <p><strong>Modo 2 — postura de seguridad implícita.</strong> Este es peor, porque revela un incentivo. En T07 el agente eligió <code>default=True</code>:</p>
+
+      <pre><code class="language-python">def to_dict(self, include_targets: bool = True):
+    ...</code></pre>
+
+      <p>Mi fix real había elegido <code>default=False</code> — fail-closed, con un comentario explicando por qué. Le pregunté al agente, después, por qué había elegido el default inseguro. La respuesta, parafraseada: <code>default=False</code> rompía un test existente del modelo.</p>
+
+      <p>Ahí está todo. El agente no optimiza por <em>seguro</em>. Optimiza por <strong>verde fácil</strong>. Ante una elección de seguridad no especificada, toma el camino de menor fricción, y el camino de menor fricción casi nunca es el defensivo. Mi fix eligió la opción segura y pagó el precio de actualizar ese test. El agente no tenía forma de saber que ese precio valía la pena, porque nadie se lo había escrito.</p>
+
+      <div class="callout">
+        <div class="callout-label">Pattern</div>
+        <p>No hay que hacer al agente mejor programador — ya lo es. Hay que hacer <strong>explícito lo implícito</strong>: políticas de RBAC, defaults de seguridad, semántica del dominio. Todo lo que sabés y nunca escribiste es exactamente lo que el agente va a inventar.</p>
+      </div>
+
+      <hr />
+
+      <h2>El experimento que sí controla la variable</h2>
+
+      <p>Con los dos modos identificados, escribí un <code>AGENTS.md</code> de cien líneas. No respuestas a las tareas: <strong>principios</strong>. La tabla de quién-ve-qué. La nota de que <code>portero</code> es un rol lateral que no hereda nada y que hay que incluir a propósito. La postura fail-closed. La regla de no cambiar la forma del response para ocultar un campo.</p>
+
+      <p>Después re-corrí T02 y T07 en worktrees nuevos, con el mismo agente y <strong>exactamente el mismo prompt mínimo</strong>. La única variable que cambió fue un archivo de texto en la raíz del repo.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" font-family="Inter, system-ui, sans-serif">
+          <text x="190" y="24" text-anchor="middle" fill="#94A3B8" font-size="12" font-family="JetBrains Mono, monospace" letter-spacing="1.4">SIN AGENTS.MD</text>
+          <text x="570" y="24" text-anchor="middle" fill="#7DD3FC" font-size="12" font-family="JetBrains Mono, monospace" letter-spacing="1.4">CON AGENTS.MD</text>
+          <line x1="380" y1="10" x2="380" y2="310" stroke="rgba(148,163,184,0.25)" stroke-dasharray="5 5"/>
+
+          <rect x="24" y="44" width="332" height="112" rx="9" fill="#122845" stroke="rgba(248,113,113,0.4)"/>
+          <text x="44" y="70" fill="#F1F5F9" font-size="13" font-weight="600">T02 · miembros de una unidad</text>
+          <text x="44" y="94" fill="#94A3B8" font-size="11" font-family="JetBrains Mono, monospace">require_role(admin, owner, tenant)</text>
+          <text x="44" y="116" fill="#F87171" font-size="11">✗ portero excluido</text>
+          <text x="44" y="136" fill="#F87171" font-size="11">✗ 6 tests blindan la política equivocada</text>
+
+          <rect x="404" y="44" width="332" height="112" rx="9" fill="#122845" stroke="rgba(125,211,252,0.5)"/>
+          <text x="424" y="70" fill="#F1F5F9" font-size="13" font-weight="600">T02 · miembros de una unidad</text>
+          <text x="424" y="94" fill="#94A3B8" font-size="11" font-family="JetBrains Mono, monospace">require_role(..., portero) + has_access</text>
+          <text x="424" y="116" fill="#7DD3FC" font-size="11">✓ portero incluido</text>
+          <text x="424" y="136" fill="#7DD3FC" font-size="11">✓ owner/tenant restringido a su unidad</text>
+
+          <rect x="24" y="176" width="332" height="112" rx="9" fill="#122845" stroke="rgba(251,191,36,0.4)"/>
+          <text x="44" y="202" fill="#F1F5F9" font-size="13" font-weight="600">T07 · ocultar target_unit_ids</text>
+          <text x="44" y="226" fill="#94A3B8" font-size="11" font-family="JetBrains Mono, monospace">include_targets: bool = True</text>
+          <text x="44" y="248" fill="#FBBF24" font-size="11">⚠ fail-open (expone por defecto)</text>
+          <text x="44" y="268" fill="#FBBF24" font-size="11">⚠ omite la key: rompe el contrato</text>
+
+          <rect x="404" y="176" width="332" height="112" rx="9" fill="#122845" stroke="rgba(125,211,252,0.5)"/>
+          <text x="424" y="202" fill="#F1F5F9" font-size="13" font-weight="600">T07 · ocultar target_unit_ids</text>
+          <text x="424" y="226" fill="#94A3B8" font-size="11" font-family="JetBrains Mono, monospace">include_targets: bool = False</text>
+          <text x="424" y="248" fill="#7DD3FC" font-size="11">✓ fail-closed</text>
+          <text x="424" y="268" fill="#7DD3FC" font-size="11">✓ devuelve [] y actualiza el test que rompía</text>
+
+          <text x="380" y="308" text-anchor="middle" fill="#94A3B8" font-size="11">misma tarea · mismo prompt · mismo agente · única variable: un archivo de texto</text>
+        </svg>
+        <p class="figure-caption">Figure 2 · <strong>El delta.</strong> Los dos modos de fallo del baseline se convirtieron en éxitos. Nada cambió en el agente — cambió lo que podía ver.</p>
+      </div>
+
+      <p>En T07 el detalle que más me gustó: el agente eligió <code>default=False</code> <strong>y actualizó el test del modelo que esa decisión rompía</strong>. La política escrita le ganó al incentivo del verde fácil. Es el mismo modelo, con el mismo sesgo hacia la menor fricción; lo que cambió es que ahora la fricción tenía una razón declarada.</p>
+
+      <p>Le tiré una tercera tarea que el <code>AGENTS.md</code> no anticipaba: buscar un vehículo por chapa y devolver al dueño. La guía no dice una palabra sobre búsqueda por chapa. El agente dedujo de los principios una política coherente — portero sí (control de acceso), owner/tenant no (privacidad), con aislamiento multi-tenant testeado. <strong>El harness no solo cura lo que falló: aplica sus principios a tareas que no vio.</strong></p>
+
+      <hr />
+
+      <h2>Cuando el harness superó a mi propio código</h2>
+
+      <p>Acá el experimento se me dio vuelta.</p>
+
+      <p>En T02, el agente guiado agregó una restricción que mi oráculo <strong>no tiene</strong>: owner y tenant solo pueden ver los miembros de <em>su propia</em> unidad. Fui a mirar <code>main</code>. Hoy, en producción, cualquier propietario puede listar los miembros —con email— de cualquier unidad de su residencial. Es una fuga de privacidad entre vecinos, y estaba ahí desde que escribí el endpoint.</p>
+
+      <p>En la tarea de búsqueda por chapa, lo mismo: el agente le dio acceso a <code>admin</code> / <code>super_admin</code> / <code>portero</code>. Mi código real se lo da a owner y tenant. Cuando me senté a decidir cuál de las dos políticas era la correcta, la respuesta fue incómoda: la del agente.</p>
+
+      <p>Dos veces, el agente guiado escribió mejor política de seguridad que la que hay en mi <code>main</code>. Y eso rompe mi propia rúbrica, que definía el éxito como <em>"equivalente al commit oráculo"</em>. Cuando el agente supera al oráculo, la rúbrica lo puntúa como fallo. <strong>El oráculo no es la verdad; es una referencia.</strong> Tuve que redefinir la métrica en medio del experimento, que es exactamente lo que un buen experimento no debería necesitar — y exactamente el tipo de cosa que solo descubrís midiendo.</p>
+
+      <hr />
+
+      <h2>El meta-hallazgo: mi instrumento me mintió tres veces</h2>
+
+      <p>Esta es la parte que no pensaba escribir.</p>
+
+      <p>Tres veces durante la medición, un <em>sensor de la medición</em> —no el agente— dio una lectura falsa que estuvo a punto de producir un veredicto equivocado. Las tres fueron mías.</p>
+
+      <div class="bug-row">
+        <div class="bug-num">SENSOR 1</div>
+        <div>
+          <div class="bug-title">Lectura desincronizada</div>
+          <div class="bug-desc">Una vista del worktree mostró el archivo roto con un <code>IndentationError</code>. Veredicto preliminar: "el agente rompió todo". En el disco real el archivo estaba sano. El <code>git diff</code> —la fuente de verdad— lo desmintió.</div>
+        </div>
+      </div>
+
+      <div class="bug-row">
+        <div class="bug-num">SENSOR 2</div>
+        <div>
+          <div class="bug-title">Comparación tardía</div>
+          <div class="bug-desc">Canté "éxito rotundo" en T02 <em>antes</em> de comparar con el oráculo. La rúbrica computacional estaba entera en verde — compila, tests pasan, hay cobertura — y la tarea había fallado en la única dimensión que importaba.</div>
+        </div>
+      </div>
+
+      <div class="bug-row">
+        <div class="bug-num">SENSOR 3</div>
+        <div>
+          <div class="bug-title">La cura peor que la enfermedad</div>
+          <div class="bug-desc">"Endurecí" el script de scoring para resolver un falso-verde que en realidad <strong>no existía</strong> (era el problema 1). El script endurecido introdujo un falso-<em>rojo</em>: reportó <code>1 failed</code> una vez; tres corridas limpias dieron <code>458 passed</code>. Arreglé un problema mal diagnosticado y creé uno nuevo.</div>
+        </div>
+      </div>
+
+      <p>Un harness se construye sobre sus sensores. Si los sensores no son confiables y deterministas, todo el edificio se apoya en arena — y peor, te da falsa confianza. Es, irónicamente, el mismo principio que el harness le aplica al agente, aplicado al instrumento que mide al agente.</p>
+
+      <div class="callout">
+        <div class="callout-label">Warning</div>
+        <p>No cantes veredicto sin los tres: <code>score.sh</code> (qué entregó) + <code>git diff</code> (qué hizo) + <code>git show &lt;oráculo&gt;</code> (qué se esperaba). Cualquier sensor solo, mintió. Y nunca le creas al agente cuando dice "los tests pasan" — en T08 no coincidía con un run limpio.</p>
+      </div>
+
+      <hr />
+
+      <h2>Lo que este experimento no prueba</h2>
+
+      <p>Si llegaste hasta acá esperando una tasa de éxito, no la vas a encontrar, y prefiero decirlo yo antes de que lo diga un comentario.</p>
+
+      <ul>
+        <li><strong>n = 5, una corrida por tarea, un modelo.</strong> Sirve para <em>descubrir</em> modos de fallo — cumplió, encontró dos reales. No sirve para afirmar un porcentaje. Los agentes tienen varianza alta entre corridas; con n=1, T02 pudo haber sido mala suerte.</li>
+        <li><strong>Re-corrí solo las tareas que habían fallado.</strong> Eso garantiza un delta positivo por construcción. Un harness puede curar T02 y romper T01, y yo no lo habría visto. El chequeo de regresión —re-correr los éxitos con el <code>AGENTS.md</code> puesto— es la corrida que falta, y es barata.</li>
+        <li><strong>El par T02/T03 no es una contraprueba.</strong> Lo vendí como "lo único que cambió fue si la regla estaba escrita". Es falso: cambió el endpoint, el prompt y la tarea entera. Es la señal que me hizo formular la hipótesis, no la que la prueba. La prueba limpia es T02 sin harness contra T02 con harness — misma tarea, mismo prompt, única variable el archivo.</li>
+        <li><strong>Contaminé T08</strong> nombrando <code>net_balance</code> en el prompt, y la conté como éxito igual.</li>
+        <li><strong>Yo era el juez y conocía los oráculos.</strong> Mitigado corriendo al agente en sesiones frías y separadas, y usando siempre comandos en la máquina como fuente de verdad. Mitigado, no eliminado.</li>
+      </ul>
+
+      <p>Nada de esto invalida el hallazgo cualitativo —el delta de T02 y T07 es nítido y direccional— pero sí acota cuánto podés apoyarte en él. Un experimento que solo confirma lo que querías encontrar no es evidencia; es una anécdota bien vestida.</p>
+
+      <h2>Qué haría diferente</h2>
+
+      <ol>
+        <li><strong>Definir el número antes de empezar, y calcularlo.</strong> Escribí en el plan que la tasa de éxito era "el número que el harness tiene que mover", con un criterio de muerte de 10 puntos porcentuales. Después nunca lo calculé. Escribir el criterio y no aplicarlo es peor que no tenerlo: te da la sensación de rigor sin el rigor.</li>
+        <li><strong>Incluir controles negativos.</strong> Dos de las diez tareas del plan original —paginación, escribir tests— no tienen ninguna decisión de dominio implícita. Si el harness también las "mejora", el que está midiendo mal soy yo. Un harness que mejora todo probablemente esté midiendo mi expectativa, no el código.</li>
+        <li><strong>Arreglar los sensores antes de agregar sensores.</strong> El plan de la Fase 2 tenía cuatro herramientas nuevas. La lección del baseline es que ninguna de las cuatro vale nada hasta que la suite deje de mentir. Determinismo primero, cobertura después.</li>
+      </ol>
+
+      <hr />
+
+      <h2>El patrón, generalizado</h2>
+
+      <p>Si tenés un repo con reglas de negocio que solo viven en la cabeza de dos o tres personas —y todos los repos con más de un año lo tienen— entonces ya sabés qué va a pasar cuando un agente lo toque. No va a fallar en el CRUD. Va a fallar en la regla que nadie escribió, con código impecable y tests en verde.</p>
+
+      <p>El experimento sugiere tres cosas, ninguna sorprendente en retrospectiva y todas invisibles antes de medir. Primero: <strong>el presupuesto del harness va a dominio y postura, no a andamiaje técnico.</strong> Segundo: <strong>codificar principios generaliza; codificar respuestas, no.</strong> Y tercero, la que más me costó aceptar: <strong>escribir las reglas para el agente es escribirlas para vos.</strong> Dos bugs de privacidad reales en producción no aparecieron porque el agente fuera brillante. Aparecieron porque, por primera vez en dos años, alguien me obligó a escribir en una tabla quién puede ver qué.</p>
+
+      <p>El harness no reemplaza tu criterio. Te obliga a tenerlo por escrito. Ese, y no la productividad, terminó siendo el retorno.</p>
+
+      <p>🔗 <strong><a href="harness-engineering.html">Parte 1 · Qué es harness engineering y cómo se arma</a></strong> · <a href="../../">portfolio</a> · <a href="https://github.com/NeryC">github.com/NeryC</a></p>
+
+    </div>
+
+    <div class="tag-pills">
+      <span class="tag-pill">Harness Engineering</span>
+      <span class="tag-pill">AI Agents</span>
+      <span class="tag-pill">AGENTS.md</span>
+      <span class="tag-pill">Evals</span>
+      <span class="tag-pill">RBAC</span>
+    </div>
+
+    <div class="footer-cta">
+      <h3>Sobre este experimento</h3>
+      <p>AdminRent es un SaaS privado, así que el repo no es público. El diseño del spike, la rúbrica, el kit de baseline y el protocolo de re-corrida sí lo son — y el <code>AGENTS.md</code> completo está en el post:</p>
+      <div class="links">
+        <a href="harness-engineering.html">📄 Parte 1 · La teoría ↗</a>
+        <a href="https://github.com/NeryC">💻 github.com/NeryC ↗</a>
+      </div>
+      <h3 style="margin-top:24px;">Sobre el autor</h3>
+      <p>Soy Nery Cano, senior full-stack engineer en Paraguay, construyendo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / AI engineering.</p>
+      <div class="links">
+        <a href="../../">Portfolio ↗</a>
+        <a href="https://github.com/NeryC">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
+        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
+      </div>
+    </div>
+  </article>
+
+  <footer class="site-footer">
+    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

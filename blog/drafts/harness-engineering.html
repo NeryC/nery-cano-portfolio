@@ -12,11 +12,25 @@
   <meta property="article:published_time" content="2026-06-26" />
   <meta property="article:tag" content="Harness Engineering" />
   <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="AGENTS.md" />
   <meta property="article:tag" content="Developer Tooling" />
+  <meta property="article:tag" content="LLM Systems" />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_5_harness_engineering_banner.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/harness-engineering.html" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Harness Engineering: cómo diseñar repos donde la IA no la caga" />
+  <meta name="twitter:description" content="Guías, sensores, contexto, evals y autonomía: el arnés que convierte a un agente de IA en un colega fiable." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_5_harness_engineering_banner.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/harness-engineering.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/harness-engineering.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/harness-engineering.html" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <style>
     :root{
       --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
@@ -139,9 +153,11 @@
   <nav class="header-nav">
     <a href="../../">← Portfolio</a>
     <a href="../">Todo lo que escribo</a>
-    <a href="#">English ↗</a>
+    <a href="../harness-engineering.html">English ↗</a>
   </nav>
   <article class="article">
+    <!-- structure: pattern-essay — sin proyecto propio ni postmortem; se omiten figura de arquitectura y sección de bugs, según BLOG_STRUCTURE §10. -->
+    <!-- destino de publicación: blog/es/harness-engineering.html -->
     <div class="article-meta">26 jun 2026 · Parte 1 de 2 · ~16 min</div>
     <h1 class="article-title">Harness Engineering: cómo diseñar repos donde la IA no la caga</h1>
     <p class="article-subtitle">Guías, sensores, contexto, evals y límites de autonomía: el arnés que convierte a un agente de IA de pasante caótico en colega fiable. Spoiler: el problema no es el modelo — es tu repo.</p>
@@ -149,6 +165,7 @@
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
     </div>
+    <img class="banner-img" src="../post_5_harness_engineering_banner.png" alt="Harness Engineering: guías, sensores, límites y trazas alrededor del modelo" />
 
     <div class="article-body">
       <p><em>Esta es la primera de dos partes. Acá te explico qué es harness engineering y cómo se arma, de cero. En la <strong>parte 2</strong> te muestro cómo lo apliqué a un SaaS real, multi-tenant, en producción — con baseline, números y un par de momentos vergonzosos. Empecemos por la teoría, que en este caso es sorprendentemente práctica.</em></p>
@@ -163,6 +180,10 @@
         <div class="callout-label">La tesis</div>
         <p>No vas a arreglar a un agente pidiéndole que se porte bien. Lo arreglás <strong>diseñando el entorno donde trabaja</strong>: las instrucciones que lee, los tests que lo atrapan, los límites que no puede cruzar. A esa disciplina se la llama <strong>harness engineering</strong>, y es, cada vez más, un rol propio.</p>
       </div>
+
+      <p>🔗 <strong><a href="harness-engineering-adminrent.html">Parte 2 · Harness engineering en un SaaS real</a></strong> · <a href="../../">portfolio</a> · <a href="https://github.com/NeryC">github.com/NeryC</a></p>
+
+      <hr />
 
       <h2>Esto no es una moda de blog</h2>
       <p>Antes de seguir, una dosis de realidad para los escépticos (yo era uno). En febrero de 2026, un equipo de OpenAI contó que construyó y desplegó un producto interno con <strong>cero líneas de código escritas a mano</strong> — del orden de un millón de líneas, ~1.500 pull requests, con un equipo de tres a siete ingenieros. ¿Su conclusión textual? Que sus desafíos más difíciles ya no son escribir código, sino <em>"diseñar entornos, bucles de feedback y sistemas de control"</em>.</p>
@@ -364,32 +385,45 @@
       <p>¿Cuándo aplica todo esto? En el instante en que dejás que un agente toque tu repo con algo de autonomía, <strong>ya estás haciendo harness engineering</strong> — la única pregunta es si lo hacés a propósito o por accidente. No hace falta apuntar a "un millón de líneas sin código humano" para que rinda. Un <code>AGENTS.md</code> de cien líneas, dos sensores que atrapan tus errores más frecuentes y una tabla de autonomía ya te cambian la relación con la herramienta: de rezarle a cada PR, a confiar en el sistema que lo rodea.</p>
       <p>Porque al final, la frase con la que abrimos era una trampa. El problema nunca fue el modelo. Tampoco eras vos. Era el <strong>vacío</strong> entre los dos — todo lo que sabías y nunca escribiste. Harness engineering es, simplemente, llenar ese vacío a propósito.</p>
 
-      <div class="footer-cta reveal">
-        <h3>En la parte 2: de la teoría al barro</h3>
-        <p>Tomé un SaaS real, multi-tenant, en producción, y le apliqué exactamente esto: medí un baseline, escribí el harness, y volví a medir. El agente pasó de inventar políticas de permisos a <em>superar mi propio código</em> — dos veces. Con números, diffs y un par de momentos en los que el que medía (yo) quedó en ridículo.</p>
-        <div class="links">
-          <a href="#">Parte 2 · Harness engineering en un SaaS real → (próximamente)</a>
-          <a href="https://github.com/NeryC">github.com/NeryC</a>
-        </div>
-      </div>
+      <p>🔗 <strong><a href="harness-engineering-adminrent.html">Parte 2 · Harness engineering en un SaaS real</a></strong> · <a href="../../">portfolio</a> · <a href="https://github.com/NeryC">github.com/NeryC</a></p>
 
-      <div class="tag-pills">
-        <span class="tag-pill">Harness Engineering</span>
-        <span class="tag-pill">AI Agents</span>
-        <span class="tag-pill">AGENTS.md</span>
-        <span class="tag-pill">Developer Tooling</span>
-        <span class="tag-pill">LLM Systems</span>
+    </div>
+
+    <div class="tag-pills">
+      <span class="tag-pill">Harness Engineering</span>
+      <span class="tag-pill">AI Agents</span>
+      <span class="tag-pill">AGENTS.md</span>
+      <span class="tag-pill">Developer Tooling</span>
+      <span class="tag-pill">LLM Systems</span>
+    </div>
+
+    <div class="footer-cta reveal">
+      <h3>En la parte 2: de la teoría al barro</h3>
+      <p>Tomé un SaaS real, multi-tenant, en producción, y le apliqué exactamente esto: medí un baseline, escribí el harness, y volví a medir. El agente pasó de inventar políticas de permisos a <em>superar mi propio código</em> — dos veces. Con diffs, modos de fallo, y un par de momentos en los que el que medía (yo) quedó en ridículo.</p>
+      <div class="links">
+        <a href="harness-engineering-adminrent.html">📄 Parte 2 · Harness engineering en un SaaS real ↗</a>
+        <a href="https://github.com/NeryC">💻 github.com/NeryC ↗</a>
+      </div>
+      <h3 style="margin-top:24px;">Sobre el autor</h3>
+      <p>Soy Nery Cano, senior full-stack engineer en Paraguay, construyendo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / AI engineering.</p>
+      <div class="links">
+        <a href="../../">Portfolio ↗</a>
+        <a href="https://github.com/NeryC">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
+        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
       </div>
     </div>
   </article>
 
   <footer class="site-footer">
-    Nery Cano · Senior Full-Stack Engineer · Escrito a mano (con un harness al lado)
+    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
   </footer>
 
   <script>
     const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
     document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
 </html>
