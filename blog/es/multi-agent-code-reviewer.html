@@ -311,9 +311,9 @@
        columna crece en proporción y la medida se mantiene entre 91 y 96
        caracteres. Todo lo que vive dentro de .article se expresa en em para
        que siga la escala (metadata, captions, callouts, bug-rows, código).
-       Banner, figuras con grid, código y tablas hacen full-bleed mucho más
-       ancho. Las figuras cuyo unico hijo es un elemento svg NO sangran: su
-       viewBox es fijo y ensancharlas solo escala el dibujo.
+       Sangran solo las figuras con grid, el código y las tablas, y apenas
+       1.3x la columna: más que eso desconecta el bloque del texto. El banner
+       y las figuras cuyo unico hijo es un elemento svg NO sangran.
        Debajo de 1240px, comportamiento original. */
     @media (min-width: 1240px) {
       .header-nav, .site-footer, .article { max-width: 920px; }
@@ -336,13 +336,14 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      .banner-img,
+      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
+         ambos se ve rota. Se alinea con la columna. */
       .article-body > .figure,
       .article-body > pre,
       .article-body > table {
-        width: min(1360px, 94vw);
+        width: min(1200px, 94vw);
         max-width: none;
-        margin-left: calc((100% - min(1360px, 94vw)) / 2);
+        margin-left: calc((100% - min(1200px, 94vw)) / 2);
         margin-right: 0;
       }
       .article-body > .figure:has(> svg) {
@@ -370,13 +371,14 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      .banner-img,
+      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
+         ambos se ve rota. Se alinea con la columna. */
       .article-body > .figure,
       .article-body > pre,
       .article-body > table {
-        width: min(1520px, 94vw);
+        width: min(1320px, 94vw);
         max-width: none;
-        margin-left: calc((100% - min(1520px, 94vw)) / 2);
+        margin-left: calc((100% - min(1320px, 94vw)) / 2);
         margin-right: 0;
       }
       .article-body > .figure:has(> svg) {
@@ -404,13 +406,14 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      .banner-img,
+      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
+         ambos se ve rota. Se alinea con la columna. */
       .article-body > .figure,
       .article-body > pre,
       .article-body > table {
-        width: min(1700px, 94vw);
+        width: min(1440px, 94vw);
         max-width: none;
-        margin-left: calc((100% - min(1700px, 94vw)) / 2);
+        margin-left: calc((100% - min(1440px, 94vw)) / 2);
         margin-right: 0;
       }
       .article-body > .figure:has(> svg) {
@@ -438,13 +441,14 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      .banner-img,
+      /* El banner NO sangra: vive pegado al byline y una raya de 700px entre
+         ambos se ve rota. Se alinea con la columna. */
       .article-body > .figure,
       .article-body > pre,
       .article-body > table {
-        width: min(1880px, 94vw);
+        width: min(1580px, 94vw);
         max-width: none;
-        margin-left: calc((100% - min(1880px, 94vw)) / 2);
+        margin-left: calc((100% - min(1580px, 94vw)) / 2);
         margin-right: 0;
       }
       .article-body > .figure:has(> svg) {
