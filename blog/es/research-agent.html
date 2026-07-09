@@ -304,20 +304,22 @@
       .figure { margin: 32px -8px; padding: 16px; }
     }
   
-    /* ── Layout ancho (≥1100px) ────────────────────────────────────────────
-       La prosa mantiene una medida legible (~820px ≈ 70 car./línea).
-       Banner, figuras, código y tablas sangran hasta 1180px, donde el
-       ancho extra sí aporta: diagramas, matrices y snippets respiran. */
-    @media (min-width: 1100px) {
-      .header-nav, .site-footer { max-width: 1180px; }
-      .article { max-width: 1180px; }
-      .article > *,
-      .article-body > * { max-width: 820px; margin-left: auto; margin-right: auto; }
-      .article-body { max-width: 1180px; }
+    /* ── Layout ancho (≥1240px) ────────────────────────────────────────────
+       La columna de prosa crece a 820px (~75 car./línea, aún legible).
+       Banner, figuras, código y tablas hacen "full-bleed" a 1180px con
+       márgenes negativos: no se toca el flujo del texto ni sus márgenes,
+       así que nada se desalinea. Debajo de 1240px, comportamiento original. */
+    @media (min-width: 1240px) {
+      .header-nav, .site-footer, .article { max-width: 868px; }
       .banner-img,
       .article-body > .figure,
       .article-body > pre,
-      .article-body > table { max-width: 1180px; }
+      .article-body > table {
+        width: 1180px;
+        max-width: none;
+        margin-left: calc((100% - 1180px) / 2);
+        margin-right: 0;
+      }
     }
   </style>
 </head>

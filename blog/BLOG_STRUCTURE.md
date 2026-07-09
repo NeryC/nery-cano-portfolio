@@ -65,7 +65,7 @@ Every post embeds the same `<style>` block (~220 lines). Copy it verbatim from a
 - A dark palette with named CSS custom properties (`--accent`, `--accent-glow`, `--bg-deep`, etc.)
 - Typography: 19px Source Serif 4 body, 44px Inter ExtraBold H1, 26px H2, 21px H3
 - Reading column: `max-width: 760px`, centered, 24px gutters
-- **Wide layout (≥1100px viewport):** the article container grows to `1180px`. Prose, headings, callouts and bug-rows stay capped at `820px` (a readable ~70-character measure); the banner, `.figure` blocks, `<pre>` and `<table>` bleed to the full `1180px`. Below 1100px nothing changes. Copy the `@media (min-width: 1100px)` block verbatim from any existing post.
+- **Wide layout (≥1240px viewport):** the reading column grows to `868px` (≈820px of text, a readable ~75-character measure). The banner, `.figure` blocks, `<pre>` and `<table>` **full-bleed** to `1180px` via negative margins — they escape the column without touching the text flow. Below 1240px nothing changes. Copy the `@media (min-width: 1240px)` block verbatim from any existing post. Do NOT center prose children with `margin-left:auto` — element-qualified rules like `h1.article-title{margin:...}` outrank `.article > *` and the layout desyncs.
 - Code blocks: `#1a1f2e` background, glow-cyan inline tokens with subtle border
 - Responsive: at `max-width: 600px`, H1 drops to 32px, body to 17px
 - Component classes for figures, callouts, bug-rows, tag pills, footer CTA
