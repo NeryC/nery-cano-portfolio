@@ -313,6 +313,22 @@
       .article-body h2 { font-size: 22px; }
       .figure { margin: 32px -8px; padding: 16px; }
     }
+  
+    /* ── Layout ancho (≥1100px) ────────────────────────────────────────────
+       La prosa mantiene una medida legible (~820px ≈ 70 car./línea).
+       Banner, figuras, código y tablas sangran hasta 1180px, donde el
+       ancho extra sí aporta: diagramas, matrices y snippets respiran. */
+    @media (min-width: 1100px) {
+      .header-nav, .site-footer { max-width: 1180px; }
+      .article { max-width: 1180px; }
+      .article > *,
+      .article-body > * { max-width: 820px; margin-left: auto; margin-right: auto; }
+      .article-body { max-width: 1180px; }
+      .banner-img,
+      .article-body > .figure,
+      .article-body > pre,
+      .article-body > table { max-width: 1180px; }
+    }
   </style>
 </head>
 <body>

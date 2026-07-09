@@ -15,13 +15,13 @@
   <meta property="article:tag" content="AGENTS.md" />
   <meta property="article:tag" content="Developer Tooling" />
   <meta property="article:tag" content="LLM Systems" />
-  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_5_harness_engineering_banner.png" />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_5_harness_engineering_banner_es.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/harness-engineering.html" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Harness Engineering: cómo diseñar repos donde la IA no la caga" />
   <meta name="twitter:description" content="Guías, sensores, contexto, evals y autonomía: el arnés que convierte a un agente de IA en un colega fiable." />
-  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_5_harness_engineering_banner.png" />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_5_harness_engineering_banner_es.png" />
 
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/harness-engineering.html" />
   <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/harness-engineering.html" />
@@ -148,6 +148,22 @@
       font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
     @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
       .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  
+    /* ── Layout ancho (≥1100px) ────────────────────────────────────────────
+       La prosa mantiene una medida legible (~820px ≈ 70 car./línea).
+       Banner, figuras, código y tablas sangran hasta 1180px, donde el
+       ancho extra sí aporta: diagramas, matrices y snippets respiran. */
+    @media (min-width: 1100px) {
+      .header-nav, .site-footer { max-width: 1180px; }
+      .article { max-width: 1180px; }
+      .article > *,
+      .article-body > * { max-width: 820px; margin-left: auto; margin-right: auto; }
+      .article-body { max-width: 1180px; }
+      .banner-img,
+      .article-body > .figure,
+      .article-body > pre,
+      .article-body > table { max-width: 1180px; }
+    }
   </style>
 </head>
 <body>
@@ -165,7 +181,7 @@
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
     </div>
-    <img class="banner-img" src="../post_5_harness_engineering_banner.png" alt="Harness Engineering: guías, sensores, límites y trazas alrededor del modelo" />
+    <img class="banner-img" src="../post_5_harness_engineering_banner_es.png" alt="Harness Engineering: guías, sensores, límites y trazas alrededor del modelo" />
 
     <div class="article-body">
       <p><em>Esta es la primera de dos partes. Acá te explico qué es harness engineering y cómo se arma, de cero. En la <strong>parte 2</strong> te muestro cómo lo apliqué a un SaaS real, multi-tenant, en producción — con baseline, números y un par de momentos vergonzosos. Empecemos por la teoría, que en este caso es sorprendentemente práctica.</em></p>

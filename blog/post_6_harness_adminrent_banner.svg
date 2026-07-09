@@ -22,29 +22,29 @@
   <!-- before / after -->
   <g>
     <rect x="800" y="176" width="330" height="126" rx="12" fill="#122845" stroke="#F87171" stroke-width="2" opacity="0.95"/>
-    <text x="826" y="212" fill="#94A3B8" font-size="13" font-weight="700" letter-spacing="2.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">SIN AGENTS.MD</text>
-    <text x="826" y="248" fill="#F87171" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✗ inventó la política</text>
-    <text x="826" y="278" fill="#F87171" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✗ 6 tests en verde</text>
+    <text x="826" y="212" fill="#94A3B8" font-size="13" font-weight="700" letter-spacing="2.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">WITHOUT AGENTS.MD</text>
+    <text x="826" y="248" fill="#F87171" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✗ invented the policy</text>
+    <text x="826" y="278" fill="#F87171" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✗ 6 tests in green</text>
 
     <path d="M965,312 L965,342" stroke="#94A3B8" stroke-width="2"/>
     <path d="M957,334 L965,344 L973,334" fill="none" stroke="#94A3B8" stroke-width="2"/>
 
     <rect x="800" y="352" width="330" height="126" rx="12" fill="#122845" stroke="#7DD3FC" stroke-width="2"/>
-    <text x="826" y="388" fill="#7DD3FC" font-size="13" font-weight="700" letter-spacing="2.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">CON AGENTS.MD</text>
-    <text x="826" y="424" fill="#7DD3FC" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✓ política correcta</text>
-    <text x="826" y="454" fill="#7DD3FC" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✓ superó a mi código</text>
+    <text x="826" y="388" fill="#7DD3FC" font-size="13" font-weight="700" letter-spacing="2.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">WITH AGENTS.MD</text>
+    <text x="826" y="424" fill="#7DD3FC" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✓ correct policy</text>
+    <text x="826" y="454" fill="#7DD3FC" font-size="17" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">✓ beat my own code</text>
   </g>
 
-  <text x="70" y="140" fill="#7DD3FC" font-size="19" font-weight="700" letter-spacing="4.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">PARTE 2 · EN EL BARRO</text>
+  <text x="70" y="140" fill="#7DD3FC" font-size="19" font-weight="700" letter-spacing="4.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">PART 2 · IN THE MUD</text>
 
-  <text x="70" y="248" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">Medí. Escribí</text>
-  <text x="70" y="316" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">las reglas.</text>
-  <text x="70" y="384" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">Volví a medir.</text>
+  <text x="70" y="248" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">Measured.</text>
+  <text x="70" y="316" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">Wrote the rules.</text>
+  <text x="70" y="384" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">Measured again.</text>
 
   <rect x="70" y="422" width="86" height="4" rx="2" fill="#7DD3FC"/>
 
-  <text x="70" y="482" fill="#94A3B8" font-size="25">Harness engineering sobre un SaaS</text>
-  <text x="70" y="516" fill="#94A3B8" font-size="25">multi-tenant en producción</text>
+  <text x="70" y="482" fill="#94A3B8" font-size="25">Harness engineering on a multi-tenant</text>
+  <text x="70" y="516" fill="#94A3B8" font-size="25">SaaS in production</text>
 
   <text x="70" y="580" fill="#4FA9E8" font-size="18" font-weight="600" letter-spacing="1.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">NERY CANO · neryc.github.io</text>
 </svg>
