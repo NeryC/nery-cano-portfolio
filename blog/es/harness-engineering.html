@@ -153,10 +153,12 @@
        En pantallas grandes el problema no es la columna: es que 19px de
        cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
        de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
-       columna crece en proporción y la medida se mantiene entre 92 y 97
-       caracteres. Banner, figuras con grid, código y tablas hacen full-bleed
-       mucho más ancho. Las figuras cuyo unico hijo es un elemento svg NO
-       sangran: su viewBox es fijo y ensancharlas solo escala el dibujo.
+       columna crece en proporción y la medida se mantiene entre 91 y 96
+       caracteres. Todo lo que vive dentro de .article se expresa en em para
+       que siga la escala (metadata, captions, callouts, bug-rows, código).
+       Banner, figuras con grid, código y tablas hacen full-bleed mucho más
+       ancho. Las figuras cuyo unico hijo es un elemento svg NO sangran: su
+       viewBox es fijo y ensancharlas solo escala el dibujo.
        Debajo de 1240px, comportamiento original. */
     @media (min-width: 1240px) {
       .header-nav, .site-footer, .article { max-width: 920px; }
@@ -166,9 +168,17 @@
       .article-subtitle { font-size: 1.16em; }
       .article-body h2 { font-size: 1.36em; }
       .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
       .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
       .bug-title { font-size: 0.9em; }
       .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
       .banner-img,
@@ -192,9 +202,17 @@
       .article-subtitle { font-size: 1.16em; }
       .article-body h2 { font-size: 1.36em; }
       .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
       .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
       .bug-title { font-size: 0.9em; }
       .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
       .banner-img,
@@ -218,9 +236,17 @@
       .article-subtitle { font-size: 1.16em; }
       .article-body h2 { font-size: 1.36em; }
       .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
       .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
       .bug-title { font-size: 0.9em; }
       .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
       .banner-img,
@@ -244,9 +270,17 @@
       .article-subtitle { font-size: 1.16em; }
       .article-body h2 { font-size: 1.36em; }
       .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
       .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
       .bug-title { font-size: 0.9em; }
       .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
       .banner-img,
