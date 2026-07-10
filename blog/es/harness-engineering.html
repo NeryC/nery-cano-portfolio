@@ -155,8 +155,8 @@
        de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
        columna crece en proporción y la medida se mantiene entre 91 y 96
        caracteres. Todo lo que vive dentro de .article se expresa en em para
-       que siga la escala: metadata, captions, callouts, bug-rows, código y
-       el interior de las figuras.
+       que siga la escala: metadata, captions, callouts, bug-rows, código,
+       tablas y el interior de las figuras.
        NADA sangra fuera de la columna. Un bloque más ancho que el texto al
        que pertenece se lee como un error de maquetado, no como jerarquía.
        Debajo de 1240px, comportamiento original. */
@@ -181,7 +181,8 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
       .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
       .axis { font-size: 0.55em; }
       .mlbl { font-size: 0.5em; }
@@ -214,7 +215,8 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
       .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
       .axis { font-size: 0.55em; }
       .mlbl { font-size: 0.5em; }
@@ -247,7 +249,8 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
       .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
       .axis { font-size: 0.55em; }
       .mlbl { font-size: 0.5em; }
@@ -280,7 +283,8 @@
       .footer-cta p { font-size: 0.88em; }
       .article-body pre { font-size: 0.78em; }
       .article-body pre code[class*="language-"] { font-size: 1em; }
-      /* interiores de las figuras con grid (solo existen en la parte 1) */
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
       .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
       .axis { font-size: 0.55em; }
       .mlbl { font-size: 0.5em; }
@@ -314,7 +318,7 @@
   </nav>
   <article class="article">
     <!-- structure: pattern-essay — sin proyecto propio ni postmortem; se omiten figura de arquitectura y sección de bugs, según BLOG_STRUCTURE §10. -->
-    <div class="article-meta">26 jun 2026 · Parte 1 de 2 · ~17 min</div>
+    <div class="article-meta">26 jun 2026 · Parte 1 de 2 · ~20 min</div>
     <h1 class="article-title">Harness Engineering: cómo diseñar repos donde la IA no la caga</h1>
     <p class="article-subtitle">Guías, sensores, contexto, evals y límites de autonomía: el arnés que convierte a un agente de IA de pasante caótico en colega fiable. Spoiler: el problema es tu repo, no el modelo.</p>
     <div class="byline">
@@ -554,6 +558,86 @@
 
       <h3>05 · Trazas: poder ver qué pasó</h3>
       <p>Lo último: observabilidad. Dos capas. La primera es hacer que la observabilidad de <em>runtime</em> sea legible para el agente, de modo que pueda consultar logs y métricas <em>durante</em> una tarea, no solo vos después en un dashboard. La segunda son las trazas de la <em>trayectoria</em> del agente: prompts, llamadas a herramientas, diffs. Eso es lo que te deja responder "¿por qué carajo hizo eso?" cuando algo sale raro, y alimentar el steering loop con datos en vez de corazonadas.</p>
+
+      <hr/>
+
+      <h2>Cómo se ve en un stack Python + TypeScript</h2>
+      <p>Basta de teoría. Acá está cada componente mapeado a herramientas reales para el stack detrás de casi todo lo que hago: una API Flask en Python, un frontend Next.js y TypeScript, Postgres en Supabase, desplegado en Railway y Vercel, con GitHub Actions de gate. Cambiá los nombres por los tuyos; la forma se mantiene.</p>
+
+      <table>
+        <thead>
+          <tr><th>Componente</th><th>Backend &#183; Flask / Python</th><th>Frontend &#183; Next.js / TS</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Contexto</strong></td><td><code>AGENTS.md</code> + <code>docs/</code>, schemas <code>pydantic</code></td><td><code>types.generated.ts</code>, <code>CLAUDE.md</code></td></tr>
+          <tr><td><strong>Sensores</strong></td><td><code>ruff</code>, <code>pyright</code>, <code>import-linter</code>, <code>pytest</code>, <code>gitleaks</code></td><td><code>eslint</code>, <code>tsc --noEmit</code>, <code>vitest</code>, <code>dependency-cruiser</code></td></tr>
+          <tr><td><strong>Evals</strong></td><td>set de tareas + rúbrica, o <code>promptfoo</code></td><td>harness de replay sobre el agente (Vercel AI SDK)</td></tr>
+          <tr><td><strong>Autonomía</strong></td><td>tabla en <code>AGENTS.md</code> + scope en <code>auto-merge.yml</code></td><td>checks requeridos en branch protection</td></tr>
+          <tr><td><strong>Trazas</strong></td><td>Sentry, logs estructurados</td><td>Sentry, OpenTelemetry del SDK + Langfuse</td></tr>
+        </tbody>
+      </table>
+
+      <p><strong>Contexto</strong> es lo que más rinde y lo más barato. Arrancá con un <code>AGENTS.md</code> en la raíz, de cincuenta a cien líneas, un índice y no una enciclopedia. Después matá la adivinación de formas de datos: definí cada payload una vez como modelo <code>pydantic</code>, generá JSON Schema desde ahí, y generá los tipos del frontend desde ese schema. El tipo contra el que programa el frontend pasa a ser el objeto que el backend devuelve, y un comando los mantiene sincronizados.</p>
+
+      <pre><code class="language-bash"># pydantic es la única fuente de verdad; los dos lados regeneran desde ahí
+python scripts/gen_type_schemas.py     # modelos -> contracts/*.schema.json
+npm run gen:types                      # schema  -> lib/types.generated.ts</code></pre>
+
+      <p><strong>Sensores</strong>, los baratos primero, atados a <code>pre-commit</code> para que corran en un segundo antes de que el código llegue al CI: <code>ruff</code> para errores reales de Python (las reglas <code>F</code> y <code>E9</code>, no el formato), <code>gitleaks</code> para secretos, <code>compileall</code> para sintaxis. Convertí la arquitectura en una regla que el build hace cumplir, con <code>import-linter</code> en Python y <code>dependency-cruiser</code> en TypeScript. Y el sensor que se gana el pan: un <code>pytest</code> pelado que afirma un invariante de dominio, tipo "un campo sensible serializa vacío salvo que lo pida un admin". Corrélo contra el commit con el bug del mes pasado; si ahí pasa en verde, es decoración.</p>
+
+      <pre><code class="language-yaml"># .pre-commit-config.yaml: la red shift-left
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    hooks: [{ id: ruff }]           # arrancá solo con F + E9
+  - repo: https://github.com/gitleaks/gitleaks
+    hooks: [{ id: gitleaks }]</code></pre>
+
+      <p><strong>Evals</strong> es donde la mayoría se detiene, así que es tu ventaja. No necesitás una plataforma. Una docena de tareas representativas en una carpeta, una rúbrica, y un script que corre el agente sobre cada una y anota pass, partial o fail convierte "¿mi cambio al <code>AGENTS.md</code> ayudó?" en un número que podés ver moverse. <code>promptfoo</code> te da estructura contra Anthropic; para un agente sobre el Vercel AI SDK, un harness fino de replay sobre fixtures hace lo mismo. Reportá una tasa, 8 de 10, nunca un solo tilde verde.</p>
+
+      <p><strong>Autonomía</strong> es una tabla y un workflow. La tabla vive en <code>AGENTS.md</code>. El cumplimiento vive en un job de GitHub Actions que lee el diff del PR y habilita auto-merge solo cuando el cambio se mantiene fuera de tu superficie sensible. Es el mecanismo exacto detrás de la Parte 2, y el lugar exacto donde resbalé: la regla cuenta cuando corre en el workflow, no cuando descansa en el markdown.</p>
+
+      <pre><code class="language-yaml"># auto-merge solo cuando el diff evita la superficie donde ya sangraste
+- run: |
+    files="$(gh pr diff "$PR" --name-only)"
+    printf '%s\n' "$files" | grep -Eq '^backend/app/(api|services|models)/' \
+      &amp;&amp; echo "sensible -> revisión humana" \
+      || gh pr merge "$PR" --auto --squash</code></pre>
+
+      <p><strong>Trazas</strong>, dos capas. <code>Sentry</code> en las dos apps te da los errores de runtime que le podés pasar al agente mientras depura. Para la trayectoria del propio agente, el Vercel AI SDK emite spans de OpenTelemetry, y Langfuse o Helicone guardan cada prompt, llamada a herramienta y respuesta para que puedas reconstruir por qué hizo lo que hizo. Lo vas a querer la primera vez que un diff no tenga sentido.</p>
+
+      <h3>Un kit para copiar</h3>
+      <p>Dos artefactos no tienen plantilla obvia, así que acá están. Primero, el esqueleto del <code>AGENTS.md</code>: un índice, la regla de capas, la tabla de quién-ve-qué que hoy vive solo en tu cabeza, y los niveles de autonomía.</p>
+
+      <pre><code class="language-markdown"># &lt;repo&gt;: guía para agentes
+
+## Comandos
+pytest -q &#183; ruff check . &#183; pyright &#183; lint-imports
+
+## Arquitectura (las dependencias apuntan hacia adentro)
+api/ -> services/ -> models/      # services nunca importa Flask
+
+## Quién ve qué  (la política que vive en tu cabeza; escribila acá)
+| recurso          | admin | owner / tenant | &lt;rol lateral&gt;  |
+| miembros unidad  | todas | solo la suya   | todas          |
+| finanzas         | sí    | solo lo propio | nunca          |
+
+## Autonomía
+siempre:   agregar tests &#183; arreglar tests rotos &#183; refactor dentro de una capa
+preguntar: endpoint nuevo &#183; cambio de schema / migración &#183; tocar permisos
+nunca:     migrar datos en prod &#183; borrar datos &#183; push a main</code></pre>
+
+      <p>Segundo, el test guardián, el sensor que atrapa el bug caro. Escribilo, y corrélo contra el commit donde vivía el bug; si ahí no falla, no está cuidando nada.</p>
+
+      <pre><code class="language-python">def test_sensitive_field_hidden_by_default(client, non_admin_token):
+    r = client.get("/units/1/announcements", headers=non_admin_token)
+    assert "target_unit_ids" not in r.get_json()[0]   # fail-closed</code></pre>
+
+      <p>La tercera pieza, el bucle de evals, no entra en un snippet. La Parte 2 lo corre de punta a punta: revivís un commit real como tarea, le das al agente la intención y no el diff, y puntuás el resultado contra el commit que nunca vio.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">Patrón</div>
+        <p>Cada herramienta de acá ya la corrés. Un harness son tus linters, tests, schemas y CI apuntados al agente en vez de solo a vos, más las dos piezas que a casi todo repo le faltan: un <code>AGENTS.md</code> que el agente lee y un set de evals que te dice si editarlo sirvió.</p>
+      </div>
 
       <hr/>
 
