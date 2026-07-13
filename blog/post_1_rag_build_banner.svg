@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="Inter, DejaVu Sans, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0E1F3A"/><stop offset="55%" stop-color="#08152A"/><stop offset="100%" stop-color="#06101F"/></linearGradient>
+    <radialGradient id="glow" cx="0.18" cy="0.05" r="0.75"><stop offset="0%" stop-color="#1F3A68" stop-opacity="0.85"/><stop offset="100%" stop-color="#06101F" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow2" cx="0.9" cy="1" r="0.6"><stop offset="0%" stop-color="#2E75B6" stop-opacity="0.35"/><stop offset="100%" stop-color="#06101F" stop-opacity="0"/></radialGradient>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#4FA9E8"/></marker>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/><rect width="1200" height="630" fill="url(#glow)"/><rect width="1200" height="630" fill="url(#glow2)"/>
+  <g font-family="JetBrains Mono, DejaVu Sans Mono, monospace">
+    <rect x="800" y="250" width="110" height="60" rx="10" fill="#122845" stroke="#F4A259" stroke-width="2"/><text x="855" y="278" text-anchor="middle" fill="#F4A259" font-size="16" font-weight="700">PDF</text><text x="855" y="298" text-anchor="middle" fill="#94A3B8" font-size="12">parser</text>
+    <line x1="910" y1="280" x2="948" y2="280" stroke="#4FA9E8" stroke-width="2.5" marker-end="url(#a)"/>
+    <rect x="952" y="250" width="120" height="60" rx="10" fill="#122845" stroke="#7DD3FC" stroke-width="2"/><text x="1012" y="278" text-anchor="middle" fill="#7DD3FC" font-size="15" font-weight="700">pgvector</text><text x="1012" y="298" text-anchor="middle" fill="#94A3B8" font-size="12">chunks</text>
+    <line x1="1012" y1="250" x2="1012" y2="200" stroke="#4FA9E8" stroke-width="2.5" marker-end="url(#a)"/>
+    <rect x="952" y="140" width="120" height="56" rx="10" fill="#122845" stroke="#4FA9E8" stroke-width="2"/><text x="1012" y="166" text-anchor="middle" fill="#4FA9E8" font-size="14" font-weight="700">Claude</text><text x="1012" y="184" text-anchor="middle" fill="#94A3B8" font-size="12">+ tools</text>
+    <rect x="800" y="370" width="272" height="56" rx="10" fill="#122845" stroke="#7DD3FC" stroke-width="2"/><text x="936" y="397" text-anchor="middle" fill="#7DD3FC" font-size="14" font-weight="700">memories</text><text x="936" y="415" text-anchor="middle" fill="#94A3B8" font-size="12">RAG over what it recalls</text>
+    <line x1="1012" y1="310" x2="1012" y2="368" stroke="#4FA9E8" stroke-width="2.5" stroke-dasharray="4 4" marker-end="url(#a)"/>
+  </g>
+  <text x="80" y="150" fill="#7DD3FC" font-size="20" font-weight="700" letter-spacing="4.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">PART 2 · IN THE CODE</text>
+  <text x="80" y="262" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">How I built</text>
+  <text x="80" y="328" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">a RAG agent</text>
+  <text x="80" y="394" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">with memory</text>
+  <rect x="80" y="426" width="86" height="4" rx="2" fill="#7DD3FC"/>
+  <text x="80" y="484" fill="#94A3B8" font-size="25">PDF parser, pgvector, tools and memory</text>
+  <text x="80" y="556" fill="#4FA9E8" font-size="18" font-weight="600" letter-spacing="1.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">NERY CANO · neryc.github.io</text>
+</svg>

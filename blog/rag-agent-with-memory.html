@@ -3,306 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building a Zero-Dependency PDF Parser to Survive Vercel Serverless — Nery Cano</title>
-  <meta name="description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <title>RAG from scratch: the complete guide (Part 1) — Nery Cano</title>
+  <meta name="description" content="What RAG is, what the alternatives are, and how to actually build it. Explained from zero, with lots of diagrams. Part 1 of 2." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless — Nery Cano" />
-  <meta property="og:description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta property="og:title" content="RAG from scratch: the complete guide (Part 1 of 2)" />
+  <meta property="og:description" content="What RAG is, the alternatives, and how to actually build it. The full theory before the code." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
   <meta property="article:published_time" content="2026-05-12" />
   <meta property="article:tag" content="RAG" />
+  <meta property="article:tag" content="Embeddings" />
+  <meta property="article:tag" content="pgvector" />
+  <meta property="article:tag" content="AI SDK" />
   <meta property="article:tag" content="Anthropic Claude" />
-  <meta property="article:tag" content="Next.js" />
-  <meta property="article:tag" content="Serverless" />
+
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless" />
-  <meta name="twitter:description" content="How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys." />
+  <meta name="twitter:title" content="RAG from scratch: the complete guide (Part 1 of 2)" />
+  <meta name="twitter:description" content="What RAG is, the alternatives, and how to actually build it. The full theory before the code." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
   <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/rag-agent-with-memory.html" />
   <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <style>
-    :root {
-      --primary: #1F3A68;
-      --accent: #2E75B6;
-      --accent-light: #4FA9E8;
-      --accent-glow: #7DD3FC;
-      --ink: #0F172A;
-      --bg-deep: #06101F;
-      --bg-mid: #0E1F3A;
-      --muted: #94A3B8;
-      --text: #E2E8F0;
-      --text-strong: #F1F5F9;
-      --border: rgba(148, 163, 184, 0.18);
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 19px;
-      line-height: 1.7;
-      color: var(--text);
-      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
-                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
-                  var(--bg-deep);
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
-    a { color: var(--accent-light); text-decoration: none; }
-    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
-    .header-nav {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 28px 24px 0;
-      display: flex; justify-content: space-between; align-items: center;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .header-nav a { color: var(--muted); }
-    .header-nav a:hover { color: var(--accent-glow); }
-    .article {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 24px 80px;
-    }
-    .article-meta {
-      margin-top: 56px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-    }
-    h1.article-title {
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 44px;
-      font-weight: 800;
-      letter-spacing: -1.2px;
-      line-height: 1.15;
-      color: var(--text-strong);
-      margin: 14px 0 12px;
-    }
-    .article-subtitle {
-      font-family: "Source Serif 4", Georgia, serif;
-      font-style: italic;
-      font-size: 22px;
-      line-height: 1.4;
-      color: var(--muted);
-      margin: 0 0 32px;
-    }
-    .byline {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
-    .byline-name {
-      font-family: "Inter", system-ui, sans-serif;
-      font-weight: 600;
-      color: var(--text-strong);
-      font-size: 15px;
-    }
-    .byline-meta {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .banner-img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 8px 0 40px;
-      display: block;
-      border: 1px solid var(--border);
-    }
-    .article-body {
-      font-size: 19px;
-      line-height: 1.75;
-      color: var(--text);
-    }
-    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
-      font-family: "Inter", system-ui, sans-serif;
-      color: var(--text-strong);
-      margin: 48px 0 14px;
-      letter-spacing: -0.4px;
-      line-height: 1.25;
-    }
-    .article-body h1 { font-size: 32px; font-weight: 800; }
-    .article-body h2 { font-size: 26px; font-weight: 700; }
-    .article-body h3 { font-size: 21px; font-weight: 700; }
-    .article-body p { margin: 18px 0; }
-    .article-body strong { color: var(--text-strong); font-weight: 700; }
-    .article-body em { color: var(--text); }
-    .article-body ul, .article-body ol { padding-left: 28px; }
-    .article-body li { margin: 8px 0; }
-    .article-body blockquote {
-      border-left: 3px solid var(--accent);
-      margin: 24px 0;
-      padding: 4px 24px;
-      color: var(--muted);
-      font-style: italic;
-    }
-    .article-body code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.88em;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(46,117,182,0.25);
-    }
-    .article-body pre {
-      background: #1a1f2e !important;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px 20px !important;
-      overflow-x: auto;
-      font-size: 14px;
-      line-height: 1.55;
-      margin: 24px 0;
-    }
-    .article-body pre code {
-      background: transparent;
-      border: none;
-      color: inherit;
-      padding: 0;
-      font-size: 14px;
-    }
-    .article-body hr {
-      border: none;
-      height: 1px;
-      background: var(--border);
-      margin: 48px 0;
-    }
-    .article-body img { max-width: 100%; border-radius: 6px; }
-    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    .article-body th, .article-body td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
-    .figure {
-      margin: 40px -8px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
-    }
-    .figure svg { display: block; width: 100%; height: auto; }
-    .figure-caption {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 18px;
-      text-align: center;
-    }
-    .figure-caption strong {
-      color: var(--accent-glow);
-      letter-spacing: 1.4px;
-    }
-    .callout {
-      margin: 32px 0;
-      padding: 18px 22px;
-      border-radius: 10px;
-      background: rgba(46,117,182,0.10);
-      border: 1px solid rgba(46,117,182,0.30);
-      border-left: 3px solid var(--accent-glow);
-    }
-    .callout-label {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-      margin-bottom: 6px;
-    }
-    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
-    .bug-row {
-      display: flex;
-      gap: 14px;
-      align-items: baseline;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .bug-num {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--accent-glow);
-      flex-shrink: 0;
-      width: 48px;
-    }
-    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
-    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
-    .footer-cta {
-      margin-top: 56px;
-      padding: 32px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
-    }
-    .footer-cta h3 {
-      margin: 0 0 12px;
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 20px;
-      color: var(--text-strong);
-    }
-    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
-    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
-    .footer-cta .links a {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 13px;
-      letter-spacing: 1px;
-      color: var(--accent-glow);
-    }
-    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-pill {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 14px;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      border: 1px solid rgba(46,117,182,0.3);
-      letter-spacing: 1px;
-    }
-    .site-footer {
-      max-width: 760px;
-      margin: 60px auto 40px;
-      padding: 24px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      letter-spacing: 1px;
-      border-top: 1px solid var(--border);
-    }
-    @media (max-width: 600px) {
-      body { font-size: 17px; }
-      h1.article-title { font-size: 32px; }
-      .article-subtitle { font-size: 18px; }
-      .article-body { font-size: 17px; }
-      .article-body h1 { font-size: 26px; }
-      .article-body h2 { font-size: 22px; }
-      .figure { margin: 32px -8px; padding: 16px; }
-    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
   
     /* ── Layout ancho y tipografía fluida ─────────────────────────────────
        En pantallas grandes el problema no es la columna: es que 19px de
@@ -451,389 +298,450 @@
       .sem .h { font-size: 0.55em; }
       .sem ul { font-size: 0.64em; }
     }
-</style>
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
 </head>
 <body>
+  <!-- structure: explicit-guide -->
   <nav class="header-nav">
     <a href="../">← Portfolio</a>
     <a href="./">All writing</a>
     <a href="es/rag-agent-with-memory.html">Español ↗</a>
   </nav>
+
   <article class="article">
-    <div class="article-meta">May 12, 2026 · 9 min read</div>
-    <h1 class="article-title">Building a Zero-Dependency PDF Parser to Survive Vercel Serverless</h1>
-    <p class="article-subtitle">How I dodged DOMMatrix is not defined and shipped a RAG agent that actually deploys.</p>
+    <div class="article-meta">May 12, 2026 · Part 1 of 2 · ~20 min read</div>
+    <h1 class="article-title">RAG from scratch: the guide I wish I'd had</h1>
+    <p class="article-subtitle">What it is, what the alternatives are, and how it actually gets built. Then, in <strong>part 2</strong>, the agent with memory I built on Next.js, Voyage and pgvector, with the real code.</p>
     <div class="byline">
-      <div>
-        <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
-      </div>
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
     </div>
-    <img class="banner-img" src="post_1_rag_banner.png" alt="Building a Zero-Dependency PDF Parser to Survive Vercel Serverless" />
+    <img class="banner-img" src="post_1_rag_banner.png" alt="RAG from scratch: retrieval, embeddings, vector store and generation" />
 
     <div class="article-body">
 
-<p><em>How I dodged <code>DOMMatrix is not defined</code> and shipped a RAG agent that actually deploys — by replacing a 200KB npm package with 80 lines of regex and <code>zlib.inflateSync</code>.</em></p>
+      <p><em>This is an explicit guide, the kind I wish I had found. First what RAG is and why it exists, with diagrams. Then the decisions you will have to make and their alternatives. And at the end, the real code of an agent with memory I built and deployed. Read it top to bottom or jump to the part you are missing.</em></p>
 
-<p>I was three hours into building a "chat with your PDFs" demo on Next.js 16 when I hit the kind of error that makes you question your career:</p>
+      <p>A language model knows an enormous amount about the world up to the date it was trained. About your company, your PDFs, your notes or your database, it knows nothing. And you cannot paste a 300-page manual into every question: it does not fit in the context window, it costs a fortune in tokens, and the model gets lost among so much irrelevant text.</p>
 
-<pre><code class="language-typescript">ReferenceError: DOMMatrix is not defined
-    at /var/task/node_modules/pdfjs-dist/build/pdf.js:...</code></pre>
+      <p>RAG solves exactly that. Instead of feeding it everything, you find <em>the few paragraphs that matter</em> for that specific question and pass those alongside the query. The model answers with that evidence in front of it, cites where it came from, and if the fact is not there, you can make it say "I don't know" instead of inventing.</p>
 
-<p>The PDF was loading fine on <code>localhost</code>. The moment I deployed to Vercel — boom. Function crash. The error surfaced from <code>pdfjs-dist</code>, the underlying library used by <code>pdf-parse</code> and roughly every "easy" PDF-text-extraction package on npm.</p>
+      <p>🔗 <strong><a href="rag-agent-memory-build.html">Part 2 · How I built it (with the real code)</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">repo</a> · <a href="../">portfolio</a></p>
 
-<p>The reason is simple and brutal: <code>pdfjs-dist</code> was designed to run <strong>in the browser</strong>. It depends on <code>DOMMatrix</code>, <code>canvas</code>, and a handful of other DOM APIs that have always been part of the Web Platform but have never existed in Node.js. On your laptop, Next.js's dev server is a forgiving Node + JSDOM-ish environment that papers over the gap. On Vercel's serverless runtime, there is no DOM, no shim, no mercy.</p>
+      <h2>Five words, first</h2>
 
-<p>I needed a different path. I ended up writing a <strong>zero-dependency PDF parser</strong> using nothing but Node's built-in <code>zlib</code> and a few regular expressions. It is not pretty. It will never replace a real PDF library. But it's small, it's serverless-safe, and it ships.</p>
+      <p>If you have never touched this, five terms are enough to follow everything that comes next. You do not need to know anything else to start.</p>
 
-<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://rag-agent-memory.vercel.app">live demo</a></p>
+      <ul>
+        <li><strong>Language model (LLM).</strong> The engine behind ChatGPT or Claude. It predicts text and knows a ton about the general world, but nothing about your private documents.</li>
+        <li><strong>Token.</strong> A little piece of a word, the unit the model reads with and the unit you are billed in. "computer" is about two tokens; a page, about 500.</li>
+        <li><strong>Context window.</strong> How much text the model can read at once. It is large, but not infinite, and everything you put in there you pay for on every question.</li>
+        <li><strong>Vector (or embedding).</strong> A list of numbers that represents the <em>meaning</em> of a text. It is the central piece of RAG and I explain it in detail below; for now, think of it as the coordinates of an idea on a map.</li>
+        <li><strong>Index.</strong> A structure that lets you search among millions of those vectors in milliseconds, like the index at the back of a book but for meanings.</li>
+      </ul>
 
-<hr />
+      <p>With those five, you can follow the rest without getting lost.</p>
 
-<h2>What it is, in one paragraph</h2>
+      <hr />
 
-<p>A RAG agent on Next.js 16 that lets a user upload PDFs, chunks them, embeds the chunks with Voyage AI, stores them in Supabase <code>pgvector</code>, and chats over them with citations. The single non-obvious piece is the PDF text extractor: ~80 lines of TypeScript that reads the raw bytes as <code>latin1</code>, inflates any <code>FlateDecode</code> streams with Node's built-in <code>zlib</code>, and pulls text out of <code>Tj</code> / <code>TJ</code> operators with two regular expressions. Zero npm dependencies beyond what the rest of the app already pulls in. Survives Vercel because it has no DOM dependencies.</p>
+      <h2>What RAG is, in one paragraph</h2>
 
-<div class="figure">
-<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arrC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
-    </marker>
-    <linearGradient id="boxC" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#122845"/>
-      <stop offset="1" stop-color="#0E1F3A"/>
-    </linearGradient>
-  </defs>
+      <p>RAG stands for <strong>Retrieval-Augmented Generation</strong>. It is three moves. <strong>Retrieve:</strong> given a question, you search your knowledge base for the most relevant fragments. <strong>Augment:</strong> you paste those fragments into the prompt, next to the question. <strong>Generate:</strong> the model answers using that context as evidence. The whole trick is in the first step, in retrieving well; the rest is pasting text and calling the model.</p>
 
-  <!-- Source PDF -->
-  <g transform="translate(20, 30)">
-    <rect width="140" height="80" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="70" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">user.pdf</text>
-    <text x="70" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">tree of objects</text>
-    <text x="70" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">+ FlateDecode</text>
-    <text x="70" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">streams</text>
-  </g>
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>The RAG pipeline: the question becomes a vector, retrieves fragments from the knowledge base, augments the prompt, and the model generates the answer with citations</title>
+          <defs>
+            <marker id="rag-ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker>
+            <path id="ragflow" d="M70,120 H210 H360 H510 H660" fill="none"/>
+          </defs>
+          <rect x="14" y="94" width="112" height="52" rx="9" fill="#122845" stroke="rgba(148,163,184,0.35)"/>
+          <text x="70" y="118" text-anchor="middle" fill="#F1F5F9" font-size="13" font-weight="600">Question</text>
+          <text x="70" y="136" text-anchor="middle" fill="#94A3B8" font-size="10.5">from the user</text>
+          <line x1="126" y1="120" x2="158" y2="120" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#rag-ar)"/>
+          <rect x="162" y="88" width="150" height="64" rx="9" fill="#122845" stroke="rgba(125,211,252,0.5)"/>
+          <text x="237" y="106" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="700" letter-spacing="1">1 · RETRIEVE</text>
+          <text x="237" y="126" text-anchor="middle" fill="#94A3B8" font-size="10.5">embed + search</text>
+          <text x="237" y="142" text-anchor="middle" fill="#94A3B8" font-size="10.5">the top k matches</text>
+          <line x1="312" y1="120" x2="344" y2="120" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#rag-ar)"/>
+          <rect x="348" y="88" width="150" height="64" rx="9" fill="#122845" stroke="rgba(125,211,252,0.5)"/>
+          <text x="423" y="106" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="700" letter-spacing="1">2 · AUGMENT</text>
+          <text x="423" y="126" text-anchor="middle" fill="#94A3B8" font-size="10.5">paste the fragments</text>
+          <text x="423" y="142" text-anchor="middle" fill="#94A3B8" font-size="10.5">into the prompt</text>
+          <line x1="498" y1="120" x2="530" y2="120" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#rag-ar)"/>
+          <rect x="534" y="88" width="150" height="64" rx="9" fill="#122845" stroke="rgba(79,169,232,0.5)"/>
+          <text x="609" y="106" text-anchor="middle" fill="#4FA9E8" font-size="12" font-weight="700" letter-spacing="1">3 · GENERATE</text>
+          <text x="609" y="126" text-anchor="middle" fill="#94A3B8" font-size="10.5">the LLM answers</text>
+          <text x="609" y="142" text-anchor="middle" fill="#94A3B8" font-size="10.5">with citations</text>
+          <line x1="609" y1="152" x2="609" y2="196" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#rag-ar)"/>
+          <rect x="534" y="200" width="150" height="46" rx="9" fill="#0E1F3A" stroke="rgba(125,211,252,0.45)"/>
+          <text x="609" y="228" text-anchor="middle" fill="#F1F5F9" font-size="12" font-weight="600">Answer + citations</text>
+          <ellipse cx="237" cy="238" rx="70" ry="15" fill="#0E1F3A" stroke="rgba(148,163,184,0.35)"/>
+          <path d="M167,238 v-16 a70,15 0 0 0 140,0 v16" fill="#0E1F3A" stroke="rgba(148,163,184,0.35)"/>
+          <ellipse cx="237" cy="222" rx="70" ry="15" fill="#122845" stroke="rgba(148,163,184,0.35)"/>
+          <text x="237" y="220" text-anchor="middle" fill="#94A3B8" font-size="10.5">knowledge base</text>
+          <text x="237" y="236" text-anchor="middle" fill="#94A3B8" font-size="10.5">(vectors)</text>
+          <line x1="237" y1="207" x2="237" y2="156" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#rag-ar)"/>
+          <circle class="loop-token" r="11" fill="#7DD3FC" opacity="0.18"><animateMotion dur="5s" repeatCount="indefinite"><mpath href="#ragflow"/></animateMotion></circle>
+          <circle class="loop-token" r="5" fill="#7DD3FC"><animateMotion dur="5s" repeatCount="indefinite"><mpath href="#ragflow"/></animateMotion></circle>
+        </svg>
+        <p class="figure-caption">Figure 1 · <strong>The RAG pipeline.</strong> Follow the token: the question is retrieved against the vector base, augments the prompt, and the model generates the answer with citations.</p>
+      </div>
 
-  <!-- Step 1 -->
-  <g transform="translate(200, 30)">
-    <rect width="150" height="80" rx="10" fill="url(#boxC)" stroke="rgba(125,211,252,0.5)"/>
-    <text x="75" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#7DD3FC">STEP 1</text>
-    <text x="75" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">find streams</text>
-    <text x="75" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">/stream...endstream/g</text>
-    <text x="75" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">read as latin1</text>
-  </g>
+      <h2>The problem RAG solves, and why not the other options</h2>
 
-  <!-- Step 2 -->
-  <g transform="translate(380, 30)">
-    <rect width="150" height="80" rx="10" fill="url(#boxC)" stroke="rgba(125,211,252,0.5)"/>
-    <text x="75" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#7DD3FC">STEP 2</text>
-    <text x="75" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">inflate</text>
-    <text x="75" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">zlib.inflateSync</text>
-    <text x="75" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">if FlateDecode</text>
-  </g>
+      <p>When you want a model to answer about data it did not see in training, you have four paths. RAG is one. It is worth understanding why it usually wins before building it.</p>
 
-  <!-- Step 3 -->
-  <g transform="translate(560, 30)">
-    <rect width="140" height="80" rx="10" fill="url(#boxC)" stroke="rgba(125,211,252,0.5)"/>
-    <text x="70" y="22" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#7DD3FC">STEP 3</text>
-    <text x="70" y="40" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">extract text</text>
-    <text x="70" y="58" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Tj · TJ regex</text>
-    <text x="70" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">+ octal decode</text>
-  </g>
+      <p><strong>Paste everything into the prompt.</strong> Simple, but it does not scale. A whole manual does not fit in the context window, and even if it did, you pay for every token on every query and the model gets distracted by the irrelevant. It works for a couple of pages, not for your knowledge base.</p>
 
-  <!-- arrows top row -->
-  <line x1="160" y1="70" x2="198" y2="70" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
-  <line x1="350" y1="70" x2="378" y2="70" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
-  <line x1="530" y1="70" x2="558" y2="70" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
+      <p><strong>Fine-tuning.</strong> You retrain the model with your data. It changes the <em>style</em> and <em>format</em> of the answers far more than the factual knowledge, it is expensive to repeat every time your data changes, and it gives you no citations, no way to know where each claim came from. It is for teaching a tone or a task, not for "know the latest thing I uploaded."</p>
 
-  <!-- Downstream pipeline -->
-  <g transform="translate(40, 180)">
-    <rect width="150" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="75" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">chunk</text>
-    <text x="75" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">~500 tok · 50 overlap</text>
-  </g>
+      <p><strong>Giant context window.</strong> New models accept hundreds of thousands of tokens. It helps, but it does not replace RAG: you still pay for everything you put in, latency rises, and accuracy drops when the relevant fact is buried in the middle of a huge text (the "lost in the middle" problem). RAG and long context combine well; they do not compete.</p>
 
-  <g transform="translate(210, 180)">
-    <rect width="150" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="75" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">embed</text>
-    <text x="75" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Voyage AI batch</text>
-  </g>
+      <p><strong>RAG.</strong> You bring only the fragments that matter, at question time. It is cheap (embedding and searching costs little), it updates instantly (you upload a document and it is queryable), and it gives you traceability: you know which paragraph backed each sentence. That last point, the citations, is what makes it usable for anything serious.</p>
 
-  <g transform="translate(380, 180)">
-    <rect width="160" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">store</text>
-    <text x="80" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Supabase · pgvector</text>
-  </g>
+      <div class="callout reveal">
+        <div class="callout-label">Rule of thumb</div>
+        <p>If the knowledge changes often and you need to know where each answer came from, it is RAG. If you want to teach it a style or a fixed task, it is fine-tuning. It is almost never "paste everything into the prompt," and long context is a complement to RAG, not a replacement.</p>
+      </div>
 
-  <g transform="translate(560, 180)">
-    <rect width="140" height="60" rx="10" fill="url(#boxC)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="70" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">chat + cite</text>
-    <text x="70" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">sonnet-4.6 + tools</text>
-  </g>
+      <hr />
 
-  <!-- vertical connect from step 3 to chunk row -->
-  <line x1="630" y1="110" x2="630" y2="148" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,3"/>
-  <line x1="630" y1="148" x2="115" y2="148" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,3"/>
-  <line x1="115" y1="148" x2="115" y2="178" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,3" marker-end="url(#arrC)"/>
+      <h2>The anatomy: the five steps</h2>
 
-  <!-- arrows bottom row -->
-  <line x1="190" y1="210" x2="208" y2="210" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
-  <line x1="360" y1="210" x2="378" y2="210" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
-  <line x1="540" y1="210" x2="558" y2="210" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrC)"/>
+      <p>Every RAG system, however sophisticated, is a variation of five steps split across two moments. Three happen <strong>only once, at indexing time</strong> (when you upload a document). Two happen <strong>on every query</strong>. Separating those two moments in your head is half of understanding RAG.</p>
 
-  <!-- Caption row labels -->
-  <text x="400" y="282" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" letter-spacing="1.5" fill="#94A3B8">INGESTION PIPELINE</text>
-  <text x="400" y="300" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">synchronous inside the upload route · fits the 10s Hobby cap</text>
-</svg>
-<p class="figure-caption">Figure 1 · <strong>Big picture.</strong> The PDF parser is three small steps on top of <code>zlib</code> and regex. Everything downstream is standard RAG plumbing — chunk, embed, store, chat — wired to run synchronously inside the upload route so it fits Vercel Hobby's 10-second function cap.</p>
-</div>
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 320" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>The two moments of RAG: offline indexing (document, split, embed, store) and online query (question, embed, search, generate) meeting at the vector base</title>
+          <defs><marker id="an-ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker></defs>
+          <text x="30" y="30" fill="#7DD3FC" font-size="12" font-weight="700" letter-spacing="1.5" font-family="JetBrains Mono, monospace">INDEXING · ONCE (OFFLINE)</text>
+          <g>
+            <rect x="14" y="44" width="120" height="46" rx="8" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="74" y="65" text-anchor="middle" fill="#F1F5F9" font-size="11.5" font-weight="600">Document</text><text x="74" y="80" text-anchor="middle" fill="#94A3B8" font-size="10">PDF, notes, DB</text>
+            <line x1="134" y1="67" x2="158" y2="67" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+            <rect x="162" y="44" width="120" height="46" rx="8" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="222" y="65" text-anchor="middle" fill="#F1F5F9" font-size="11.5" font-weight="600">1 · Split</text><text x="222" y="80" text-anchor="middle" fill="#94A3B8" font-size="10">into fragments</text>
+            <line x1="282" y1="67" x2="306" y2="67" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+            <rect x="310" y="44" width="120" height="46" rx="8" fill="#122845" stroke="rgba(125,211,252,0.5)"/><text x="370" y="65" text-anchor="middle" fill="#7DD3FC" font-size="11.5" font-weight="600">2 · Embed</text><text x="370" y="80" text-anchor="middle" fill="#94A3B8" font-size="10">text → vector</text>
+            <line x1="430" y1="67" x2="454" y2="67" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+            <rect x="458" y="44" width="120" height="46" rx="8" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="518" y="65" text-anchor="middle" fill="#F1F5F9" font-size="11.5" font-weight="600">3 · Store</text><text x="518" y="80" text-anchor="middle" fill="#94A3B8" font-size="10">in the index</text>
+            <path d="M578,67 H648 V150" fill="none" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+          </g>
+          <path d="M582,176 v-4 a66,15 0 0 0 132,0 v4 a66,15 0 0 1 -132,0" fill="#0E1F3A" stroke="rgba(125,211,252,0.5)"/>
+          <ellipse cx="648" cy="172" rx="66" ry="15" fill="#122845" stroke="rgba(125,211,252,0.5)"/>
+          <text x="648" y="170" text-anchor="middle" fill="#7DD3FC" font-size="10.5" font-weight="600">vector</text>
+          <text x="648" y="184" text-anchor="middle" fill="#7DD3FC" font-size="10.5" font-weight="600">base</text>
+          <text x="30" y="222" fill="#4FA9E8" font-size="12" font-weight="700" letter-spacing="1.5" font-family="JetBrains Mono, monospace">QUERY · EVERY QUESTION (ONLINE)</text>
+          <g>
+            <rect x="14" y="236" width="120" height="46" rx="8" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="74" y="257" text-anchor="middle" fill="#F1F5F9" font-size="11.5" font-weight="600">Question</text>
+            <line x1="134" y1="259" x2="158" y2="259" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+            <rect x="162" y="236" width="120" height="46" rx="8" fill="#122845" stroke="rgba(125,211,252,0.5)"/><text x="222" y="257" text-anchor="middle" fill="#7DD3FC" font-size="11.5" font-weight="600">Embed</text><text x="222" y="272" text-anchor="middle" fill="#94A3B8" font-size="10">same function</text>
+            <line x1="282" y1="259" x2="306" y2="259" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+            <rect x="310" y="236" width="120" height="46" rx="8" fill="#122845" stroke="rgba(79,169,232,0.5)"/><text x="370" y="257" text-anchor="middle" fill="#4FA9E8" font-size="11.5" font-weight="600">4 · Search</text><text x="370" y="272" text-anchor="middle" fill="#94A3B8" font-size="10">the top k</text>
+            <line x1="430" y1="259" x2="454" y2="259" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#an-ar)"/>
+            <rect x="458" y="236" width="120" height="46" rx="8" fill="#122845" stroke="rgba(79,169,232,0.5)"/><text x="518" y="257" text-anchor="middle" fill="#4FA9E8" font-size="11.5" font-weight="600">5 · Generate</text><text x="518" y="272" text-anchor="middle" fill="#94A3B8" font-size="10">answer + citations</text>
+            <path d="M648,188 V236 H582" fill="none" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#an-ar)"/>
+          </g>
+        </svg>
+        <p class="figure-caption">Figure 2 · <strong>The two moments.</strong> You index once (top) and query many times (bottom). Both sides meet at the vector base, and use the same embedding function.</p>
+      </div>
 
-<hr />
+      <h3>1 · Ingestion and splitting (chunking)</h3>
 
-<h2>A 60-second PDF anatomy lesson</h2>
+      <p>A whole document is too big to retrieve as one unit: if you bring back the entire PDF, you are back to the "paste everything" problem. So you cut it into <strong>fragments</strong> (chunks) of a few hundred words each. Each fragment has to be small enough to be precise and large enough to make sense on its own.</p>
 
-<p>Before the parser makes sense, you need to know what's actually inside a <code>.pdf</code> file. I knew almost nothing about this when I started; an afternoon of reading the <a href="https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf">Adobe PDF 1.7 reference</a> clarified things faster than I expected.</p>
+      <p>The detail almost everyone overlooks: the <strong>overlap</strong>. If you cut cleanly, an idea that falls right on the boundary gets split between two fragments and neither contains it whole. So each fragment carries the last sentences of the previous one. It costs a little storage and it avoids losing information at the seams.</p>
 
-<p>A PDF is a tree of objects, encoded as a mix of ASCII and binary. The text you actually see on screen lives inside <strong>content streams</strong> — blobs of PostScript-like instructions that say "move the cursor here, set this font, show this string."</p>
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>Chunking with overlap: the text is cut into fragments that share their edges, so no idea is left split</title>
+          <text x="20" y="34" fill="#94A3B8" font-size="12">Continuous document text</text>
+          <rect x="20" y="44" width="720" height="26" rx="4" fill="#0E1F3A" stroke="rgba(148,163,184,0.3)"/>
+          <text x="380" y="61" text-anchor="middle" fill="#64748B" font-size="11" font-family="JetBrains Mono, monospace">…paragraph after paragraph, no natural cuts for the search engine…</text>
+          <rect x="20" y="110" width="260" height="34" rx="6" fill="rgba(125,211,252,0.14)" stroke="#7DD3FC"/><text x="150" y="132" text-anchor="middle" fill="#E2E8F0" font-size="12" font-weight="600">Fragment 1</text>
+          <rect x="230" y="150" width="260" height="34" rx="6" fill="rgba(79,169,232,0.14)" stroke="#4FA9E8"/><text x="360" y="172" text-anchor="middle" fill="#E2E8F0" font-size="12" font-weight="600">Fragment 2</text>
+          <rect x="440" y="110" width="260" height="34" rx="6" fill="rgba(125,211,252,0.14)" stroke="#7DD3FC"/><text x="570" y="132" text-anchor="middle" fill="#E2E8F0" font-size="12" font-weight="600">Fragment 3</text>
+          <rect x="230" y="110" width="50" height="74" rx="4" fill="rgba(244,162,89,0.16)" stroke="#F4A259" stroke-dasharray="3 3"/>
+          <rect x="440" y="110" width="50" height="74" rx="4" fill="rgba(244,162,89,0.16)" stroke="#F4A259" stroke-dasharray="3 3"/>
+          <text x="380" y="206" text-anchor="middle" fill="#F4A259" font-size="11" font-family="JetBrains Mono, monospace">the orange zones are the overlap: repeated on purpose</text>
+        </svg>
+        <p class="figure-caption">Figure 3 · <strong>Chunking with overlap.</strong> Fragments share their edges so an idea straddling two of them is not lost.</p>
+      </div>
 
-<p>A typical content stream looks something like this:</p>
+      <h3>2 · Embeddings: turning meaning into coordinates</h3>
 
-<pre><code class="language-typescript">BT
-  /F1 12 Tf
-  72 720 Td
-  (Hello, world.) Tj
-  0 -14 Td
-  [(Multiple) -250 (segments)] TJ
-ET</code></pre>
+      <p>This is the heart of RAG and the part that is hardest at first. An <strong>embedding</strong> is a function that takes a text and returns a list of numbers (a vector, say 1536 dimensions). The magic is that the function was trained so that <em>texts with similar meaning end up close</em> in that space, even if they share not a single word.</p>
 
-<p>Two operators do almost all the work:</p>
+      <p>Think of it as a map: just as on a map nearby cities tend to share climate, on this "map of meanings" nearby texts share sense. "How much is shipping?" and "home delivery rates" have not one word in common, but they point to the same thing, so their vectors land close. Keyword search would not see the link; embedding search does. That is <strong>semantic search</strong>: you search by meaning, not by text match.</p>
 
-<ul>
-<li><strong><code>Tj</code></strong> — show a single string. Syntax: <code>(some text) Tj</code>.</li>
-<li><strong><code>TJ</code></strong> — show an array of strings with kerning adjustments. Syntax: <code>[(Multiple) -250 (segments)] TJ</code>.</li>
-</ul>
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>Vector space: fragments with similar meaning cluster together; the question lands near its cluster and the nearest neighbors light up</title>
+          <rect x="14" y="14" width="732" height="312" rx="12" fill="rgba(8,16,31,0.5)" stroke="rgba(148,163,184,0.2)"/>
+          <g fill="#4FA9E8" opacity="0.85"><circle cx="150" cy="90" r="6"/><circle cx="120" cy="130" r="6"/><circle cx="185" cy="120" r="6"/><circle cx="160" cy="160" r="6"/><circle cx="110" cy="95" r="6"/></g>
+          <text x="150" y="60" text-anchor="middle" fill="#4FA9E8" font-size="11" font-family="JetBrains Mono, monospace">invoices and payments</text>
+          <g fill="#F4A259" opacity="0.85"><circle cx="600" cy="110" r="6"/><circle cx="640" cy="140" r="6"/><circle cx="580" cy="150" r="6"/><circle cx="630" cy="90" r="6"/></g>
+          <text x="612" y="66" text-anchor="middle" fill="#F4A259" font-size="11" font-family="JetBrains Mono, monospace">cooking recipes</text>
+          <g fill="#7DD3FC"><circle cx="360" cy="235" r="6"/><circle cx="410" cy="255" r="6"/><circle cx="330" cy="270" r="6"/><circle cx="395" cy="205" r="6"/><circle cx="440" cy="230" r="6"/></g>
+          <text x="385" y="305" text-anchor="middle" fill="#7DD3FC" font-size="11" font-family="JetBrains Mono, monospace">returns policy</text>
+          <circle cx="395" cy="235" r="9" fill="#F1F5F9"/>
+          <text x="395" y="180" text-anchor="middle" fill="#F1F5F9" font-size="12" font-weight="600">your question</text>
+          <line x1="395" y1="188" x2="395" y2="222" stroke="#F1F5F9" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <circle cx="395" cy="235" r="20" fill="none" stroke="#7DD3FC" stroke-width="1.6" opacity="0"><animate attributeName="r" values="10;95" dur="3.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.9;0" dur="3.5s" repeatCount="indefinite"/></circle>
+          <g stroke="#7DD3FC" stroke-width="1.3" opacity="0.7"><line x1="395" y1="235" x2="360" y2="235"/><line x1="395" y1="235" x2="410" y2="255"/><line x1="395" y1="235" x2="440" y2="230"/></g>
+        </svg>
+        <p class="figure-caption">Figure 4 · <strong>The vector space.</strong> Each point is a fragment; similar ones cluster. Your question lands near its cluster and you retrieve its nearest neighbors.</p>
+      </div>
 
-<p>If you can extract the strings inside the parentheses of every <code>Tj</code> and <code>TJ</code> operator in every content stream, you have, approximately, the text of the PDF.</p>
+      <p>You do not train this function yourself. You call an embeddings API (OpenAI, Voyage, Cohere) or run an open model. The golden rule: <strong>you must embed queries with the same model you embedded the documents with</strong>. Vectors from different models live in different spaces and cannot be compared.</p>
 
-<p>There's one catch. Modern PDFs almost always <strong>compress</strong> their content streams using zlib (the <code>FlateDecode</code> filter in PDF terminology). A raw PDF byte-stream contains long runs of binary garbage that decompresses into the readable PostScript above.</p>
+      <h3>3 · Storage and index</h3>
 
-<p>So the parser needs to do three things:</p>
+      <p>You now have one vector per fragment. Now you have to store them and, above all, find the ones closest to a query vector <em>fast</em>. Comparing against all of them one by one (brute force) works with thousands of vectors; with millions, it does not. That is where an <strong>approximate nearest neighbor index</strong> (ANN), like <code>HNSW</code>, comes in: it trades a bit of exactness for near-instant searches.</p>
 
-<ol>
-<li>Find every <code>stream ... endstream</code> block.</li>
-<li>Detect whether it's <code>FlateDecode</code>-compressed and inflate if so.</li>
-<li>Pull text out of <code>Tj</code> / <code>TJ</code> operators with regex.</li>
-</ol>
+      <p>This lives in a <strong>vector database</strong>. It can be a dedicated one (Pinecone, Weaviate, Qdrant) or, as in my case, Postgres with the <code>pgvector</code> extension, which gives you vector search next to your normal tables without adding another piece of infrastructure. We compare the options below.</p>
 
-<p>That's the entire algorithm.</p>
+      <h3>4 · Retrieval: cosine and top-k</h3>
 
-<hr />
+      <p>A question arrives. You embed it with the same function, and now you have to measure which fragments are "close." The standard measure is <strong>cosine similarity</strong>: it looks at the angle between two vectors, not their size. Cosine 1 means same direction (same meaning); 0 means unrelated. You keep the <strong>top k</strong> (typically 3 to 8) and, optionally, discard those below a minimum <strong>threshold</strong>, so you do not drag in noise when nothing is truly relevant.</p>
 
-<h2>Step 1 — Find every stream</h2>
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>Top-k retrieval: candidate fragments ordered by cosine similarity; the top k above the threshold are chosen</title>
+          <text x="20" y="28" fill="#94A3B8" font-size="12">Candidates ordered by similarity to the question</text>
+          <line x1="470" y1="40" x2="470" y2="228" stroke="#F4A259" stroke-width="1.4" stroke-dasharray="5 4"/>
+          <text x="476" y="52" fill="#F4A259" font-size="10.5" font-family="JetBrains Mono, monospace">threshold 0.25</text>
+          <g font-family="JetBrains Mono, monospace" font-size="11">
+            <rect x="20" y="44" width="560" height="24" rx="4" fill="rgba(125,211,252,0.18)" stroke="#7DD3FC"/><text x="30" y="61" fill="#E2E8F0">frag. A · shipping policy</text><text x="592" y="61" fill="#7DD3FC">0.88 ✓</text>
+            <rect x="20" y="74" width="470" height="24" rx="4" fill="rgba(125,211,252,0.16)" stroke="#7DD3FC"/><text x="30" y="91" fill="#E2E8F0">frag. B · delivery rates</text><text x="592" y="91" fill="#7DD3FC">0.81 ✓</text>
+            <rect x="20" y="104" width="360" height="24" rx="4" fill="rgba(125,211,252,0.14)" stroke="#7DD3FC"/><text x="30" y="121" fill="#E2E8F0">frag. C · coverage areas</text><text x="592" y="121" fill="#7DD3FC">0.64 ✓</text>
+            <rect x="20" y="134" width="150" height="24" rx="4" fill="rgba(148,163,184,0.12)" stroke="rgba(148,163,184,0.4)"/><text x="30" y="151" fill="#94A3B8">frag. D · opening hours</text><text x="592" y="151" fill="#64748B">0.19 ✗</text>
+            <rect x="20" y="164" width="90" height="24" rx="4" fill="rgba(148,163,184,0.12)" stroke="rgba(148,163,184,0.4)"/><text x="120" y="181" fill="#94A3B8">frag. E · company history</text><text x="592" y="181" fill="#64748B">0.08 ✗</text>
+          </g>
+          <rect x="20" y="206" width="620" height="34" rx="8" fill="rgba(46,117,182,0.12)" stroke="rgba(125,211,252,0.4)"/>
+          <text x="330" y="228" text-anchor="middle" fill="#7DD3FC" font-size="12">top-3 retrieved (A, B, C) → into the prompt · the rest is dropped</text>
+        </svg>
+        <p class="figure-caption">Figure 5 · <strong>Top-k by cosine.</strong> Order by similarity, cut by threshold, and only the best fragments enter the prompt.</p>
+      </div>
 
-<p>A PDF stream is delimited by the literal keywords <code>stream</code> and <code>endstream</code>, with newlines in between. The content between them is opaque bytes — either binary (compressed) or PostScript (raw).</p>
+      <h3>5 · Generation with citations</h3>
 
-<p>The robust way to read a PDF in Node without losing bytes is to read it as <code>latin1</code>. Latin-1 maps every byte 0–255 to a unique character, so the round-trip is lossless. (UTF-8 would corrupt anything non-ASCII; the <code>Buffer</code> API is overkill for text scanning.)</p>
+      <p>The last step is the simplest. You build a prompt that says, in essence: "answer the question using only this context, and cite which document each claim comes from," you paste the retrieved fragments, and you call the model. Since each fragment knows which document and page it came from, the model can write <code>[manual.pdf p.12]</code> next to each fact. That citation is what separates a serious assistant from a plausible-text generator.</p>
 
-<pre><code class="language-ts">import { inflateSync } from 'zlib'; // built-in, no npm install
+      <hr />
 
-function extractPdfText(buffer: Buffer): string {
-  const raw = buffer.toString('latin1');
-  const texts: string[] = [];
+      <h2>The strategies, in detail</h2>
 
-  const streamRegex = /stream\r?\n([\s\S]*?)\r?\nendstream/g;
-  let m: RegExpExecArray | null;
+      <p>The basic pipeline works, but each of its five steps has a fan of techniques behind it. Here is the full map, because "RAG does not work" is almost always one of these decisions made wrong, not the model. We go step by step, from simplest to most advanced.</p>
 
-  while ((m = streamRegex.exec(raw)) !== null) {
-    const streamData = m[1];
-    // ... step 2 below
-  }
+      <div class="callout reveal">
+        <div class="callout-label">Level heads-up</div>
+        <p>From here on we enter advanced territory. If you are just starting, everything above is enough to build a RAG that works; this is for when you want to squeeze it. I explain each technical term the first time it appears, and there is an express glossary of the acronyms at the end of the block.</p>
+      </div>
 
-  return texts.join(' ').replace(/\s+/g, ' ').trim();
-}</code></pre>
+      <h3>Chunking strategies (much more than "cut every N")</h3>
 
-<p><code>[\s\S]*?</code> is the lazy "match anything including newlines" idiom — JavaScript doesn't have <code>re.DOTALL</code> like Python, so this is the standard workaround.</p>
+      <p>How you cut the document decides how good retrieval can be: a badly cut fragment will never be retrieved well, no matter how good the search is. There is a whole ladder of strategies.</p>
 
-<h2>Step 2 — Decompress if FlateDecode</h2>
+      <table>
+        <thead><tr><th>Strategy</th><th>How it works</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Fixed size</strong></td><td>Cuts every N characters or tokens, with overlap</td><td>The default. Simple and surprisingly hard to beat.</td></tr>
+          <tr><td><strong>By sentence</strong></td><td>Groups whole sentences until the fragment fills</td><td>Avoids cutting mid-sentence. Cheap to add.</td></tr>
+          <tr><td><strong>Recursive</strong></td><td>Tries separators in order: paragraph, then sentence, then word</td><td>The most used by libraries. Respects structure without configuring it.</td></tr>
+          <tr><td><strong>By document structure</strong></td><td>Cuts by Markdown, HTML or code headings</td><td>Documents with clear hierarchy. Each fragment inherits its section.</td></tr>
+          <tr><td><strong>Semantic</strong></td><td>Embeds sentence by sentence and cuts where the topic shifts</td><td>When precision is worth the extra indexing cost.</td></tr>
+          <tr><td><strong>Small-to-big / parent</strong></td><td>You index small fragments but return the big paragraph containing them</td><td>Search precisely, answer with broad context. Very effective.</td></tr>
+          <tr><td><strong>Contextual (Anthropic)</strong></td><td>Prepends a summary of where the fragment lives in the document</td><td>Fragments that become ambiguous out of context ("it rose 3%": what?).</td></tr>
+          <tr><td><strong>Late chunking</strong></td><td>Embeds the whole document and only then averages per fragment</td><td>Each fragment "knows" about the rest. Needs long-context models.</td></tr>
+        </tbody>
+      </table>
 
-<p>Each PDF stream is preceded by a dictionary that tells you which filter (if any) was used to encode the data. The dictionary lives in the bytes just before the <code>stream</code> keyword. We don't need to fully parse it — checking whether <code>FlateDecode</code> appears in the ~500 bytes preceding the stream is enough for 99% of real-world PDFs.</p>
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>The fragment-size tradeoff: small is precise but lacks context; large has context but retrieves noise; the sweet spot is in the middle, and small-to-big gets both</title>
+          <text x="30" y="34" fill="#F87171" font-size="12" font-weight="700">SMALL FRAGMENT</text><text x="30" y="52" fill="#94A3B8" font-size="11">precise, but lacks context</text>
+          <rect x="30" y="64" width="60" height="20" rx="3" fill="rgba(248,113,113,0.2)" stroke="#F87171"/>
+          <text x="640" y="34" text-anchor="end" fill="#F4A259" font-size="12" font-weight="700">LARGE FRAGMENT</text><text x="640" y="52" text-anchor="end" fill="#94A3B8" font-size="11">context, but brings noise</text>
+          <rect x="560" y="64" width="180" height="20" rx="3" fill="rgba(244,162,89,0.2)" stroke="#F4A259"/>
+          <line x1="30" y1="110" x2="740" y2="110" stroke="rgba(148,163,184,0.3)" stroke-width="1.5"/>
+          <circle cx="385" cy="110" r="8" fill="#7DD3FC"/><text x="385" y="140" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="600">the sweet spot</text><text x="385" y="158" text-anchor="middle" fill="#94A3B8" font-size="10.5">~300 to 600 tokens for most cases</text>
+          <text x="385" y="188" text-anchor="middle" fill="#94A3B8" font-size="10.5" font-family="JetBrains Mono, monospace">small-to-big gets both: index small, return large</text>
+        </svg>
+        <p class="figure-caption">Figure 6 · <strong>The size tradeoff.</strong> Small wins precision, large wins context. The parent-document strategy keeps the best of both sides.</p>
+      </div>
 
-<pre><code class="language-ts">const streamStart = m.index;
-const preceding = raw.slice(Math.max(0, streamStart - 500), streamStart);
-const isFlate = preceding.includes('FlateDecode');
+      <h3>Embedding strategies</h3>
 
-let content: string;
-if (isFlate) {
-  try {
-    const compressed = Buffer.from(streamData, 'latin1');
-    const decompressed = inflateSync(compressed);
-    content = decompressed.toString('utf8');
-  } catch {
-    continue; // corrupted stream, skip
-  }
-} else {
-  content = streamData;
-}</code></pre>
+      <p>The model that turns text into a vector determines what "close" means. The options split by how they represent meaning and by where they run.</p>
 
-<p><code>inflateSync</code> is part of Node's built-in <code>zlib</code> module — no npm install, no bundling. It throws on malformed input, which is fine because PDFs sometimes contain partial or corrupted streams that aren't worth crashing the whole upload over.</p>
+      <table>
+        <thead><tr><th>Dimension</th><th>Options</th><th>What to watch</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Dense vs sparse</strong></td><td>Dense (meaning) · sparse like SPLADE (terms)</td><td>Dense ones catch synonyms; sparse ones, exact matches. Best is to combine them (hybrid).</td></tr>
+          <tr><td><strong>Provider</strong></td><td>OpenAI · Voyage · Cohere · open (BGE, E5)</td><td>Fast-to-start API vs running your own model with zero cost per token.</td></tr>
+          <tr><td><strong>Dimensions</strong></td><td>256 to 3072, some truncatable (Matryoshka)</td><td>More dimensions, more nuance and more storage and index cost.</td></tr>
+          <tr><td><strong>Domain and language</strong></td><td>General · technical · multilingual</td><td>A model trained on your domain beats a general one even with fewer dimensions.</td></tr>
+        </tbody>
+      </table>
 
-<p>After inflation, <code>content</code> is the PostScript-like text we actually want.</p>
+      <p>The one rule you cannot break: <strong>the same model to index and to query</strong>. Vectors from different models live in different spaces and do not compare.</p>
 
-<h2>Step 3 — Pull text from Tj and TJ</h2>
+      <h3>Index strategies</h3>
 
-<p>Two regexes do most of the work.</p>
+      <p>How you store the vectors sets the tradeoff between exactness and speed.</p>
 
-<pre><code class="language-ts">// Skip streams that don't have any text operators
-if (!content.includes('Tj') &amp;&amp; !content.includes('TJ')) continue;
+      <table>
+        <thead><tr><th>Index</th><th>What it does</th><th>Tradeoff</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Flat (exact)</strong></td><td>Compares against all, one by one</td><td>Perfect accuracy, but slow with millions of vectors.</td></tr>
+          <tr><td><strong>IVF</strong></td><td>Groups into cells and searches only the near ones</td><td>Fast, with a bit of loss. Has to be trained.</td></tr>
+          <tr><td><strong>HNSW</strong></td><td>A navigable graph of neighbors</td><td>Today's standard: very fast and very accurate. Uses more memory. The one I use.</td></tr>
+        </tbody>
+      </table>
 
-// (text) Tj
-for (const t of content.matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g)) {
-  const s = t[1]
-    .replace(/\\n/g, '\n')
-    .replace(/\\(\d{3})/g, (_, oct) =&gt; String.fromCharCode(parseInt(oct, 8)));
-  if (s.trim()) texts.push(s);
+      <h3>Retrieval strategies (the heart)</h3>
+
+      <p>This is where RAG is won or lost, and where there are the most techniques. Top-k by cosine is the starting point, not the goal. Think of it as a funnel: you retrieve broad and cheap, and keep filtering with methods that get more precise and more expensive.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>The retrieval funnel: from many cheap candidates to few precise fragments, passing through hybrid search and reranking</title>
+          <defs><marker id="fun-ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker></defs>
+          <polygon points="120,40 640,40 470,260 290,260" fill="rgba(46,117,182,0.08)" stroke="rgba(125,211,252,0.3)"/>
+          <text x="380" y="66" text-anchor="middle" fill="#7DD3FC" font-size="13" font-weight="700">1 · Retrieve broad (cheap)</text>
+          <text x="380" y="84" text-anchor="middle" fill="#94A3B8" font-size="10.5">dense + sparse (BM25) · pull 50 to 100 candidates</text>
+          <text x="380" y="130" text-anchor="middle" fill="#4FA9E8" font-size="13" font-weight="700">2 · Fuse (hybrid, RRF)</text>
+          <text x="380" y="148" text-anchor="middle" fill="#94A3B8" font-size="10.5">combine both rankings into one</text>
+          <text x="380" y="192" text-anchor="middle" fill="#F4A259" font-size="13" font-weight="700">3 · Rerank (expensive)</text>
+          <text x="380" y="210" text-anchor="middle" fill="#94A3B8" font-size="10.5">a cross-encoder reads question and fragment together</text>
+          <rect x="300" y="230" width="160" height="26" rx="6" fill="rgba(125,211,252,0.18)" stroke="#7DD3FC"/>
+          <text x="380" y="248" text-anchor="middle" fill="#E2E8F0" font-size="11.5" font-weight="600">top 3 to 5 into the prompt</text>
+          <line x1="670" y1="60" x2="670" y2="245" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#fun-ar)"/>
+          <text x="690" y="150" fill="#94A3B8" font-size="10" font-family="JetBrains Mono, monospace" transform="rotate(90 690 150)">precision ↑ · volume ↓</text>
+        </svg>
+        <p class="figure-caption">Figure 7 · <strong>The retrieval funnel.</strong> Many cheap candidates at the top, few precise fragments at the bottom. Each stage costs more and sharpens more.</p>
+      </div>
+
+      <table>
+        <thead><tr><th>Technique</th><th>What it solves</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Dense (semantic)</strong></td><td>The default: finds meaning even when the words do not match.</td></tr>
+          <tr><td><strong>Sparse / BM25</strong></td><td>Exact matches of rare terms: codes, proper names, acronyms.</td></tr>
+          <tr><td><strong>Hybrid + RRF</strong></td><td>Runs dense and sparse, and fuses both rankings with Reciprocal Rank Fusion. Almost always better than either alone.</td></tr>
+          <tr><td><strong>Reranking</strong></td><td>You pull 20 to 50 candidates and a cross-encoder reorders them looking at question and fragment at once. The highest-return improvement.</td></tr>
+          <tr><td><strong>Query rewriting</strong></td><td>An LLM reformulates the user's question into a better one for searching (resolves pronouns, adds context from the chat).</td></tr>
+          <tr><td><strong>Multi-query</strong></td><td>Generates several versions of the question, searches with all, and merges. Covers different ways of saying the same thing.</td></tr>
+          <tr><td><strong>HyDE</strong></td><td>Generates a hypothetical answer and searches with <em>that</em>. Sometimes a fake answer resembles the real one more than the question does.</td></tr>
+          <tr><td><strong>Decomposition</strong></td><td>Breaks a complex question into sub-questions, retrieves for each, and joins. For multi-hop queries.</td></tr>
+          <tr><td><strong>Metadata filter</strong></td><td>Restricts by author, date, type or (in my case) session, before ordering by similarity.</td></tr>
+          <tr><td><strong>MMR (diversity)</strong></td><td>Avoids bringing five fragments that say the same thing; balances relevance with variety.</td></tr>
+          <tr><td><strong>Contextual retrieval</strong></td><td>Stores each fragment with a summary of its context, so it does not become ambiguous when retrieved alone.</td></tr>
+          <tr><td><strong>GraphRAG</strong></td><td>Builds a graph of entities and relations, and retrieves by connections. For questions that cross many documents.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout reveal">
+        <div class="callout-label">Express glossary of acronyms</div>
+        <p><strong>BM25:</strong> classic keyword search. <strong>RRF:</strong> a simple formula to fuse two result lists into one. <strong>Cross-encoder:</strong> a model that reads question and fragment together to score how well they answer each other (slower and more precise than embedding them separately). <strong>MMR:</strong> a method to keep results from repeating each other. <strong>HyDE:</strong> generate a fake trial answer and search with it. <strong>HNSW / IVF:</strong> two ways to organize the vectors for fast search. <strong>nDCG / MRR / recall@k:</strong> three ways to grade how good the search was.</p>
+      </div>
+
+      <h3>Generation strategies</h3>
+
+      <p>The last step looks trivial, but it has decisions too. <strong>Grounding:</strong> the prompt has to order it to answer <em>only</em> with the given context, not with the model's general knowledge. <strong>Citations:</strong> if each fragment carries its origin, the model can write <code>[file.pdf p.3]</code> and make every sentence verifiable. <strong>Honest refusal:</strong> you have to give it explicit permission to say "this is not in your documents" instead of inventing; without that instruction, a helpful model fills the gap. That "I don't know" is as valuable as a good answer.</p>
+
+      <h3>How to know if it works: evaluation</h3>
+
+      <p>Here is the step almost everyone skips, and it is the one that separates a demo from a system. You cannot improve what you do not measure, and "it feels like it answers well" is not measuring. RAG is evaluated in two halves, because it has two parts that can fail separately.</p>
+
+      <p><strong>Retrieval</strong> is measured with a set of questions where you already know which fragment should come back (a <em>golden set</em>). With that you compute <code>recall@k</code> (is the right fragment among the k you brought?), <code>MRR</code> (how high up did it appear?) and <code>nDCG</code> (is the order good?). <strong>Generation</strong> is measured differently: <em>faithfulness</em> (does the answer rest only on the context, or did it hallucinate?), <em>relevance</em> (does it answer what was asked?) and <em>citation accuracy</em>. Tools like RAGAS automate much of this using an LLM as judge.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">The same principle as always</div>
+        <p>A golden set of twenty questions with their expected fragment turns "I changed the chunking, did it improve?" from a hunch into a number. It is exactly the <em>evals</em> discipline I used in the <a href="harness-engineering.html">harness engineering series</a>: without a way to measure, every change is blind faith.</p>
+      </div>
+
+      <h3>The most common failure modes</h3>
+
+      <table>
+        <thead><tr><th>Symptom</th><th>Almost always the cause</th></tr></thead>
+        <tbody>
+          <tr><td>Brings irrelevant fragments</td><td>Bad chunking, or the wrong embedding model for your domain.</td></tr>
+          <tr><td>The fact exists but it does not find it</td><td>Missing hybrid search (rare term) or the fragment got split.</td></tr>
+          <tr><td>Hallucinates with the context right there</td><td>The prompt does not force grounding, or you put in too many fragments and it got lost in the middle.</td></tr>
+          <tr><td>Cites the source wrong</td><td>The origin metadata does not travel with the fragment to the prompt.</td></tr>
+          <tr><td>Good in tests, bad in production</td><td>There was never a golden set; you tested with the questions you already knew worked.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout reveal">
+        <div class="callout-label">The order that pays</div>
+        <p>Get the full basic pipeline working before adding hybrid, reranking or contextual. Most "RAG does not work" cases are the two most boring things: badly cut fragments or the wrong embedding model. Measure first, optimize later.</p>
+      </div>
+
+      <hr />
+
+      <h2>The minimal RAG, in code</h2>
+
+      <p>With the theory clear, the whole pipeline fits on one screen. This is the essence, no frills: index and query.</p>
+
+      <pre><code class="language-typescript">// --- INDEX (once per document) ---
+const chunks = split(text, { tokens: 500, overlap: 50 })
+for (const group of inBatches(chunks, 100)) {
+  const vectors = await embed(group)             // same function as at query time
+  await db.insert("chunks", group, vectors)      // stores text + vector + metadata
 }
 
-// [(text) -250 (more) ...] TJ
-for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
-  for (const p of t[1].matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g)) {
-    if (p[1].trim()) texts.push(p[1]);
-  }
-}</code></pre>
+// --- QUERY (on every question) ---
+const q = await embed([question])
+const top = await db.rpc("match_chunks", {       // nearest neighbors by cosine
+  query_embedding: q, match_count: 5, match_threshold: 0.25,
+})
+const prompt = `Answer using only this context and cite the source:
+${top.map(c => `[${c.filename} p.${c.page}] ${c.content}`).join("\n\n")}
 
-<p>The <code>(?:\\.[^)\\]*)*</code> mess is there to handle escaped characters inside parentheses — PDFs allow <code>\)</code> and <code>\\</code> inside string literals, which would otherwise terminate the match early. The <code>\\(\d{3})</code> pass converts octal escapes (<code>\101</code> → <code>A</code>) that appear in some PDFs.</p>
+Question: ${question}`
+const answer = await model.generate(prompt)      // the LLM answers with citations</code></pre>
 
-<p>This is enough to extract the text from a clinical paper, a textbook chapter, or pretty much any text-based PDF you'll feed a RAG pipeline.</p>
+      <p>Everything else (agents, memory, streaming, reranking) is layers on top of these twelve lines. If you understand this, you understand RAG.</p>
 
-<hr />
+      <hr />
 
-<h2>What this does NOT handle</h2>
+      <h2>The pattern, generalized</h2>
 
-<p>I want to be honest: this parser is good enough for RAG, not good enough for everything.</p>
+      <p>RAG is a simpler idea than its name suggests: give the model the right evidence at the right time, instead of hoping it already knows. Everything else is engineering detail around that idea.</p>
 
-<div class="bug-row">
-<div class="bug-num">EDGE 1</div>
-<div>
-  <div class="bug-title">Scanned PDFs (image-only, no text streams)</div>
-  <div class="bug-desc">There's no <code>Tj</code>/<code>TJ</code> content to extract — the pages are flattened images. For those you need OCR (Tesseract, AWS Textract, Google Document AI). The parser will return an empty string and the upload route can surface that gracefully.</div>
-</div>
-</div>
+      <p>And once you see it that way, it shows up everywhere. Documents are RAG. An agent's memory is RAG over what you remember. Web search is RAG with an index you do not control. The mechanism (embed, search by closeness, inject) is always the same, and the hard part is always the same: <strong>retrieving well</strong>. If your answers are bad, it is almost never the fault of the model doing the generating; it is that you are giving it the wrong context. Fix retrieval and you fix RAG.</p>
 
-<div class="bug-row">
-<div class="bug-num">EDGE 2</div>
-<div>
-  <div class="bug-title">Complex font encodings (<code>ToUnicode</code> CMaps)</div>
-  <div class="bug-desc">Some PDFs encode characters with non-standard glyph IDs that need a CMap lookup to map back to readable characters. Most consumer-generated PDFs (Word, Pages, LaTeX) are fine; weird editorial PDFs sometimes return garbage.</div>
-</div>
-</div>
-
-<div class="bug-row">
-<div class="bug-num">EDGE 3</div>
-<div>
-  <div class="bug-title">Table structure</div>
-  <div class="bug-desc">Text comes out in reading order, but you lose the row/column relationships. Fine for chunking and semantic search, bad for <em>"extract this table as JSON."</em></div>
-</div>
-</div>
-
-<div class="bug-row">
-<div class="bug-num">EDGE 4</div>
-<div>
-  <div class="bug-title">Encrypted PDFs</div>
-  <div class="bug-desc">They'll just look like garbage after the missing decryption step. You need a real PDF library if encrypted PDFs are in scope.</div>
-</div>
-</div>
-
-<p>For RAG, none of these usually matter. You're going to chunk the text anyway, embed it, and let semantic search do the heavy lifting.</p>
-
-<hr />
-
-<h2>Wiring it into the ingestion pipeline</h2>
-
-<p>Once the text is out, the rest of the ingestion is standard:</p>
-
-<pre><code class="language-ts">async function processDocument(blobUrl: string, sessionId: string, documentId: string) {
-  const buffer = await fetch(blobUrl).then(r =&gt; r.arrayBuffer());
-  const text = extractPdfText(Buffer.from(buffer));
-
-  const chunks = chunkText(text);              // ~500 tokens each, 50-token overlap
-  const embeddings = await embedBatch(chunks); // Voyage AI batch endpoint
-
-  await supabase.from('chunks').insert(
-    chunks.map((c, i) =&gt; ({
-      document_id: documentId,
-      session_id: sessionId,
-      content: c.content,
-      embedding: embeddings[i],
-      chunk_index: i,
-      page_number: c.pageNumber,
-    }))
-  );
-
-  await supabase
-    .from('documents')
-    .update({ status: 'ready', chunk_count: chunks.length })
-    .eq('id', documentId);
-}</code></pre>
-
-<p>A subtle point that bit me: I originally ran <code>processDocument</code> in the background using Vercel's <code>after()</code>. That dies on the Hobby plan because <code>after()</code> keeps the function alive past the 10-second hard cap. The fix was unromantic — run ingestion <strong>synchronously</strong> inside the upload route handler, fast enough that a 1–10 page PDF finishes in 2–5 seconds. The user gets <code>status: 'ready'</code> directly in the response and never sees a "processing" spinner.</p>
-
-<div class="callout">
-<div class="callout-label">Takeaway</div>
-<p>Browser-only dependencies are a serverless red flag. If a package builds on <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, or any DOM API, assume it'll break in serverless and reach for a Node-native alternative — even if it means writing a smaller, dumber tool yourself. The maintenance cost of <em>"weird unfixable production crash on Friday afternoon"</em> outweighs the convenience of <code>npm install</code>.</p>
-</div>
-
-<hr />
-
-<h2>What I learned</h2>
-
-<p>Two takeaways I'll carry into every future serverless LLM project:</p>
-
-<ol>
-<li><strong>Treat browser-only dependencies as a serverless red flag.</strong> If a package is built on top of <code>pdfjs-dist</code>, <code>canvas</code>, <code>jsdom</code>, or any DOM API, assume it'll break in serverless and look for a Node-native alternative — even if it means writing a worse, simpler parser yourself. The maintenance cost of "weird unfixable production crash on Friday afternoon" outweighs the convenience of <code>npm install pdf-parse</code>.</li>
-<li><strong>A worse, smaller, owned parser beats a fancier one you can't debug.</strong> This parser is ~80 lines. I understand every byte of it. When something goes wrong, the stack trace points at a regex I wrote, not at three layers of abstraction inside a library. That ownership is worth a lot when you're shipping under a timeline.</li>
-</ol>
-
-<hr />
-
-<h2>What I'd do differently</h2>
-
-<ol>
-<li><strong>Surface "no text extracted" as a first-class error in the UI.</strong> Right now if a user uploads a scanned PDF, the parser returns an empty string, the chunker produces zero chunks, and the document just sits at <code>status: 'ready'</code> with nothing to chat about. A simple check after extraction (<em>"extracted text was empty — this looks like a scanned PDF; OCR isn't supported yet"</em>) would prevent confusion and open the door to wiring up an OCR fallback later.</li>
-<li><strong>Detect <code>ToUnicode</code> CMaps and warn before chunking.</strong> The current parser silently returns gibberish for PDFs with custom glyph encodings. A quick sanity check (e.g. ratio of printable ASCII characters in the extracted text) could flag these and tell the user "this PDF uses non-standard fonts; results may be garbled."</li>
-<li><strong>Move ingestion off the upload route once I'm off Hobby.</strong> Synchronous ingestion is the right call inside a 10-second cap, but it caps the PDF size you can handle and makes the upload feel slow for bigger files. On Pro, I'd put ingestion behind Inngest or QStash with proper progress events streamed over SSE.</li>
-</ol>
-
-<hr />
-
-<h2>The pattern, generalized</h2>
-
-<p>This project is really about a more general decision: <strong>when to write your own 80-line tool versus install a 200KB library.</strong> The rule I've landed on is roughly:</p>
-
-<ul>
-<li><strong>Library wins</strong> when the spec is large, the edge cases matter, and the runtime environment is generous. Server-side rendering of PDFs to images? Use <code>pdfjs-dist</code> on a worker that has a DOM polyfill.</li>
-<li><strong>Owned code wins</strong> when you only need a sliver of the spec, your runtime is restrictive, and the failure cost of <em>"the library doesn't deploy"</em> is high. Extracting text for RAG? 80 lines beats 200 KB.</li>
-</ul>
-
-<p>The same pattern applies far beyond PDF parsing — image thumbnailing (Sharp vs hand-rolling a Resize via <code>node:zlib</code>+PNG chunks), CSV parsing (Papa Parse vs a 20-line tokenizer), Markdown rendering (a full unified pipeline vs a single regex pass). Reach for the library by default, but know the moment to write the small version yourself.</p>
-
-<p>The full code, with chunking, embedding, the dual memory system, and the chat agent on top, lives at the repo below. If you're hitting the same <code>DOMMatrix is not defined</code> wall — paste my parser into your <code>lib/</code> folder, <code>npm uninstall pdf-parse</code>, and ship.</p>
-
-<p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://rag-agent-memory.vercel.app">live demo</a></p>
+      <p>🔗 <strong><a href="rag-agent-memory-build.html">Part 2 · How I built it</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">repo</a> · <a href="../">portfolio</a></p>
 
     </div>
+
     <div class="tag-pills">
       <span class="tag-pill">RAG</span>
+      <span class="tag-pill">Embeddings</span>
+      <span class="tag-pill">pgvector</span>
+      <span class="tag-pill">AI SDK</span>
       <span class="tag-pill">Anthropic Claude</span>
-      <span class="tag-pill">Next.js</span>
-      <span class="tag-pill">Serverless</span>
     </div>
-    <div class="footer-cta">
-      <h3>About this project</h3>
-      <p>The full source code, README, and live demo:</p>
+
+    <div class="footer-cta reveal">
+      <h3>In part 2: from theory to code</h3>
+      <p>I took all of this and built a real agent: you upload PDFs, it chats with citations, searches the web when needed, and remembers things about you across sessions. In part 2 I show the actual code, step by step: the PDF parser, the pgvector schema, the agent's tools and the memory loop.</p>
       <div class="links">
-        <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-with-memory ↗</a>
-        <a href="https://rag-agent-memory.vercel.app">🔗 Live demo ↗</a>
+        <a href="rag-agent-memory-build.html">📄 Part 2 · How I built it ↗</a>
+        <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-memory ↗</a>
       </div>
       <h3 style="margin-top:24px;">About the author</h3>
       <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
@@ -845,9 +753,15 @@ for (const t of content.matchAll(/\[([^\]]+)\]\s*TJ/g)) {
       </div>
     </div>
   </article>
+
   <footer class="site-footer">
     © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
   </footer>
+
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
