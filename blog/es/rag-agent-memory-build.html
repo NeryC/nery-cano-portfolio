@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cómo construí un agente RAG con memoria: el código real (Parte 2) — Nery Cano</title>
+  <meta name="description" content="El código real de un agente RAG con memoria: parser de PDF sin dependencias, pgvector, herramientas del agente y memoria de dos vías sobre Next.js y el Vercel AI SDK v6." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Cómo construí un agente RAG con memoria (Parte 2 de 2)" />
+  <meta property="og:description" content="El código real, paso a paso: parser de PDF, esquema de pgvector, el agente con herramientas y el bucle de memoria." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_build_banner_es.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/rag-agent-memory-build.html" />
+  <meta property="article:published_time" content="2026-05-13" />
+  <meta property="article:tag" content="RAG" />
+  <meta property="article:tag" content="pgvector" />
+  <meta property="article:tag" content="AI SDK" />
+  <meta property="article:tag" content="Anthropic Claude" />
+  <meta property="article:tag" content="Serverless" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Cómo construí un agente RAG con memoria (Parte 2 de 2)" />
+  <meta name="twitter:description" content="El código real, paso a paso: parser de PDF, esquema de pgvector, el agente con herramientas y el bucle de memoria." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_build_banner_es.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-memory-build.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/rag-agent-memory-build.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-memory-build.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  
+    /* ── Layout ancho y tipografía fluida ─────────────────────────────────
+       En pantallas grandes el problema no es la columna: es que 19px de
+       cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
+       de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
+       columna crece en proporción y la medida se mantiene entre 91 y 96
+       caracteres. Todo lo que vive dentro de .article se expresa en em para
+       que siga la escala: metadata, captions, callouts, bug-rows, código,
+       tablas y el interior de las figuras.
+       NADA sangra fuera de la columna. Un bloque más ancho que el texto al
+       que pertenece se lee como un error de maquetado, no como jerarquía.
+       Debajo de 1240px, comportamiento original. */
+    @media (min-width: 1240px) {
+      .header-nav, .site-footer, .article { max-width: 920px; }
+      .article { font-size: 20px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 1600px) {
+      .header-nav, .site-footer, .article { max-width: 1000px; }
+      .article { font-size: 21.5px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2000px) {
+      .header-nav, .site-footer, .article { max-width: 1090px; }
+      .article { font-size: 23px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2400px) {
+      .header-nav, .site-footer, .article { max-width: 1200px; }
+      .article { font-size: 25px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- structure: build-report — la segunda parte de la guía RAG; recorre la implementación real del proyecto rag-agent-memory. -->
+  <nav class="header-nav">
+    <a href="../../">← Portfolio</a>
+    <a href="../">Todos los artículos</a>
+  </nav>
+
+  <article class="article">
+    <div class="article-meta">13 may 2026 · Parte 2 de 2 · ~16 min</div>
+    <h1 class="article-title">Cómo construí un agente RAG con memoria</h1>
+    <p class="article-subtitle">La parte 1 fue la teoría. Esta es el código real: el parser de PDF que sobrevive a serverless, el esquema de pgvector, el agente con herramientas y el bucle de memoria, todo abierto.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+    </div>
+    <img class="banner-img" src="../post_1_rag_build_banner_es.png" alt="La arquitectura real: ingesta, pgvector, el agente con herramientas y memoria" />
+
+    <div class="article-body">
+
+      <p><em>Esta es la parte 2. En la <a href="rag-agent-with-memory.html">parte 1</a> conté qué es RAG y todas las estrategias detrás de cada paso. Acá bajo al barro: el código real de un agente que subís PDFs, chatea con citas, busca en la web cuando hace falta, y te recuerda entre sesiones. Todo verificable en el repo.</em></p>
+
+      <p>El sistema hace cuatro cosas. Subís un PDF y en unos segundos es consultable. Preguntás y responde citando documento y página, como <code>[manual.pdf p.3]</code>. Si el tema no está en tus documentos, busca en la web solo. Y al terminar cada charla, aprende hechos tuyos y los recuerda en la próxima. El stack: <strong>Next.js 16</strong> con el <strong>Vercel AI SDK v6</strong>, chat con <strong>Claude Sonnet 4.6</strong>, embeddings <strong>Voyage</strong>, y <strong>Supabase pgvector</strong> de base de vectores.</p>
+
+      <p>🔗 <strong><a href="rag-agent-with-memory.html">Parte 1 · La guía completa de RAG</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">código</a> · <a href="https://rag-agent-memory.vercel.app">demo en vivo</a></p>
+
+      <hr />
+
+      <h2>La arquitectura, de un vistazo</h2>
+
+      <p>Dos caminos que se encuentran en la base de vectores. La <strong>ingesta</strong> lleva un PDF de crudo a fragmentos consultables. El <strong>chat</strong> toma una pregunta y la responde con evidencia. Los dos comparten pgvector y el mismo aislamiento por sesión.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>Arquitectura: la ingesta lleva el PDF de Blob al parser, trocea, embebe con Voyage y guarda en pgvector; el chat embebe la pregunta, recupera fragmentos y memorias, y Claude responde con herramientas por streaming</title>
+          <defs><marker id="ar-a2" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker></defs>
+          <text x="24" y="28" fill="#7DD3FC" font-size="11.5" font-weight="700" letter-spacing="1.5" font-family="JetBrains Mono, monospace">INGESTA · /api/upload (síncrona)</text>
+          <g font-size="10.5">
+            <rect x="14" y="40" width="96" height="42" rx="7" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="62" y="58" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">PDF</text><text x="62" y="73" text-anchor="middle" fill="#94A3B8">Vercel Blob</text>
+            <line x1="110" y1="61" x2="132" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="136" y="40" width="110" height="42" rx="7" fill="#122845" stroke="rgba(244,162,89,0.5)"/><text x="191" y="58" text-anchor="middle" fill="#F4A259" font-size="11" font-weight="600">parser propio</text><text x="191" y="73" text-anchor="middle" fill="#94A3B8">zlib + regex</text>
+            <line x1="246" y1="61" x2="268" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="272" y="40" width="96" height="42" rx="7" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="320" y="58" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">trocear</text><text x="320" y="73" text-anchor="middle" fill="#94A3B8">500 / 50</text>
+            <line x1="368" y1="61" x2="390" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="394" y="40" width="104" height="42" rx="7" fill="#122845" stroke="rgba(125,211,252,0.5)"/><text x="446" y="58" text-anchor="middle" fill="#7DD3FC" font-size="11" font-weight="600">Voyage</text><text x="446" y="73" text-anchor="middle" fill="#94A3B8">voyage-3</text>
+            <line x1="498" y1="61" x2="520" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="524" y="40" width="112" height="42" rx="7" fill="#122845" stroke="rgba(125,211,252,0.6)"/><text x="580" y="58" text-anchor="middle" fill="#7DD3FC" font-size="11" font-weight="600">pgvector</text><text x="580" y="73" text-anchor="middle" fill="#94A3B8">chunks</text>
+          </g>
+          <rect x="524" y="150" width="222" height="60" rx="10" fill="rgba(46,117,182,0.12)" stroke="rgba(125,211,252,0.5)"/>
+          <text x="635" y="174" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="700">Supabase · pgvector</text>
+          <text x="635" y="193" text-anchor="middle" fill="#94A3B8" font-size="10.5">chunks + memories · HNSW coseno · por sesión</text>
+          <line x1="580" y1="82" x2="580" y2="150" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#ar-a2)"/>
+          <text x="24" y="252" fill="#4FA9E8" font-size="11.5" font-weight="700" letter-spacing="1.5" font-family="JetBrains Mono, monospace">CHAT · /api/chat (streaming SSE)</text>
+          <g font-size="10.5">
+            <rect x="14" y="264" width="96" height="42" rx="7" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="62" y="282" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">Pregunta</text><text x="62" y="297" text-anchor="middle" fill="#94A3B8">embeber</text>
+            <line x1="110" y1="285" x2="132" y2="285" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="136" y="264" width="150" height="42" rx="7" fill="#122845" stroke="rgba(79,169,232,0.5)"/><text x="211" y="282" text-anchor="middle" fill="#4FA9E8" font-size="11" font-weight="600">recuperar</text><text x="211" y="297" text-anchor="middle" fill="#94A3B8">chunks + memorias</text>
+            <line x1="286" y1="285" x2="308" y2="285" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="312" y="264" width="150" height="42" rx="7" fill="#122845" stroke="rgba(79,169,232,0.6)"/><text x="387" y="282" text-anchor="middle" fill="#4FA9E8" font-size="11" font-weight="600">Claude Sonnet 4.6</text><text x="387" y="297" text-anchor="middle" fill="#94A3B8">+ herramientas</text>
+            <line x1="462" y1="285" x2="484" y2="285" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-a2)"/>
+            <rect x="488" y="264" width="130" height="42" rx="7" fill="#0E1F3A" stroke="rgba(125,211,252,0.45)"/><text x="553" y="282" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">Respuesta</text><text x="553" y="297" text-anchor="middle" fill="#94A3B8">token a token + citas</text>
+            <path d="M211,264 V218 H610 V210" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar-a2)"/>
+          </g>
+        </svg>
+        <p class="figure-caption">Figura 1 · <strong>La arquitectura real.</strong> Ingesta síncrona arriba, chat con streaming abajo; los dos lados se encuentran en pgvector, aislados por sesión.</p>
+      </div>
+
+      <h2>El esquema: cuatro tablas y dos búsquedas</h2>
+
+      <p>Todo el sistema se apoya en cuatro tablas de Postgres y dos funciones de búsqueda. Los <code>chunks</code> guardan los fragmentos de PDF con su vector; las <code>memories</code>, los hechos aprendidos, también con vector. Fijate que las dos tienen la misma forma: es lo que permite hacer RAG sobre documentos y sobre recuerdos con el mismo mecanismo.</p>
+
+      <pre><code class="language-sql">-- fragmentos de documentos: texto + vector + de dónde salió
+CREATE TABLE chunks (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  document_id uuid REFERENCES documents(id) ON DELETE CASCADE,
+  session_id text NOT NULL,        -- el aislamiento entre usuarios vive acá
+  content text NOT NULL,
+  embedding vector(1536),          -- el vector de Voyage
+  page_number int DEFAULT 1
+);
+CREATE INDEX ON chunks USING hnsw (embedding vector_cosine_ops);  -- búsqueda rápida
+
+-- memorias: hechos del usuario, con la MISMA forma que un chunk
+CREATE TABLE memories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id text NOT NULL,
+  content text NOT NULL,
+  embedding vector(1536),
+  confidence float NOT NULL        -- qué tan seguro es el hecho
+);</code></pre>
+
+      <p>Además hay una tabla <code>documents</code> (una fila por PDF, con su estado) y una <code>conversations</code> (el historial de cada charla en JSON). Las dos búsquedas, <code>match_chunks</code> y <code>match_memories</code>, son gemelas: reciben un vector de consulta, filtran por sesión, y devuelven lo más parecido por coseno. Las veo en detalle en la sección de recuperación.</p>
+
+      <hr />
+
+      <h2>La ingesta, y el parser de PDF que sobrevive a serverless</h2>
+
+      <p>La ingesta corre <strong>síncrona dentro del route de upload</strong>: subo el PDF a Vercel Blob, extraigo el texto, troceo en fragmentos de 500 tokens con 50 de solapamiento, embebo en lotes de 100 y guardo, todo antes de responder. Es a propósito: en el plan Hobby de Vercel la ventana de función es corta, así que meto el trabajo en una sola invocación en lugar de armar una cola. Funciona para PDFs chicos, que es el caso de un demo.</p>
+
+      <p>El único paso que se puso feo fue extraer el texto. Empecé con <code>pdf-parse</code>, que por dentro usa <code>pdfjs-dist</code>, y me estrellé apenas desplegué.</p>
+
+      <div class="bug-row"><div class="bug-num">BUG 1</div><div><div class="bug-title"><code>DOMMatrix is not defined</code></div><div class="bug-desc">En mi laptop andaba; en Vercel, crash inmediato. <code>pdfjs-dist</code> fue diseñado para el navegador y depende de <code>DOMMatrix</code>, <code>canvas</code> y otras APIs del DOM que nunca existieron en Node. El runtime serverless no tiene DOM ni shim. La única salida real fue dejar de depender de esa librería.</div></div></div>
+
+      <div class="bug-row"><div class="bug-num">BUG 2</div><div><div class="bug-title">El texto sale en binario</div><div class="bug-desc">Un PDF es un árbol de objetos, y el texto vive en <em>content streams</em> casi siempre comprimidos con <code>FlateDecode</code> (zlib). Sin descomprimir, solo ves basura. Detecto el filtro en el diccionario previo al stream y lo inflo con el <code>zlib</code> nativo de Node, sin dependencias.</div></div></div>
+
+      <div class="bug-row"><div class="bug-num">BUG 3</div><div><div class="bug-title">Bytes corrompidos al leer</div><div class="bug-desc">Leer el PDF como UTF-8 destruye cualquier byte no ASCII. La lectura correcta es <code>latin1</code>, que mapea cada byte 0 a 255 a un carácter único, así el ida y vuelta no pierde nada. Después, dos regex sobre los operadores <code>Tj</code> y <code>TJ</code> sacan el texto.</div></div></div>
+
+      <p>El parser terminó en unas 80 líneas de TypeScript sin una sola dependencia de npm. El núcleo es este:</p>
+
+      <pre><code class="language-typescript">function extractPdfText(buffer: Buffer): string {
+  const raw = buffer.toString("latin1")           // lectura sin pérdida
+  const texts: string[] = []
+  // 1. encontrar cada bloque stream...endstream
+  for (const m of raw.matchAll(/stream\r?\n([\s\S]*?)\r?\nendstream/g)) {
+    let content = m[1]
+    // 2. inflar si el diccionario previo dice FlateDecode
+    const dict = raw.slice(Math.max(0, m.index - 500), m.index)
+    if (dict.includes("FlateDecode")) {
+      try { content = inflateSync(Buffer.from(m[1], "latin1")).toString("utf8") }
+      catch { continue }                            // stream roto: seguir de largo
+    }
+    // 3. sacar el texto de los operadores Tj
+    for (const t of content.matchAll(/\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g)) {
+      if (t[1].trim()) texts.push(t[1])
+    }
+  }
+  return texts.join(" ").replace(/\s+/g, " ").trim()
+}</code></pre>
+
+      <p>No reemplaza a una librería seria de PDF: se pierde imágenes y layouts raros. Pero es chico, no depende del DOM, y despliega. Los últimos clavos fueron detalles finos del formato: paréntesis escapados dentro de las cadenas y escapes octales como <code>\101</code> que hay que convertir a su carácter.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">El patrón</div>
+        <p>Cuando una dependencia "fácil" te ata a un entorno que tu deploy no tiene, 80 líneas que hacen el 90% del trabajo a veces ganan a los 200 KB que hacen el 100%. La clave es saber qué 10% podés resignar: acá, los PDFs con imágenes, que un demo no necesita.</p>
+      </div>
+
+      <hr />
+
+      <h2>La recuperación: pgvector, coseno, por sesión</h2>
+
+      <p>Cada usuario tiene su propio espacio de documentos, así que recuperar no es solo "buscar lo más parecido", es "buscar lo más parecido <em>de esta sesión</em>". Eso lo resuelve una función en Postgres que filtra por <code>session_id</code> antes de ordenar por coseno:</p>
+
+      <pre><code class="language-sql">-- match_chunks: vecinos más cercanos, pero solo de la sesión del usuario
+SELECT c.content, d.filename, c.page_number,
+       1 - (c.embedding &lt;=&gt; query_embedding) AS similarity   -- &lt;=&gt; = distancia coseno
+FROM chunks c
+JOIN documents d ON d.id = c.document_id
+WHERE c.session_id = p_session_id                              -- el aislamiento va primero
+  AND 1 - (c.embedding &lt;=&gt; query_embedding) &gt; match_threshold  -- descarta ruido
+ORDER BY c.embedding &lt;=&gt; query_embedding
+LIMIT match_count;                                            -- top-k</code></pre>
+
+      <p>En el chat busco chunks y memorias <strong>en paralelo</strong>: los documentos con umbral <code>0.25</code> y top-5, las memorias con umbral <code>0.3</code> y top-3. El índice <code>HNSW</code> hace que, aunque haya muchos vectores, las dos búsquedas sean casi instantáneas.</p>
+
+      <pre><code class="language-typescript">const q = await embed(pregunta)                    // un solo embedding para ambas
+const [docs, mems] = await Promise.all([
+  supabase.rpc("match_chunks",   { query_embedding: q, match_count: 5, match_threshold: 0.25, p_session_id }),
+  supabase.rpc("match_memories", { query_embedding: q, match_count: 3, match_threshold: 0.30, p_session_id }),
+])</code></pre>
+
+      <p>Ese filtro por sesión es la misma disciplina de aislamiento multi-tenant que trabajé a fondo en la <a href="harness-engineering-adminrent.html">serie sobre harness engineering</a>: el dato de un usuario no puede aparecer jamás en la respuesta de otro, y la barrera vive en la base, no en el código de arriba.</p>
+
+      <hr />
+
+      <h2>El agente: tres herramientas y un límite de pasos</h2>
+
+      <p>No es un RAG de un solo tiro. Es un <strong>agente</strong>: Claude recibe la pregunta con el contexto ya recuperado, pero además puede ir a buscar más si le hace falta. Con el Vercel AI SDK v6, definir eso son unas pocas líneas.</p>
+
+      <pre><code class="language-typescript">const tools = {
+  search_documents: tool({    // volver a buscar en los PDFs, con otra formulación
+    inputSchema: z.object({ query: z.string() }),
+    execute: async ({ query }) => buscarChunks(query, sessionId),
+  }),
+  search_web: tool({          // Exa, cuando los documentos no alcanzan (3 resultados)
+    inputSchema: z.object({ query: z.string() }),
+    execute: async ({ query }) => searchWeb(query),
+  }),
+  save_memory: tool({         // guardar un hecho del usuario a propósito
+    inputSchema: z.object({ fact: z.string() }),
+    execute: async ({ fact }) => guardarMemoria(fact, sessionId, 0.9),
+  }),
+}
+
+streamText({
+  model: gateway("anthropic/claude-sonnet-4.6"),
+  system: promptConContextoYMemorias,
+  messages,
+  tools,
+  stopWhen: stepCountIs(6),   // el freno: como mucho 6 pasos de razonar-y-actuar
+})</code></pre>
+
+      <p>El <code>stepCountIs(6)</code> es el equivalente al principio de autonomía de la serie harness: un agente sin techo de pasos puede entrar en loop y quemar tokens. Seis alcanzan para "buscá en los documentos, si no está buscá en la web, después respondé", y ponen un límite duro.</p>
+
+      <p>La respuesta se transmite <strong>token a token por SSE</strong> (server-sent events), no de una sola vez. El servidor emite una secuencia de eventos que la interfaz consume en vivo: <code>tool_start</code> y <code>tool_done</code> (para mostrar "buscando en la web…"), <code>text</code> por cada pedacito de respuesta, <code>memories_used</code> con lo que recordó, <code>citations</code> con las fuentes, y <code>done</code> al final. Es lo que hace que se sienta un agente pensando y no una caja que tarda y escupe un bloque.</p>
+
+      <hr />
+
+      <h2>La memoria: dos formas de recordar</h2>
+
+      <p>Acá está la parte que le da el nombre al proyecto. El agente recuerda cosas del usuario entre conversaciones, y lo hace con <strong>el mismo mecanismo de RAG</strong>: las memorias son texto embebido en la misma base de vectores, en su propia tabla. Recordar es, literalmente, hacer RAG sobre tus recuerdos.</p>
+
+      <p>Hay dos formas de escribir una memoria y una de leerla. La <strong>automática</strong> es la interesante: después de cada respuesta, un modelo chico y barato (Claude Haiku 4.5) lee la conversación y extrae hechos durables con un puntaje de confianza, usando salida estructurada. Solo se guardan los que superan <code>0.7</code>:</p>
+
+      <pre><code class="language-typescript">const { object } = await generateObject({
+  model: gateway("anthropic/claude-haiku-4.5"),
+  schema: z.object({
+    facts: z.array(z.object({
+      content: z.string(),
+      confidence: z.number().min(0).max(1),
+    })),
+  }),
+  prompt: `Extraé hechos durables sobre el usuario de esta conversación.
+Solo hechos de confianza alta (mayor a 0.7) útiles a futuro.\n\n${conversacion}`,
+})
+for (const f of object.facts.filter(f =&gt; f.confidence &gt; 0.7)) {
+  await guardarMemoria(f.content, sessionId, f.confidence)   // embebe y guarda
+}</code></pre>
+
+      <p>La <strong>explícita</strong> es la herramienta <code>save_memory</code> que ya vimos: el propio agente puede decidir guardar algo cuando lo detecta importante. Y al <strong>leer</strong>, en cada pregunta se recuperan las memorias más parecidas (umbral <code>0.3</code>, top-3) y se inyectan en el system prompt bajo "lo que recuerdo de este usuario". El usuario nunca repite que es celíaco o que trabaja en finanzas: el agente ya lo sabe.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>El bucle de memoria: la conversación produce hechos, se extraen con confianza, se embeben y se guardan; en la próxima pregunta se recuperan e inyectan en el prompt</title>
+          <defs>
+            <marker id="ar-m2" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker>
+            <path id="mempath2" d="M120,90 H330 H545 V170 H330 H120 V90" fill="none"/>
+          </defs>
+          <rect x="20" y="66" width="140" height="48" rx="9" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="90" y="86" text-anchor="middle" fill="#F1F5F9" font-size="12" font-weight="600">Conversación</text><text x="90" y="103" text-anchor="middle" fill="#94A3B8" font-size="10.5">pregunta + respuesta</text>
+          <line x1="160" y1="90" x2="196" y2="90" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-m2)"/>
+          <rect x="200" y="66" width="160" height="48" rx="9" fill="#122845" stroke="rgba(244,162,89,0.5)"/><text x="280" y="86" text-anchor="middle" fill="#F4A259" font-size="12" font-weight="600">Extraer hechos</text><text x="280" y="103" text-anchor="middle" fill="#94A3B8" font-size="10.5">Haiku · confianza &gt; 0.7</text>
+          <line x1="360" y1="90" x2="396" y2="90" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-m2)"/>
+          <rect x="400" y="66" width="150" height="48" rx="9" fill="#122845" stroke="rgba(125,211,252,0.5)"/><text x="475" y="86" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="600">Embeber + guardar</text><text x="475" y="103" text-anchor="middle" fill="#94A3B8" font-size="10.5">tabla memories</text>
+          <rect x="560" y="60" width="180" height="120" rx="10" fill="rgba(46,117,182,0.10)" stroke="rgba(125,211,252,0.4)"/>
+          <text x="650" y="86" text-anchor="middle" fill="#7DD3FC" font-size="11.5" font-weight="700">pgvector</text><text x="650" y="104" text-anchor="middle" fill="#94A3B8" font-size="10">memorias por sesión</text>
+          <line x1="550" y1="90" x2="558" y2="90" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-m2)"/>
+          <rect x="400" y="196" width="150" height="48" rx="9" fill="#122845" stroke="rgba(79,169,232,0.5)"/><text x="475" y="216" text-anchor="middle" fill="#4FA9E8" font-size="12" font-weight="600">Recuperar</text><text x="475" y="233" text-anchor="middle" fill="#94A3B8" font-size="10.5">las 3 más parecidas</text>
+          <line x1="650" y1="180" x2="650" y2="220" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/><path d="M650,220 H552" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar-m2)"/>
+          <line x1="400" y1="220" x2="360" y2="220" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-m2)"/>
+          <rect x="200" y="196" width="160" height="48" rx="9" fill="#122845" stroke="rgba(79,169,232,0.6)"/><text x="280" y="216" text-anchor="middle" fill="#4FA9E8" font-size="12" font-weight="600">Inyectar al prompt</text><text x="280" y="233" text-anchor="middle" fill="#94A3B8" font-size="10.5">"lo que recuerdo…"</text>
+          <line x1="200" y1="220" x2="120" y2="220" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-m2)"/>
+          <rect x="20" y="196" width="90" height="48" rx="9" fill="#0E1F3A" stroke="rgba(125,211,252,0.45)"/><text x="65" y="224" text-anchor="middle" fill="#F1F5F9" font-size="12" font-weight="600">Respuesta</text>
+          <text x="90" y="160" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="JetBrains Mono, monospace">próxima pregunta →</text>
+          <circle class="loop-token" r="10" fill="#7DD3FC" opacity="0.18"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#mempath2"/></animateMotion></circle>
+          <circle class="loop-token" r="5" fill="#7DD3FC"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#mempath2"/></animateMotion></circle>
+        </svg>
+        <p class="figure-caption">Figura 2 · <strong>El bucle de memoria.</strong> Los hechos se extraen, se embeben y se guardan; en la próxima conversación se recuperan y vuelven al prompt. RAG sobre tus propios recuerdos.</p>
+      </div>
+
+      <h2>Aislamiento por sesión: el hilo que cose todo</h2>
+
+      <p>Un detalle que aparece en cada tabla, cada búsqueda y cada herramienta: el <code>session_id</code>. Cada visitante recibe una cookie <code>httpOnly</code> de 24 horas, y esa sesión etiqueta sus documentos, sus fragmentos y sus memorias. Las dos funciones de búsqueda filtran por ella antes de comparar vectores. El resultado es que dos personas pueden subir PDFs distintos al mismo sistema y ninguna ve jamás lo del otro, sin login ni cuentas. Es multi-tenant de la forma más liviana posible, y la barrera vive en la base de datos, que es donde tiene que estar.</p>
+
+      <hr />
+
+      <h2>Lo que haría distinto</h2>
+
+      <ol>
+        <li><strong>Separar por página de verdad.</strong> Hoy el parser junta todo el PDF en un texto y trocea sobre eso, así que las citas dicen siempre <code>p.1</code>. Rastrear el número de página real durante la extracción haría las citas precisas, que es medio punto del valor de RAG.</li>
+        <li><strong>Trocear mejor.</strong> Uso longitud sobre 4 como proxy de tokens y corto por párrafos. Funciona, pero un contador de tokens real y un troceo consciente de la estructura reducirían los fragmentos partidos.</li>
+        <li><strong>Sumar reranking.</strong> Recupero por similitud pura. Traer 20 candidatos y reordenarlos con un modelo dedicado, como conté en la parte 1, es la mejora de mayor retorno que tengo pendiente.</li>
+        <li><strong>Ingesta asíncrona para PDFs grandes.</strong> La ingesta síncrona entra en la ventana serverless para documentos chicos. Para archivos grandes, lo correcto es una cola: responder rápido y procesar en segundo plano.</li>
+      </ol>
+
+      <hr />
+
+      <h2>El patrón, generalizado</h2>
+
+      <p>Si mirás el sistema entero, hay un solo mecanismo repetido tres veces. Los documentos son RAG. La memoria es RAG sobre lo que el agente aprendió de vos. La búsqueda web es RAG con un índice que no controlás. Embeber, buscar por cercanía, inyectar en el prompt: siempre lo mismo. Una vez que ves RAG como "traer la evidencia justa en el momento justo", deja de ser una técnica y pasa a ser una forma de pensar cualquier sistema que tenga que responder sobre datos que el modelo no vio.</p>
+
+      <p>Y la parte difícil es siempre la misma, la que insistí en la parte 1: recuperar bien. Si las respuestas son malas, casi nunca es el modelo que genera; es el contexto equivocado. Arreglá la recuperación y arreglás RAG.</p>
+
+      <p>🔗 <strong><a href="rag-agent-with-memory.html">Parte 1 · La guía completa de RAG</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">código completo</a> · <a href="https://rag-agent-memory.vercel.app">demo en vivo</a></p>
+
+    </div>
+
+    <div class="tag-pills">
+      <span class="tag-pill">RAG</span>
+      <span class="tag-pill">pgvector</span>
+      <span class="tag-pill">AI SDK</span>
+      <span class="tag-pill">Anthropic Claude</span>
+      <span class="tag-pill">Serverless</span>
+    </div>
+
+    <div class="footer-cta reveal">
+      <h3>Sobre este proyecto</h3>
+      <p>El código completo del agente con memoria: el parser de PDF, el esquema de pgvector, las herramientas del agente y el bucle de memoria, con demo en vivo.</p>
+      <div class="links">
+        <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-memory ↗</a>
+        <a href="https://rag-agent-memory.vercel.app">🔗 Demo en vivo ↗</a>
+        <a href="rag-agent-with-memory.html">📄 Parte 1 · La teoría ↗</a>
+      </div>
+      <h3 style="margin-top:24px;">Sobre el autor</h3>
+      <p>Soy Nery Cano, senior full-stack engineer en Paraguay, construyendo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / AI engineering.</p>
+      <div class="links">
+        <a href="../../">Portfolio ↗</a>
+        <a href="https://github.com/NeryC">GitHub ↗</a>
+        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
+        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
+      </div>
+    </div>
+  </article>
+
+  <footer class="site-footer">
+    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
+  </footer>
+
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

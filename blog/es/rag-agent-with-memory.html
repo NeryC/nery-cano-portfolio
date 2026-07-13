@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>RAG desde cero: la guía completa + cómo construí un agente con memoria — Nery Cano</title>
+  <title>RAG desde cero: la guía completa (Parte 1) — Nery Cano</title>
   <meta name="description" content="Qué es RAG, qué alternativas hay y cómo se implementa paso a paso. Más un agente real con memoria: Next.js, Voyage, pgvector y Claude, con muchos diagramas." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
 
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="RAG desde cero: la guía completa + cómo construí un agente con memoria" />
+  <meta property="og:title" content="RAG desde cero: la guía completa (Parte 1 de 2)" />
   <meta property="og:description" content="Qué es RAG, qué alternativas hay y cómo se implementa. Después, el agente con memoria que construí sobre Next.js, Voyage y pgvector." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner_es.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/rag-agent-with-memory.html" />
@@ -20,7 +20,7 @@
   <meta property="article:tag" content="Anthropic Claude" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="RAG desde cero: la guía completa + cómo construí un agente con memoria" />
+  <meta name="twitter:title" content="RAG desde cero: la guía completa (Parte 1 de 2)" />
   <meta name="twitter:description" content="Qué es RAG, qué alternativas hay y cómo se implementa. Después, el agente con memoria que construí sobre Next.js, Voyage y pgvector." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner_es.png" />
 
@@ -321,9 +321,9 @@
   </nav>
 
   <article class="article">
-    <div class="article-meta">12 may 2026 · Guía · ~22 min</div>
+    <div class="article-meta">12 may 2026 · Parte 1 de 2 · ~20 min</div>
     <h1 class="article-title">RAG desde cero: la guía que me hubiera gustado tener</h1>
-    <p class="article-subtitle">Qué es, qué alternativas hay y cómo se implementa de verdad. Después, el agente con memoria que construí sobre Next.js, Voyage y pgvector, con el código real.</p>
+    <p class="article-subtitle">Qué es, qué alternativas hay y cómo se implementa de verdad. Después, y en la <strong>parte 2</strong>, el agente con memoria que construí sobre Next.js, Voyage y pgvector, con el código real.</p>
     <div class="byline">
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
@@ -337,7 +337,21 @@
 
       <p>RAG resuelve exactamente eso. En lugar de meterle todo, le buscás <em>los pocos párrafos que importan</em> para esa pregunta puntual y se los pasás junto con la consulta. El modelo responde con esa evidencia delante, cita de dónde la sacó, y si el dato no está, lo podés hacer decir "no lo sé" en vez de inventar.</p>
 
-      <p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://github.com/NeryC/rag-agent-memory">código</a> · <a href="../../">portfolio</a></p>
+      <h2>Cinco palabras, primero</h2>
+
+      <p>Si nunca tocaste esto, cinco términos alcanzan para entender todo lo que sigue. No necesitás saber nada más para arrancar.</p>
+
+      <ul>
+        <li><strong>Modelo de lenguaje (LLM).</strong> El motor detrás de ChatGPT o Claude. Predice texto y sabe un montón del mundo general, pero nada de tus documentos privados.</li>
+        <li><strong>Token.</strong> Un pedacito de palabra, la unidad con la que el modelo lee y con la que te cobran. "computadora" son unos tres tokens; una página, unos 500.</li>
+        <li><strong>Ventana de contexto.</strong> Cuánto texto puede leer el modelo de una sola vez. Es grande, pero no infinita, y todo lo que metas ahí lo pagás en cada pregunta.</li>
+        <li><strong>Vector (o embedding).</strong> Una lista de números que representa el <em>significado</em> de un texto. Es la pieza central de RAG y la explico en detalle más abajo; por ahora, pensalo como las coordenadas de una idea en un mapa.</li>
+        <li><strong>Índice.</strong> Una estructura que permite buscar entre millones de esos vectores en milisegundos, como el índice al final de un libro pero para significados.</li>
+      </ul>
+
+      <p>Con esas cinco, ya podés seguir el resto sin perderte.</p>
+
+      <p>🔗 <strong><a href="rag-agent-memory-build.html">Parte 2 · Cómo lo construí (con el código real)</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">repo</a> · <a href="../../">portfolio</a></p>
 
       <hr />
 
@@ -485,7 +499,7 @@
 
       <p>Este es el corazón de RAG y la parte que más cuesta al principio. Un <strong>embedding</strong> es una función que toma un texto y devuelve una lista de números (un vector, por ejemplo de 1536 dimensiones). La magia es que la función se entrenó para que <em>textos con significado parecido queden cerca</em> en ese espacio, aunque no compartan una sola palabra.</p>
 
-      <p>"¿Cuánto cuesta el envío?" y "tarifas de despacho a domicilio" no tienen palabras en común, pero apuntan a lo mismo, así que sus vectores caen cerca. La búsqueda por palabras clave no vería la relación; la búsqueda por embeddings sí. Eso es la <strong>búsqueda semántica</strong>: buscás por significado, no por coincidencia de texto.</p>
+      <p>Pensalo como un mapa: así como en un mapa las ciudades cercanas suelen compartir clima, en este "mapa de significados" los textos cercanos comparten sentido. "¿Cuánto cuesta el envío?" y "tarifas de despacho a domicilio" no tienen una sola palabra en común, pero apuntan a lo mismo, así que sus vectores caen cerca. La búsqueda por palabras clave no vería la relación; la búsqueda por embeddings sí. Eso es la <strong>búsqueda semántica</strong>: buscás por significado, no por coincidencia de texto.</p>
 
       <div class="figure reveal">
         <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
@@ -562,66 +576,157 @@
 
       <hr />
 
-      <h2>Las decisiones que vas a tomar (y sus alternativas)</h2>
+      <h2>Las estrategias, en detalle</h2>
 
-      <p>El pipeline de arriba tiene cuatro lugares donde hay que elegir. No hay una respuesta universal; hay una respuesta para tu caso. Acá están las opciones reales con su compromiso, para que elijas con criterio y no por copiar un tutorial.</p>
-
-      <h3>Cómo trocear</h3>
-
-      <table>
-        <thead><tr><th>Estrategia</th><th>Cómo</th><th>Cuándo usarla</th></tr></thead>
-        <tbody>
-          <tr><td><strong>Tamaño fijo</strong></td><td>Cada N tokens, con solapamiento</td><td>El default sensato. Simple y robusto. Empezá acá.</td></tr>
-          <tr><td><strong>Por estructura</strong></td><td>Por párrafo, sección o encabezado</td><td>Documentos con formato claro (Markdown, HTML, papers).</td></tr>
-          <tr><td><strong>Semántico</strong></td><td>Cortás donde cambia el tema (por similitud)</td><td>Cuando la precisión importa y podés pagar el costo extra de indexar.</td></tr>
-          <tr><td><strong>Recursivo</strong></td><td>Intentás cortes grandes y bajás si no entran</td><td>Mezcla de documentos heterogéneos; lo que usan la mayoría de las librerías.</td></tr>
-        </tbody>
-      </table>
-
-      <p>Casi siempre alcanza con tamaño fijo por párrafo y solapamiento. Perseguir el troceo "perfecto" antes de tener el resto funcionando es optimización prematura.</p>
-
-      <h3>Qué modelo de embeddings</h3>
-
-      <table>
-        <thead><tr><th>Opción</th><th>Perfil</th><th>Nota</th></tr></thead>
-        <tbody>
-          <tr><td><strong>OpenAI <code>text-embedding-3</code></strong></td><td>Barato, muy usado, 1536 dim</td><td>La opción por defecto para arrancar rápido.</td></tr>
-          <tr><td><strong>Voyage AI</strong></td><td>Calidad alta, fuerte en dominios técnicos</td><td>Lo que usé; <code>voyage-3</code> rinde muy bien en retrieval.</td></tr>
-          <tr><td><strong>Cohere Embed</strong></td><td>Multilingüe sólido, con reranker propio</td><td>Buena si tu contenido mezcla idiomas.</td></tr>
-          <tr><td><strong>Abiertos (BGE, E5)</strong></td><td>Gratis, corren en tu infra</td><td>Control y costo cero por token; a cambio, mantenés la infra.</td></tr>
-        </tbody>
-      </table>
-
-      <p>Lo que más mueve la aguja no es cuál elegís sino ser consistente: el mismo modelo para indexar y para consultar, siempre.</p>
-
-      <h3>Dónde guardar los vectores</h3>
-
-      <table>
-        <thead><tr><th>Opción</th><th>Perfil</th><th>Cuándo</th></tr></thead>
-        <tbody>
-          <tr><td><strong>pgvector (Postgres)</strong></td><td>Vectores al lado de tus tablas normales</td><td>Ya usás Postgres y no querés otra pieza. Mi elección.</td></tr>
-          <tr><td><strong>Pinecone</strong></td><td>Servicio gestionado, cero infra</td><td>Querés escalar a millones sin operar nada.</td></tr>
-          <tr><td><strong>Weaviate / Qdrant</strong></td><td>Dedicadas, con filtros e híbrido</td><td>Búsqueda avanzada como producto central.</td></tr>
-          <tr><td><strong>FAISS</strong></td><td>Librería en memoria, local</td><td>Prototipos, notebooks, sin persistencia.</td></tr>
-        </tbody>
-      </table>
-
-      <p>Para la mayoría de las apps que ya tienen una base relacional, <code>pgvector</code> es la respuesta aburrida y correcta: una dependencia menos, transacciones normales, y filtrás por columnas comunes en la misma query.</p>
-
-      <h3>Cómo mejorar la recuperación cuando el top-k básico no alcanza</h3>
-
-      <p>El pipeline básico recupera por similitud pura. Cuando eso no basta, estas son las mejoras en orden de rendimiento por esfuerzo:</p>
-
-      <ul>
-        <li><strong>Filtrado por metadata.</strong> Guardá campos junto al vector (autor, fecha, tipo, y en mi caso el <code>session_id</code>) y filtralos en la query. Barato y evita traer lo que no corresponde.</li>
-        <li><strong>Búsqueda híbrida.</strong> Combinás la semántica con la de palabras clave (BM25). Recupera lo mejor de los dos: significado y coincidencias exactas de términos raros como códigos o nombres propios.</li>
-        <li><strong>Reranking.</strong> Traés más candidatos de lo necesario (digamos 20) y un modelo reordenador elige los 5 mejores mirando pregunta y fragmento juntos. Sube bastante la precisión por poco costo.</li>
-        <li><strong>Expansión de consulta / HyDE.</strong> Generás variantes de la pregunta, o una respuesta hipotética, y embebés eso para buscar. Ayuda cuando la pregunta es corta o ambigua.</li>
-      </ul>
+      <p>El pipeline básico funciona, pero cada uno de sus cinco pasos tiene un abanico de técnicas detrás. Acá está el mapa completo, porque "RAG no anda" casi siempre es una de estas decisiones mal tomada, no el modelo. Vamos paso por paso, del más simple al más avanzado.</p>
 
       <div class="callout reveal">
-        <div class="callout-label">Orden recomendado</div>
-        <p>Hacé funcionar el pipeline básico completo antes de sumar cualquiera de estas mejoras. La mayoría de los problemas de "RAG no funciona" son fragmentos mal cortados o el modelo de embedding equivocado, no falta de reranking.</p>
+        <div class="callout-label">Aviso de nivel</div>
+        <p>De acá en adelante entramos en terreno avanzado. Si recién arrancás, con todo lo anterior ya podés construir un RAG que funciona; esto es para cuando quieras exprimirlo. Explico cada término técnico la primera vez que aparece, y al final del bloque hay un glosario exprés de las siglas.</p>
+      </div>
+
+      <h3>Estrategias de troceo (mucho más que "cortar cada N")</h3>
+
+      <p>Cómo cortás el documento decide qué tan bueno puede ser el retrieval: un fragmento mal cortado nunca se va a recuperar bien, por más buena que sea la búsqueda. Hay toda una escalera de estrategias.</p>
+
+      <table>
+        <thead><tr><th>Estrategia</th><th>Cómo funciona</th><th>Cuándo</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Tamaño fijo</strong></td><td>Corta cada N caracteres o tokens, con solapamiento</td><td>El default. Simple y sorprendentemente difícil de superar.</td></tr>
+          <tr><td><strong>Por oración</strong></td><td>Agrupa oraciones completas hasta llenar el fragmento</td><td>Evita cortar a mitad de una frase. Barato de sumar.</td></tr>
+          <tr><td><strong>Recursivo</strong></td><td>Prueba separadores en orden: párrafo, luego oración, luego palabra</td><td>El más usado por las librerías. Respeta la estructura sin configurarla.</td></tr>
+          <tr><td><strong>Por estructura del documento</strong></td><td>Corta por encabezados de Markdown, HTML o funciones de código</td><td>Documentos con jerarquía clara. Cada fragmento hereda su sección.</td></tr>
+          <tr><td><strong>Semántico</strong></td><td>Embebe oración por oración y corta donde el tema cambia</td><td>Cuando la precisión vale el costo extra de indexar.</td></tr>
+          <tr><td><strong>Small-to-big / parent</strong></td><td>Indexás fragmentos chicos, pero devolvés el párrafo grande que los contiene</td><td>Buscás con precisión y respondés con contexto amplio. Muy efectivo.</td></tr>
+          <tr><td><strong>Contextual (Anthropic)</strong></td><td>Antepone a cada fragmento un resumen de dónde vive en el documento</td><td>Fragmentos que fuera de contexto se vuelven ambiguos ("subió un 3%": ¿qué?).</td></tr>
+          <tr><td><strong>Late chunking</strong></td><td>Embebe el documento entero y recién después promedia por fragmento</td><td>Cada fragmento "sabe" del resto del documento. Necesita modelos de contexto largo.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>El compromiso del tamaño de fragmento: chico es preciso pero pierde contexto; grande tiene contexto pero recupera ruido; el punto justo está en el medio, y small-to-big obtiene ambos</title>
+          <text x="30" y="34" fill="#F87171" font-size="12" font-weight="700">FRAGMENTO CHICO</text><text x="30" y="52" fill="#94A3B8" font-size="11">preciso, pero le falta contexto</text>
+          <rect x="30" y="64" width="60" height="20" rx="3" fill="rgba(248,113,113,0.2)" stroke="#F87171"/>
+          <text x="640" y="34" text-anchor="end" fill="#F4A259" font-size="12" font-weight="700">FRAGMENTO GRANDE</text><text x="640" y="52" text-anchor="end" fill="#94A3B8" font-size="11">contexto, pero trae ruido</text>
+          <rect x="560" y="64" width="180" height="20" rx="3" fill="rgba(244,162,89,0.2)" stroke="#F4A259"/>
+          <line x1="30" y1="110" x2="740" y2="110" stroke="rgba(148,163,184,0.3)" stroke-width="1.5"/>
+          <circle cx="385" cy="110" r="8" fill="#7DD3FC"/><text x="385" y="140" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="600">el punto justo</text><text x="385" y="158" text-anchor="middle" fill="#94A3B8" font-size="10.5">~300 a 600 tokens para la mayoría</text>
+          <text x="385" y="188" text-anchor="middle" fill="#94A3B8" font-size="10.5" font-family="JetBrains Mono, monospace">small-to-big obtiene los dos: indexa chico, devuelve grande</text>
+        </svg>
+        <p class="figure-caption">Figura 6 · <strong>El compromiso del tamaño.</strong> Chico gana precisión, grande gana contexto. La estrategia parent-document se queda con lo mejor de ambos lados.</p>
+      </div>
+
+      <h3>Estrategias de embedding</h3>
+
+      <p>El modelo que convierte texto en vector determina qué "cerca" significa. Las opciones se dividen por cómo representan el significado y por dónde corren.</p>
+
+      <table>
+        <thead><tr><th>Dimensión</th><th>Opciones</th><th>Qué mirar</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Denso vs sparse</strong></td><td>Denso (significado) · sparse tipo SPLADE (términos)</td><td>Los densos captan sinónimos; los sparse, coincidencias exactas. Lo mejor es combinarlos (híbrido).</td></tr>
+          <tr><td><strong>Proveedor</strong></td><td>OpenAI · Voyage · Cohere · abiertos (BGE, E5)</td><td>API rápida de arrancar vs correr tu propio modelo con costo cero por token.</td></tr>
+          <tr><td><strong>Dimensiones</strong></td><td>256 a 3072, algunos recortables (Matryoshka)</td><td>Más dimensiones, más matiz y más costo de almacenamiento e índice.</td></tr>
+          <tr><td><strong>Dominio e idioma</strong></td><td>General · técnico · multilingüe</td><td>Un modelo entrenado en tu dominio supera a uno general aunque tenga menos dimensiones.</td></tr>
+        </tbody>
+      </table>
+
+      <p>La única regla que no podés romper: <strong>el mismo modelo para indexar y para consultar</strong>. Vectores de modelos distintos viven en espacios distintos y no se comparan.</p>
+
+      <h3>Estrategias de índice</h3>
+
+      <p>Cómo guardás los vectores define el compromiso entre exactitud y velocidad.</p>
+
+      <table>
+        <thead><tr><th>Índice</th><th>Qué hace</th><th>Compromiso</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Plano (exacto)</strong></td><td>Compara contra todos, uno por uno</td><td>Exactitud perfecta, pero lento con millones de vectores.</td></tr>
+          <tr><td><strong>IVF</strong></td><td>Agrupa en celdas y busca solo en las cercanas</td><td>Rápido, con un poco de pérdida. Hay que entrenarlo.</td></tr>
+          <tr><td><strong>HNSW</strong></td><td>Un grafo navegable de vecinos</td><td>El estándar hoy: rapidísimo y muy preciso. Usa más memoria. Es el que uso.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Estrategias de recuperación (el corazón)</h3>
+
+      <p>Acá es donde se gana o se pierde RAG, y donde más técnicas hay. El top-k por coseno es el punto de partida, no la meta. Pensalo como un embudo: recuperás amplio y barato, y vas filtrando con métodos cada vez más precisos y caros.</p>
+
+      <div class="figure reveal">
+        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
+          <title>El embudo de recuperación: de muchos candidatos baratos a pocos fragmentos precisos, pasando por búsqueda híbrida y reranking</title>
+          <defs><marker id="fun-ar" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker></defs>
+          <polygon points="120,40 640,40 470,260 290,260" fill="rgba(46,117,182,0.08)" stroke="rgba(125,211,252,0.3)"/>
+
+          <text x="380" y="66" text-anchor="middle" fill="#7DD3FC" font-size="13" font-weight="700">1 · Recuperar amplio (barato)</text>
+          <text x="380" y="84" text-anchor="middle" fill="#94A3B8" font-size="10.5">denso + sparse (BM25) · traé 50 a 100 candidatos</text>
+
+          <text x="380" y="130" text-anchor="middle" fill="#4FA9E8" font-size="13" font-weight="700">2 · Fusionar (híbrido, RRF)</text>
+          <text x="380" y="148" text-anchor="middle" fill="#94A3B8" font-size="10.5">combinar los dos rankings en uno solo</text>
+
+          <text x="380" y="192" text-anchor="middle" fill="#F4A259" font-size="13" font-weight="700">3 · Reordenar (rerank, caro)</text>
+          <text x="380" y="210" text-anchor="middle" fill="#94A3B8" font-size="10.5">un cross-encoder mira pregunta y fragmento juntos</text>
+
+          <rect x="300" y="230" width="160" height="26" rx="6" fill="rgba(125,211,252,0.18)" stroke="#7DD3FC"/>
+          <text x="380" y="248" text-anchor="middle" fill="#E2E8F0" font-size="11.5" font-weight="600">top 3 a 5 al prompt</text>
+          <line x1="670" y1="60" x2="670" y2="245" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#fun-ar)"/>
+          <text x="690" y="150" fill="#94A3B8" font-size="10" font-family="JetBrains Mono, monospace" transform="rotate(90 690 150)">precisión ↑ · volumen ↓</text>
+        </svg>
+        <p class="figure-caption">Figura 7 · <strong>El embudo de recuperación.</strong> Muchos candidatos baratos arriba, pocos fragmentos precisos abajo. Cada etapa cuesta más y afina más.</p>
+      </div>
+
+      <table>
+        <thead><tr><th>Técnica</th><th>Qué resuelve</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Denso (semántico)</strong></td><td>El default: encuentra significado aunque no coincidan las palabras.</td></tr>
+          <tr><td><strong>Sparse / BM25</strong></td><td>Coincidencias exactas de términos raros: códigos, nombres propios, siglas.</td></tr>
+          <tr><td><strong>Híbrido + RRF</strong></td><td>Corre denso y sparse, y fusiona los dos rankings con Reciprocal Rank Fusion. Casi siempre mejor que cualquiera solo.</td></tr>
+          <tr><td><strong>Reranking</strong></td><td>Traés 20 a 50 candidatos y un cross-encoder los reordena mirando pregunta y fragmento a la vez. La mejora de mayor retorno.</td></tr>
+          <tr><td><strong>Reescritura de consulta</strong></td><td>Un LLM reformula la pregunta del usuario a una mejor para buscar (resuelve pronombres, agrega contexto de la charla).</td></tr>
+          <tr><td><strong>Multi-consulta</strong></td><td>Genera varias versiones de la pregunta, busca con todas y une resultados. Cubre distintas formas de decir lo mismo.</td></tr>
+          <tr><td><strong>HyDE</strong></td><td>Genera una respuesta hipotética y busca con <em>eso</em>. A veces una respuesta falsa se parece más a la real que la pregunta.</td></tr>
+          <tr><td><strong>Descomposición</strong></td><td>Parte una pregunta compleja en sub-preguntas, recupera para cada una y junta. Para consultas de varios saltos.</td></tr>
+          <tr><td><strong>Filtro por metadata</strong></td><td>Restringe por autor, fecha, tipo o (en mi caso) sesión, antes de ordenar por similitud.</td></tr>
+          <tr><td><strong>MMR (diversidad)</strong></td><td>Evita traer cinco fragmentos que dicen lo mismo; balancea relevancia con variedad.</td></tr>
+          <tr><td><strong>Contextual retrieval</strong></td><td>Guarda cada fragmento con un resumen de su contexto, así no se vuelve ambiguo al recuperarlo suelto.</td></tr>
+          <tr><td><strong>GraphRAG</strong></td><td>Construye un grafo de entidades y relaciones, y recupera por conexiones. Para preguntas que cruzan muchos documentos.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout reveal">
+        <div class="callout-label">Glosario exprés de siglas</div>
+        <p><strong>BM25:</strong> la búsqueda por palabras clave de toda la vida. <strong>RRF:</strong> una fórmula simple para fusionar dos listas de resultados en una. <strong>Cross-encoder:</strong> un modelo que lee pregunta y fragmento juntos para puntuar qué tan bien se responden (más lento y más preciso que embeber por separado). <strong>MMR:</strong> un método para que los resultados no se repitan entre sí. <strong>HyDE:</strong> generar una respuesta falsa de prueba y buscar con ella. <strong>HNSW / IVF:</strong> dos formas de organizar los vectores para buscar rápido. <strong>nDCG / MRR / recall@k:</strong> tres maneras de ponerle nota a qué tan buena fue la búsqueda.</p>
+      </div>
+
+      <h3>Estrategias de generación</h3>
+
+      <p>El último paso parece trivial, pero también tiene decisiones. <strong>Anclaje (grounding):</strong> el prompt tiene que ordenar responder <em>solo</em> con el contexto dado, no con el conocimiento general del modelo. <strong>Citas:</strong> si cada fragmento lleva su origen, el modelo puede escribir <code>[archivo.pdf p.3]</code> y volver verificable cada frase. <strong>Rechazo honesto:</strong> hay que darle permiso explícito para decir "esto no está en tus documentos" en vez de inventar; sin esa instrucción, un modelo servicial rellena el hueco. Ese "no lo sé" es tan valioso como una buena respuesta.</p>
+
+      <h3>Cómo saber si funciona: evaluación</h3>
+
+      <p>Acá está el paso que casi todos se saltan, y es el que separa un demo de un sistema. No podés mejorar lo que no medís, y "a mí me parece que responde bien" no es medir. RAG se evalúa en dos mitades, porque tiene dos partes que pueden fallar por separado.</p>
+
+      <p><strong>La recuperación</strong> se mide con un conjunto de preguntas de las que ya sabés qué fragmento debería traer (un <em>golden set</em>). Con eso calculás <code>recall@k</code> (¿el fragmento correcto está entre los k que trajiste?), <code>MRR</code> (¿qué tan arriba apareció?) y <code>nDCG</code> (¿el orden es bueno?). <strong>La generación</strong> se mide distinto: <em>fidelidad</em> (¿la respuesta se apoya solo en el contexto, o alucinó?), <em>relevancia</em> (¿responde lo que se preguntó?) y <em>precisión de las citas</em>. Herramientas como RAGAS automatizan buena parte de esto usando un LLM como juez.</p>
+
+      <div class="callout reveal">
+        <div class="callout-label">El mismo principio de siempre</div>
+        <p>Un golden set de veinte preguntas con su fragmento esperado convierte "cambié el troceo, ¿mejoró?" de una corazonada en un número. Es exactamente la disciplina de <em>evals</em> que usé en la <a href="harness-engineering.html">serie sobre harness engineering</a>: sin una forma de medir, cada cambio es fe ciega.</p>
+      </div>
+
+      <h3>Los modos de fallo más comunes</h3>
+
+      <table>
+        <thead><tr><th>Síntoma</th><th>Causa casi siempre</th></tr></thead>
+        <tbody>
+          <tr><td>Trae fragmentos irrelevantes</td><td>Troceo malo, o el modelo de embedding equivocado para tu dominio.</td></tr>
+          <tr><td>El dato existe pero no lo encuentra</td><td>Falta búsqueda híbrida (término raro) o el fragmento quedó partido.</td></tr>
+          <tr><td>Alucina teniendo el contexto delante</td><td>El prompt no fuerza el anclaje, o metiste demasiados fragmentos y se perdió en el medio.</td></tr>
+          <tr><td>Cita mal la fuente</td><td>Los metadatos de origen no viajan con el fragmento hasta el prompt.</td></tr>
+          <tr><td>Bien en las pruebas, mal en producción</td><td>Nunca hubo un golden set; probaste con las preguntas que ya sabías que andaban.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout reveal">
+        <div class="callout-label">El orden que rinde</div>
+        <p>Hacé andar el pipeline básico completo antes de sumar híbrido, reranking o contextual. La mayoría de los "RAG no funciona" son las dos cosas más aburridas: fragmentos mal cortados o el modelo de embedding equivocado. Medí primero, optimizá después.</p>
       </div>
 
       <hr />
@@ -652,171 +757,13 @@ const respuesta = await modelo.generar(prompt)   // el LLM responde con citas</c
 
       <hr />
 
-      <h2>Cómo lo hice yo: un agente con memoria</h2>
-
-      <p>Con esa base, construí y desplegué un agente que deja subir PDFs y chatear sobre ellos con citas, que además <strong>recuerda</strong> cosas del usuario entre conversaciones y puede <strong>buscar en la web</strong> cuando los documentos no alcanzan. El stack: <strong>Next.js 16</strong> con el <strong>Vercel AI SDK v6</strong>, chat con <strong>Claude Sonnet 4.6</strong> vía AI Gateway, embeddings <strong>Voyage <code>voyage-3</code></strong>, y <strong>Supabase pgvector</strong> como base de vectores. Todo el código está abierto.</p>
-
-      <div class="figure reveal">
-        <svg viewBox="0 0 760 360" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
-          <title>Arquitectura real: la ingesta lleva el PDF de Blob al parser, trocea, embebe con Voyage y guarda en pgvector; el chat embebe la pregunta, recupera fragmentos y memorias, y Claude responde con herramientas por streaming</title>
-          <defs><marker id="ar-arch" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker></defs>
-
-          <text x="24" y="28" fill="#7DD3FC" font-size="11.5" font-weight="700" letter-spacing="1.5" font-family="JetBrains Mono, monospace">INGESTA · /api/upload (síncrona, serverless-safe)</text>
-          <g font-size="10.5">
-            <rect x="14" y="40" width="96" height="42" rx="7" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="62" y="58" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">PDF</text><text x="62" y="73" text-anchor="middle" fill="#94A3B8">Vercel Blob</text>
-            <line x1="110" y1="61" x2="132" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="136" y="40" width="110" height="42" rx="7" fill="#122845" stroke="rgba(244,162,89,0.5)"/><text x="191" y="58" text-anchor="middle" fill="#F4A259" font-size="11" font-weight="600">parser propio</text><text x="191" y="73" text-anchor="middle" fill="#94A3B8">zlib + regex</text>
-            <line x1="246" y1="61" x2="268" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="272" y="40" width="96" height="42" rx="7" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="320" y="58" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">trocear</text><text x="320" y="73" text-anchor="middle" fill="#94A3B8">500 / 50</text>
-            <line x1="368" y1="61" x2="390" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="394" y="40" width="104" height="42" rx="7" fill="#122845" stroke="rgba(125,211,252,0.5)"/><text x="446" y="58" text-anchor="middle" fill="#7DD3FC" font-size="11" font-weight="600">Voyage</text><text x="446" y="73" text-anchor="middle" fill="#94A3B8">voyage-3</text>
-            <line x1="498" y1="61" x2="520" y2="61" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="524" y="40" width="112" height="42" rx="7" fill="#122845" stroke="rgba(125,211,252,0.6)"/><text x="580" y="58" text-anchor="middle" fill="#7DD3FC" font-size="11" font-weight="600">pgvector</text><text x="580" y="73" text-anchor="middle" fill="#94A3B8">chunks</text>
-          </g>
-
-          <rect x="524" y="150" width="222" height="60" rx="10" fill="rgba(46,117,182,0.12)" stroke="rgba(125,211,252,0.5)"/>
-          <text x="635" y="174" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="700">Supabase · pgvector</text>
-          <text x="635" y="193" text-anchor="middle" fill="#94A3B8" font-size="10.5">chunks + memories · HNSW coseno · por sesión</text>
-          <line x1="580" y1="82" x2="580" y2="150" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#ar-arch)"/>
-
-          <text x="24" y="252" fill="#4FA9E8" font-size="11.5" font-weight="700" letter-spacing="1.5" font-family="JetBrains Mono, monospace">CHAT · /api/chat (streaming SSE)</text>
-          <g font-size="10.5">
-            <rect x="14" y="264" width="96" height="42" rx="7" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="62" y="282" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">Pregunta</text><text x="62" y="297" text-anchor="middle" fill="#94A3B8">embeber</text>
-            <line x1="110" y1="285" x2="132" y2="285" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="136" y="264" width="150" height="42" rx="7" fill="#122845" stroke="rgba(79,169,232,0.5)"/><text x="211" y="282" text-anchor="middle" fill="#4FA9E8" font-size="11" font-weight="600">recuperar</text><text x="211" y="297" text-anchor="middle" fill="#94A3B8">chunks + memorias</text>
-            <line x1="286" y1="285" x2="308" y2="285" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="312" y="264" width="150" height="42" rx="7" fill="#122845" stroke="rgba(79,169,232,0.6)"/><text x="387" y="282" text-anchor="middle" fill="#4FA9E8" font-size="11" font-weight="600">Claude Sonnet 4.6</text><text x="387" y="297" text-anchor="middle" fill="#94A3B8">+ herramientas</text>
-            <line x1="462" y1="285" x2="484" y2="285" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-arch)"/>
-            <rect x="488" y="264" width="130" height="42" rx="7" fill="#0E1F3A" stroke="rgba(125,211,252,0.45)"/><text x="553" y="282" text-anchor="middle" fill="#F1F5F9" font-size="11" font-weight="600">Respuesta</text><text x="553" y="297" text-anchor="middle" fill="#94A3B8">token a token + citas</text>
-            <path d="M211,264 V218 H610 V210" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar-arch)"/>
-          </g>
-        </svg>
-        <p class="figure-caption">Figura 6 · <strong>La arquitectura real.</strong> Ingesta síncrona arriba, chat con streaming abajo; los dos lados se encuentran en pgvector, aislados por sesión.</p>
-      </div>
-
-      <h3>La ingesta, y el parser de PDF que sobrevive a serverless</h3>
-
-      <p>La ingesta corre <strong>síncrona dentro del route de upload</strong>: subo el PDF a Vercel Blob, extraigo el texto, troceo, embebo en lotes de 100 y guardo, todo antes de responder. Esa decisión es a propósito: en el plan Hobby de Vercel la ventana de función es corta, así que meto el trabajo en una sola invocación en lugar de una cola. Funciona para PDFs chicos, que es el caso de un demo.</p>
-
-      <p>El único paso que se puso feo fue extraer el texto. Empecé con <code>pdf-parse</code>, que por dentro usa <code>pdfjs-dist</code>, y me estrellé contra esto apenas desplegué:</p>
-
-      <div class="bug-row"><div class="bug-num">BUG 1</div><div><div class="bug-title"><code>DOMMatrix is not defined</code></div><div class="bug-desc">En mi laptop andaba; en Vercel, crash inmediato. <code>pdfjs-dist</code> fue diseñado para el navegador y depende de <code>DOMMatrix</code>, <code>canvas</code> y otras APIs del DOM que nunca existieron en Node. El runtime serverless no tiene DOM ni shim. La única salida real fue no depender de esa librería.</div></div></div>
-
-      <div class="bug-row"><div class="bug-num">BUG 2</div><div><div class="bug-title">Texto que sale en binario</div><div class="bug-desc">Un PDF es un árbol de objetos, y el texto vive en <em>content streams</em> casi siempre comprimidos con <code>FlateDecode</code> (zlib). Sin descomprimir, solo ves basura binaria. La solución: detectar el filtro en el diccionario previo al stream e inflarlo con el <code>zlib</code> nativo de Node, sin ninguna dependencia.</div></div></div>
-
-      <div class="bug-row"><div class="bug-num">BUG 3</div><div><div class="bug-title">Bytes corrompidos al leer</div><div class="bug-desc">Leer el PDF como UTF-8 destruye cualquier byte no ASCII. La lectura correcta es <code>latin1</code>, que mapea cada byte 0 a 255 a un carácter único, así el ida y vuelta no pierde nada. Después, dos regex sobre los operadores <code>Tj</code> y <code>TJ</code> sacan el texto real.</div></div></div>
-
-      <p>El parser terminó en unas 80 líneas de TypeScript sin una sola dependencia de npm: leer <code>latin1</code>, inflar los streams <code>FlateDecode</code> con <code>zlib</code>, y dos expresiones regulares. No reemplaza a una librería seria de PDF, pero es chico, no depende del DOM, y despliega. Los detalles finos (paréntesis escapados, escapes octales <code>\101 → A</code>) fueron los últimos clavos.</p>
-
-      <div class="callout reveal">
-        <div class="callout-label">El patrón</div>
-        <p>Cuando una dependencia "fácil" te ata a un entorno que tu deploy no tiene, a veces 80 líneas que hacen el 90% del trabajo ganan a los 200 KB que hacen el 100%. La clave es saber qué 10% podés resignar: acá, PDFs con imágenes o layouts raros, que un demo no necesita.</p>
-      </div>
-
-      <h3>La recuperación: pgvector, coseno, por sesión</h3>
-
-      <p>Cada usuario tiene su propio espacio de documentos. La recuperación no es solo "buscar los más parecidos": es "buscar los más parecidos <em>de esta sesión</em>". Eso lo resuelve una función en Postgres que filtra por <code>session_id</code> antes de ordenar por similitud coseno:</p>
-
-      <pre><code class="language-sql">-- match_chunks: vecinos más cercanos, pero solo de la sesión del usuario
-SELECT c.content, d.filename, c.page_number,
-       1 - (c.embedding &lt;=&gt; query_embedding) AS similarity   -- &lt;=&gt; es distancia coseno
-FROM chunks c
-JOIN documents d ON d.id = c.document_id
-WHERE c.session_id = p_session_id                              -- el aislamiento va primero
-  AND 1 - (c.embedding &lt;=&gt; query_embedding) &gt; match_threshold  -- descarta ruido
-ORDER BY c.embedding &lt;=&gt; query_embedding
-LIMIT match_count;                                            -- top-k</code></pre>
-
-      <p>En el chat la llamo con umbral <code>0.25</code> y <code>5</code> resultados. El índice <code>HNSW</code> hace que, aunque haya muchos vectores, la búsqueda sea casi instantánea. Y el filtro por sesión es la misma disciplina de aislamiento multi-tenant que trabajé a fondo en la <a href="harness-engineering-adminrent.html">serie sobre harness engineering</a>: el dato de un usuario no aparece jamás en la respuesta de otro.</p>
-
-      <h3>El agente: tres herramientas y un límite de pasos</h3>
-
-      <p>No es un RAG de un solo tiro. Es un <strong>agente</strong>: Claude recibe la pregunta con el contexto ya recuperado, pero además tiene herramientas para ir a buscar más si le hace falta. Con el Vercel AI SDK v6, definir eso son unas pocas líneas:</p>
-
-      <pre><code class="language-typescript">const tools = {
-  search_documents: tool({    // volver a buscar en los PDFs, con otra formulación
-    inputSchema: z.object({ query: z.string() }),
-    execute: async ({ query }) => buscarChunks(query, sessionId),
-  }),
-  search_web: tool({          // Exa, cuando los documentos no alcanzan
-    inputSchema: z.object({ query: z.string() }),
-    execute: async ({ query }) => searchWeb(query),
-  }),
-  save_memory: tool({         // guardar un hecho del usuario para el futuro
-    inputSchema: z.object({ fact: z.string() }),
-    execute: async ({ fact }) => guardarMemoria(fact, sessionId),
-  }),
-}
-
-streamText({
-  model: gateway("anthropic/claude-sonnet-4.6"),
-  system: promptConContextoYMemorias,
-  messages,
-  tools,
-  stopWhen: stepCountIs(6),   // el freno: como mucho 6 pasos de razonar-y-actuar
-})</code></pre>
-
-      <p>El <code>stepCountIs(6)</code> es el equivalente al principio de autonomía de la serie harness: un agente sin un límite de pasos es un agente que puede entrar en loop y quemarte tokens. Seis pasos alcanzan para "buscá en los documentos, si no está buscá en la web, después respondé", y ponen un techo duro. La respuesta se transmite <strong>token a token por SSE</strong>, junto con eventos de qué herramienta se está usando y las citas al final, para que la interfaz muestre lo que pasa en vivo.</p>
-
-      <h3>La memoria: dos formas de recordar</h3>
-
-      <p>Acá está la parte que le da el nombre al proyecto. El agente recuerda cosas del usuario entre conversaciones, y lo hace con <strong>el mismo mecanismo de RAG</strong>: las memorias son texto embebido en la misma base de vectores, en su propia tabla. Recordar es, literalmente, hacer RAG sobre tus recuerdos.</p>
-
-      <p>Hay dos formas de escribir una memoria y una de leerla. <strong>Automática:</strong> después de cada respuesta, un modelo chico y barato (Claude Haiku 4.5) lee la conversación y extrae hechos durables con un puntaje de confianza; solo se guardan los que superan <code>0.7</code>. <strong>Explícita:</strong> el propio agente puede llamar a <code>save_memory</code> cuando detecta algo que vale la pena. Y al <strong>leer</strong>, en cada pregunta se recuperan las memorias más parecidas (umbral <code>0.3</code>, top-3) y se inyectan en el system prompt bajo "lo que recuerdo de este usuario".</p>
-
-      <div class="figure reveal">
-        <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
-          <title>El bucle de memoria: la conversación produce hechos, se extraen con confianza, se embeben y se guardan; en la próxima pregunta se recuperan e inyectan en el prompt</title>
-          <defs>
-            <marker id="ar-mem" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L0,6.4 L8,3.2 z" fill="#94A3B8"/></marker>
-            <path id="mempath" d="M120,90 H330 H545 V170 H330 H120 V90" fill="none"/>
-          </defs>
-
-          <rect x="20" y="66" width="140" height="48" rx="9" fill="#122845" stroke="rgba(148,163,184,0.35)"/><text x="90" y="86" text-anchor="middle" fill="#F1F5F9" font-size="12" font-weight="600">Conversación</text><text x="90" y="103" text-anchor="middle" fill="#94A3B8" font-size="10.5">pregunta + respuesta</text>
-          <line x1="160" y1="90" x2="196" y2="90" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-mem)"/>
-          <rect x="200" y="66" width="160" height="48" rx="9" fill="#122845" stroke="rgba(244,162,89,0.5)"/><text x="280" y="86" text-anchor="middle" fill="#F4A259" font-size="12" font-weight="600">Extraer hechos</text><text x="280" y="103" text-anchor="middle" fill="#94A3B8" font-size="10.5">Haiku · confianza &gt; 0.7</text>
-          <line x1="360" y1="90" x2="396" y2="90" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-mem)"/>
-          <rect x="400" y="66" width="150" height="48" rx="9" fill="#122845" stroke="rgba(125,211,252,0.5)"/><text x="475" y="86" text-anchor="middle" fill="#7DD3FC" font-size="12" font-weight="600">Embeber + guardar</text><text x="475" y="103" text-anchor="middle" fill="#94A3B8" font-size="10.5">tabla memories</text>
-
-          <rect x="560" y="60" width="180" height="120" rx="10" fill="rgba(46,117,182,0.10)" stroke="rgba(125,211,252,0.4)"/>
-          <text x="650" y="86" text-anchor="middle" fill="#7DD3FC" font-size="11.5" font-weight="700">pgvector</text><text x="650" y="104" text-anchor="middle" fill="#94A3B8" font-size="10">memorias por sesión</text>
-          <line x1="550" y1="90" x2="558" y2="90" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-mem)"/>
-
-          <rect x="400" y="196" width="150" height="48" rx="9" fill="#122845" stroke="rgba(79,169,232,0.5)"/><text x="475" y="216" text-anchor="middle" fill="#4FA9E8" font-size="12" font-weight="600">Recuperar</text><text x="475" y="233" text-anchor="middle" fill="#94A3B8" font-size="10.5">las 3 más parecidas</text>
-          <line x1="650" y1="180" x2="650" y2="220 " stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/><path d="M650,220 H552" fill="none" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar-mem)"/>
-          <line x1="400" y1="220" x2="360" y2="220" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-mem)"/>
-          <rect x="200" y="196" width="160" height="48" rx="9" fill="#122845" stroke="rgba(79,169,232,0.6)"/><text x="280" y="216" text-anchor="middle" fill="#4FA9E8" font-size="12" font-weight="600">Inyectar al prompt</text><text x="280" y="233" text-anchor="middle" fill="#94A3B8" font-size="10.5">"lo que recuerdo…"</text>
-          <line x1="200" y1="220" x2="120" y2="220" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#ar-mem)"/>
-          <rect x="20" y="196" width="90" height="48" rx="9" fill="#0E1F3A" stroke="rgba(125,211,252,0.45)"/><text x="65" y="224" text-anchor="middle" fill="#F1F5F9" font-size="12" font-weight="600">Respuesta</text>
-
-          <text x="90" y="160" text-anchor="middle" fill="#94A3B8" font-size="10" font-family="JetBrains Mono, monospace">próxima pregunta →</text>
-
-          <circle class="loop-token" r="10" fill="#7DD3FC" opacity="0.18"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#mempath"/></animateMotion></circle>
-          <circle class="loop-token" r="5" fill="#7DD3FC"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#mempath"/></animateMotion></circle>
-        </svg>
-        <p class="figure-caption">Figura 7 · <strong>El bucle de memoria.</strong> Los hechos se extraen, se embeben y se guardan; en la próxima conversación se recuperan y vuelven al prompt. RAG sobre tus propios recuerdos.</p>
-      </div>
-
-      <hr />
-
-      <h2>Lo que haría distinto</h2>
-
-      <ol>
-        <li><strong>Separar por página de verdad.</strong> Hoy el parser junta todo el PDF en un texto y trocea sobre eso, así que las citas dicen siempre <code>p.1</code>. Rastrear el número de página real durante la extracción haría las citas precisas, que es medio punto del valor de RAG.</li>
-        <li><strong>Trocear mejor.</strong> Uso longitud sobre 4 como proxy de tokens y corto por párrafos. Funciona, pero un troceo consciente de la estructura del documento y un contador de tokens real reducirían los fragmentos partidos a la mitad.</li>
-        <li><strong>Sumar reranking.</strong> Recupero por similitud pura. Traer 20 candidatos y reordenarlos con un modelo dedicado subiría la precisión de las respuestas notablemente, y es la mejora de mayor retorno que tengo pendiente.</li>
-        <li><strong>Ingesta asíncrona para PDFs grandes.</strong> La ingesta síncrona entra en la ventana serverless para documentos chicos. Para archivos grandes, lo correcto es una cola: responder rápido y procesar en segundo plano.</li>
-      </ol>
-
-      <hr />
-
       <h2>El patrón, generalizado</h2>
 
       <p>RAG es una idea más simple de lo que su nombre sugiere: darle al modelo la evidencia justa en el momento justo, en vez de esperar que se la sepa. Todo lo demás son detalles de ingeniería alrededor de esa idea.</p>
 
       <p>Y una vez que lo ves así, aparece en todos lados. Los documentos son RAG. La memoria del agente es RAG sobre lo que recordás. La búsqueda web es RAG con un índice que no controlás. El mecanismo (embeber, buscar por cercanía, inyectar) es siempre el mismo, y la parte difícil es siempre la misma: <strong>recuperar bien</strong>. Si tus respuestas son malas, casi nunca es culpa del modelo que genera; es que le estás dando el contexto equivocado. Arreglá la recuperación y arreglás RAG.</p>
 
-      <p>🔗 <strong>github.com/NeryC/rag-agent-memory</strong> · <a href="https://github.com/NeryC/rag-agent-memory">código completo</a> · <a href="../../">portfolio</a></p>
+      <p>🔗 <strong><a href="rag-agent-memory-build.html">Parte 2 · Cómo lo construí</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">repo</a> · <a href="../../">portfolio</a></p>
 
     </div>
 
@@ -829,11 +776,11 @@ streamText({
     </div>
 
     <div class="footer-cta reveal">
-      <h3>Sobre este proyecto</h3>
-      <p>El código completo del agente con memoria, con el parser de PDF, el esquema de pgvector y las herramientas del agente:</p>
+      <h3>En la parte 2: de la teoría al código</h3>
+      <p>Tomé todo esto y construí un agente real: subís PDFs, chatea con citas, busca en la web cuando hace falta, y recuerda cosas tuyas entre sesiones. En la parte 2 muestro el código de verdad, paso a paso: el parser de PDF, el esquema de pgvector, las herramientas del agente y el bucle de memoria.</p>
       <div class="links">
+        <a href="rag-agent-memory-build.html">📄 Parte 2 · Cómo lo construí ↗</a>
         <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-memory ↗</a>
-        <a href="harness-engineering.html">📄 La serie sobre harness engineering ↗</a>
       </div>
       <h3 style="margin-top:24px;">Sobre el autor</h3>
       <p>Soy Nery Cano, senior full-stack engineer en Paraguay, construyendo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / AI engineering.</p>
