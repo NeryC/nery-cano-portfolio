@@ -142,7 +142,21 @@ Always include `<nav class="header-nav">` at the top and `<footer class="site-fo
 
 ## 5 · Canonical article-body section order
 
-The body of every technical post moves through the same arc. Skip a section if it genuinely doesn't apply, but never reorder them.
+Every post is one of **two types**, and each new post declares which — in a machine-readable comment plus a `data-sec` marker on every `<h2>`. This is the part the sensor enforces (presence + canonical order); the prose table below fills in the rest. **Don’t rebuild the skeleton by hand — copy `blog/_templates/part-1-guide.html` or `part-2-build.html` and fill it in.** The 14 existing posts predate these markers and are grandfathered: the sensor skips the section check when a post carries no `data-sec`.
+
+**Part 1 — Guide** (`<!-- structure: guide -->`) — the default. Teaches a topic from zero. Required sections, in order:
+
+> `glossary` → `definition` → `problem` → `anatomy` → `detail` → `code` → `pattern`
+
+**Part 2 — Build** (`<!-- structure: build -->`) — the optional companion, written only when there’s a real project to narrate. It assumes Part 1 already gave the concepts. Required sections, in order:
+
+> `architecture` → `build` → `postmortem` → `different` → `pattern`
+
+The global order the sensor knows — every type is a subsequence of it — is `glossary, definition, problem, anatomy, detail, code, architecture, build, postmortem, different, pattern`. The last marked section is always `pattern`. A post may add extra marked sections as long as they keep this relative order.
+
+**Index ordering:** in both `blog/index.html` and `blog/es/index.html`, a topic’s Part 1 (guide) card always sits **above** its Part 2 (build) card — the entry point first, regardless of publish date. The rest of the list stays newest-first.
+
+The prose arc below is the detailed reference for a **build**-style narrative (it maps onto the `architecture`/`build`/`postmortem`/`different`/`pattern` spine). Skip a section if it genuinely doesn’t apply, but never reorder them.
 
 | # | Section | Purpose | Heading style |
 |---|---|---|---|
@@ -358,9 +372,18 @@ A score above 10/100 means fix it before shipping. Two carve-outs, both verified
 
 ## 9 · Quality checklist (run before publishing)
 
+Most of this checklist is **enforced by a sensor**, not left to memory. This spec is the guide (feedforward); `blog/tools/validate.mjs` is the sensor (feedback) that fails on its own. Run:
+
+```bash
+node blog/tools/validate.mjs               # every post + both indexes
+node blog/tools/validate.mjs blog/x.html   # a single file
+```
+
+Exit 0 = clean, exit 1 = at least one violation; warnings never fail the build. It runs in CI on every push (`.github/workflows/blog-structure.yml`), so a structurally broken post can’t reach the live site quietly. The sensor is deterministic — it reads the HTML, it never guesses. What it enforces on its own: integrity (no NUL bytes, files end in `</html>`, HTML + every `<svg>` balanced, `<mpath>` resolves), the head contract (`lang`, `<title>`, `og:image` is a `.png` that exists, `og:url`, `twitter:card`), i18n (exactly 3 hreflang, en/es slugs identical, `x-default` == en, counterpart exists), body (banner img exists, figures consecutive, callout, Prism, a quick-links block), and consistency (tag pills == `article:tag`; `prefers-reduced-motion` when animated; every relative link + index card resolves). It does **not** judge section quality, prose, or figures — those stay human (§7 covers voice). A sensor that faked those would be worse than none.
+
 Before committing a new post or a rewrite:
 
-- [ ] All section headings follow the canonical order (TL;DR → figure → background → implementation → postmortem → takeaway → polish/tests → would-do-differently → generalized pattern)
+- [ ] New post started from `blog/_templates/part-1-guide.html` or `part-2-build.html`; declares `<!-- structure: guide|build -->` and every `<h2>` carries a `data-sec` in canonical order (§5). The sensor enforces this.
 - [ ] At least ONE inline SVG figure with a numbered caption
 - [ ] At least ONE `<div class="callout">` for the post's key reusable insight
 - [ ] Postmortem section uses `bug-row` structure if the story has named individual failures/decisions

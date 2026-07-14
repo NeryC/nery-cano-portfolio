@@ -180,6 +180,10 @@ function validateIndexes(posts) {
   for (const idx of [join(BLOG, 'index.html'), join(BLOG, 'es', 'index.html')]) {
     if (!existsSync(idx)) { E(`missing ${basename(idx)}`); continue; }
     const s = readFileSync(idx, 'utf8'), d = dirname(idx);
+    if (readFileSync(idx).includes(0)) E(`${basename(idx)} has NUL byte(s)`);
+    if (!s.trimEnd().endsWith('</html>')) E(`${basename(idx)} does not end with </html> (truncated?)`);
+    const ib = balance(strip(s), HTML_VOID);
+    if (ib.stack.length) E(`${basename(idx)} unbalanced HTML, tags left open: ${ib.stack.slice(-3).join(', ')}`);
     for (const h of [...s.matchAll(/<a class="article-card" href="([^"]+)"/g)].map(m => m[1]))
       if (!existsSync(resolve(d, h))) E(`${basename(idx)} card links to missing ${h}`);
   }

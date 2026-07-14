@@ -21,6 +21,19 @@ The blog covers four AI portfolio projects. Each post is a long-form, technicall
 
 **Canonical structure spec:** `blog/BLOG_STRUCTURE.md`. New posts and rewrites MUST follow it. The reference implementation is `blog/talk-to-my-portfolio.html` (the post the spec was derived from).
 
+## The structure harness
+
+The spec is the guide; `blog/tools/validate.mjs` is the sensor that enforces it. Run it before publishing anything:
+
+```bash
+node blog/tools/validate.mjs               # every post + both indexes
+node blog/tools/validate.mjs blog/x.html   # one file while iterating
+```
+
+Exit 0 = clean, exit 1 = a real violation (warnings never fail). It’s zero-dependency Node ESM and runs in CI on every push via `.github/workflows/blog-structure.yml`, so a broken post can’t reach the live site quietly. It checks the mechanical invariants only — integrity/balance, the head + hreflang + og:image(.png) contract, banner/figure/callout/Prism presence, tag-pills == `article:tag`, reduced-motion when animated, that every relative link resolves, and that both indexes end in `</html>`. It does **not** judge prose or figure quality; those stay human (the AI-ism detector in §7 of the spec covers voice). When the sensor is red, fix the post — don’t loosen the sensor unless the rule itself is wrong. Full rationale in `blog/BLOG_STRUCTURE.md` §9.
+
+New posts come in two types — **Part 1 (guide)**, the default, and an optional **Part 2 (build)** when there’s a real project to narrate. Each has a fixed section spine the sensor enforces via `data-sec` markers on every `<h2>` plus a `<!-- structure: guide|build -->` declaration (§5 of the spec). Don’t hand-roll a new post: copy `blog/_templates/part-1-guide.html` or `blog/_templates/part-2-build.html` and fill it in. The 14 existing posts predate the markers and are grandfathered — the section check only fires on posts that opt in with `data-sec`.
+
 ## Sibling repo — where the projects actually live
 
 **Path:** `C:\Users\albert\Documents\Projects\Personal\agentProyect\`
@@ -46,7 +59,7 @@ If the widget breaks on the live site, the source of truth is the talk-to-my-por
 ## When to edit what
 
 - **Project code changed** → update the corresponding blog post in `blog/`. Most often: a tech-decisions section, a code snippet, or adding a new entry to the postmortem `bug-row` list.
-- **New project shipped** → write a new post following `blog/BLOG_STRUCTURE.md`, add a banner (1200×630 SVG + 2400×1260 PNG retina export), update `index.html` and `blog/index.html` to link to it.
+- **New project shipped** → copy `blog/_templates/part-1-guide.html` (and, if there’s a build to narrate, `part-2-build.html`), fill it in per `blog/BLOG_STRUCTURE.md`, add a banner (1200×630 SVG + 2400×1260 PNG retina export), update `index.html` and `blog/index.html` to link to it. Run `node blog/tools/validate.mjs` before pushing. In the blog index, always list the Part 1 (guide) card **above** its Part 2 (build) card — entry point first, regardless of date.
 - **Structure spec changed** → rewrite the relevant posts. The spec is the contract; existing posts should conform to it (except the reference implementation, which defines it).
 
 ## Quick orientation for a cold start
