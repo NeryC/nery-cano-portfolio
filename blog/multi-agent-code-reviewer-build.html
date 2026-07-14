@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The multi-agent code reviewer I built (Part 2) — Nery Cano</title>
+  <meta name="description" content="Three specialist agents in parallel and a supervisor that consolidates, with the real code: AI SDK v6, Zod, SSE streaming on Next.js. Part 2 of 2." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="The multi-agent code reviewer I built (Part 2)" />
+  <meta property="og:description" content="Three specialist agents in parallel and a supervisor that consolidates, with the real code: AI SDK v6, Zod, SSE streaming on Next.js. Part 2 of 2." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_build_banner_en.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer-build.html" />
+  <meta property="article:published_time" content="2026-05-19" />
+  <meta property="article:tag" content="Next.js" />
+  <meta property="article:tag" content="AI SDK v6" />
+  <meta property="article:tag" content="Zod" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The multi-agent code reviewer I built (Part 2)" />
+  <meta name="twitter:description" content="Three specialist agents in parallel and a supervisor that consolidates, with the real code: AI SDK v6, Zod, SSE streaming on Next.js. Part 2 of 2." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_build_banner_en.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer-build.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/multi-agent-code-reviewer-build.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer-build.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  
+    /* ── Layout ancho y tipografía fluida ─────────────────────────────────
+       En pantallas grandes el problema no es la columna: es que 19px de
+       cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
+       de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
+       columna crece en proporción y la medida se mantiene entre 91 y 96
+       caracteres. Todo lo que vive dentro de .article se expresa en em para
+       que siga la escala: metadata, captions, callouts, bug-rows, código,
+       tablas y el interior de las figuras.
+       NADA sangra fuera de la columna. Un bloque más ancho que el texto al
+       que pertenece se lee como un error de maquetado, no como jerarquía.
+       Debajo de 1240px, comportamiento original. */
+    @media (min-width: 1240px) {
+      .header-nav, .site-footer, .article { max-width: 920px; }
+      .article { font-size: 20px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 1600px) {
+      .header-nav, .site-footer, .article { max-width: 1000px; }
+      .article { font-size: 21.5px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2000px) {
+      .header-nav, .site-footer, .article { max-width: 1090px; }
+      .article { font-size: 23px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2400px) {
+      .header-nav, .site-footer, .article { max-width: 1200px; }
+      .article { font-size: 25px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="header-nav"><a href="../">← Portfolio</a><a href="index.html">Blog</a></nav>
+  <article class="article">
+    <!-- structure: build — Part 2. The real multi-agent code reviewer, with code + postmortem. Pairs with Part 1 (guide). -->
+    <div class="article-meta">May 19, 2026 · Part 2 of 2 · ~16 min read</div>
+    <h1 class="article-title">The multi-agent code reviewer I built</h1>
+    <p class="article-subtitle">Three specialists in parallel and a supervisor that consolidates. The architecture, the real code, and the bugs that broke in production.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">May 19, 2026 · build</div>
+    </div>
+    <div class="tags"><span class="tag-pill">Next.js</span> <span class="tag-pill">AI SDK v6</span> <span class="tag-pill">Zod</span></div>
+    <img class="banner-img" src="post_2_multiagent_build_banner_en.png" alt="The code reviewer: input, three agents in parallel, a supervisor, and a report over SSE" />
+    <div class="article-body">
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="multi-agent-code-reviewer.html">Part 1 · Agents and multi-agents, from zero</a></strong> · <a href="https://github.com/NeryC/multi-agent-code-reviewer">repo</a> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">demo</a> · <a href="../">portfolio</a></p>
+      </div>
+
+      <p><em>Part 1 explained the fan-out + supervisor pattern in the abstract. This is the version with code: a code reviewer where three specialized agents look at the same file at once and a fourth merges their findings into a scored report.</em></p>
+
+      <h2 data-sec="architecture">The architecture, end to end</h2>
+      <p>The whole flow fits in one line: you paste code (or a GitHub URL), and the system extracts metadata, fires three reviewers in parallel, and a supervisor consolidates everything into a 0-100 scored report, all streamed live. None of this needs a database: it's a single Next.js route emitting SSE events.</p>
+      <p>The real stack: <strong>Next.js 16.2.5</strong> (App Router), <strong>AI SDK v6</strong> with <code>generateObject</code>, <strong>Zod 4</strong> for structured output, and the models over <strong>Vercel's AI Gateway</strong>: <code>claude-sonnet-4.6</code> for the three specialists and the cheaper <code>claude-haiku-4.5</code> for the supervisor.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 660 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Flow: input, metadata, three agents in parallel, supervisor, report, all over SSE">
+          <rect x="16" y="104" width="86" height="44" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+          <text x="59" y="123" text-anchor="middle" fill="#7DD3FC" font-size="11">input</text>
+          <text x="59" y="138" text-anchor="middle" fill="#94A3B8" font-size="9">snippet / URL</text>
+          <rect x="120" y="104" width="86" height="44" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <text x="163" y="123" text-anchor="middle" fill="#E2E8F0" font-size="11">metadata</text>
+          <text x="163" y="138" text-anchor="middle" fill="#94A3B8" font-size="9">lang, lines</text>
+          <rect x="248" y="30" width="150" height="38" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.4"/><text x="323" y="54" text-anchor="middle" fill="#E2E8F0" font-size="11">security</text>
+          <rect x="248" y="106" width="150" height="38" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.4"/><text x="323" y="130" text-anchor="middle" fill="#E2E8F0" font-size="11">performance</text>
+          <rect x="248" y="182" width="150" height="38" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.4"/><text x="323" y="206" text-anchor="middle" fill="#E2E8F0" font-size="11">maintainability</text>
+          <path d="M206,126 C224,120 232,50 246,49" fill="none" stroke="#2E75B6" stroke-width="1.8" stroke-dasharray="7 9" class="flow"/>
+          <path d="M206,126 L246,125" fill="none" stroke="#2E75B6" stroke-width="1.8" stroke-dasharray="7 9" class="flow"/>
+          <path d="M206,126 C224,132 232,200 246,201" fill="none" stroke="#2E75B6" stroke-width="1.8" stroke-dasharray="7 9" class="flow"/>
+          <rect x="440" y="104" width="86" height="44" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/><text x="483" y="128" text-anchor="middle" fill="#7DD3FC" font-size="11">supervisor</text>
+          <path d="M398,49 C420,52 430,120 438,126" fill="none" stroke="#4FA9E8" stroke-width="1.8" stroke-dasharray="7 9" class="flow"/>
+          <path d="M398,125 L438,125" fill="none" stroke="#4FA9E8" stroke-width="1.8" stroke-dasharray="7 9" class="flow"/>
+          <path d="M398,201 C420,198 430,144 438,136" fill="none" stroke="#4FA9E8" stroke-width="1.8" stroke-dasharray="7 9" class="flow"/>
+          <rect x="560" y="104" width="84" height="44" rx="8" fill="#122845" stroke="#7DD3FC" stroke-width="1.4"/><text x="602" y="123" text-anchor="middle" fill="#E2E8F0" font-size="11">report</text>
+          <text x="602" y="138" text-anchor="middle" fill="#94A3B8" font-size="9">score 0-100</text>
+          <line x1="526" y1="126" x2="558" y2="126" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#b)"/>
+          <text x="330" y="242" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="10">everything over one SSE stream — no Redis, no queue</text>
+          <defs><marker id="b" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94A3B8"/></marker></defs>
+        </svg>
+        <p class="figure-caption">Figure 1 · <strong>The full flow.</strong> Input and metadata, three specialists in parallel, a supervisor that consolidates, and a report, all emitted live over a single SSE endpoint.</p>
+      </div>
+
+      <h2 data-sec="build">How I built it, step by step</h2>
+      <p><strong>The models, in one place.</strong> Everything goes through Vercel's AI Gateway with a single key. Two models: the good one to find problems, the cheap one to consolidate.</p>
+      <pre><code class="language-typescript">import { createGateway } from '@ai-sdk/gateway';
+
+const gateway = createGateway({ apiKey: process.env.AI_GATEWAY_API_KEY! });
+
+// The 3 specialists: best reasoning to find problems
+export const REVIEW_MODEL = gateway('anthropic/claude-sonnet-4.6');
+// The supervisor: synthesis + scoring, cheaper
+export const SUPERVISOR_MODEL = gateway('anthropic/claude-haiku-4.5');</code></pre>
+
+      <p><strong>One specialist = one role + one schema.</strong> The three agents are the same function with a different system prompt. The security one looks for injection, secrets, XSS; it returns a list of findings that Zod validates. Notice the prompt caps the length (title max 10 words) so the output is comparable across agents.</p>
+      <pre><code class="language-typescript">const SYSTEM = `You are a security code reviewer. Analyze the code and find
+vulnerabilities: SQL/command injection, XSS, hardcoded secrets,
+insecure deserialization, missing validation at boundaries.
+If the code is secure, return an empty array.
+Be concise: title max 10 words, description max 50.`;
+
+export async function runSecurityAgent(code: string, meta: CodeMetadata) {
+  const { object } = await generateObject({
+    model: REVIEW_MODEL,
+    schema: FindingArraySchema,        // Zod: forces the output shape
+    system: SYSTEM,
+    prompt: `Language: ${meta.lang}
+
+Code:
+${code}`,
+  });
+  return object;                        // Finding[] — already validated
+}</code></pre>
+
+      <p><strong>The Zod schemas are the contract between agents.</strong> Without a schema, the supervisor would have to parse free text from three different agents. With <code>generateObject</code> + Zod, each specialist returns exactly the same shape, and the supervisor receives data, not prose.</p>
+      <pre><code class="language-typescript">export const FindingSchema = z.object({
+  severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
+  category: z.enum(['security', 'performance', 'maintainability']),
+  title: z.string(),
+  line: z.number().int().positive().optional(),
+  description: z.string(),
+  suggestion: z.string(),
+  codeExample: z.object({ before: z.string(), after: z.string() }).optional(),
+});
+
+export const ReviewReportSchema = z.object({
+  score: z.number().int().min(0).max(100),
+  summary: z.string(),
+  recommendation: z.string(),
+  findings: z.array(FindingSchema),
+});</code></pre>
+
+      <p><strong>The orchestration: the real fan-out.</strong> Here's the heart. The three agents fire with <code>Promise.all</code>, so they run at the same time and total time is the slowest one's, not the sum. A detail that looks minor and isn't: I announce all three as "running" <em>before</em> the <code>await</code>, so the live timeline shows real parallelism, not a queue.</p>
+      <pre><code class="language-typescript">// All 3 announced BEFORE awaiting — otherwise the timeline lies
+send({ type: 'agent', name: 'security', status: 'running' });
+send({ type: 'agent', name: 'performance', status: 'running' });
+send({ type: 'agent', name: 'maintainability', status: 'running' });
+
+const [sec, perf, maint] = await Promise.all([
+  runSecurityAgent(code, meta).then((f) => { send({ type: 'agent', name: 'security', status: 'done', findings: f }); return f; }),
+  runPerformanceAgent(code, meta).then((f) => { send({ type: 'agent', name: 'performance', status: 'done', findings: f }); return f; }),
+  runMaintainabilityAgent(code, meta).then((f) => { send({ type: 'agent', name: 'maintainability', status: 'done', findings: f }); return f; }),
+]);
+
+// The supervisor gets the 3 lists together and returns ONE report
+const report = await runSupervisorAgent([...sec, ...perf, ...maint], meta);</code></pre>
+
+      <p><strong>The supervisor consolidates.</strong> A single call with the cheap model. It gets all the raw findings and returns a <code>ReviewReport</code>: it deduplicates, reprioritizes (security &gt; performance &gt; maintainability at equal severity), writes the summary, and assigns the score.</p>
+      <pre><code class="language-typescript">export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata) {
+  const { object } = await generateObject({
+    model: SUPERVISOR_MODEL,
+    schema: ReviewReportSchema,
+    system: SYSTEM,   // "deduplicate, reprioritize, summarize, score 0-100"
+    prompt: `Raw findings from 3 agents:
+${JSON.stringify(findings, null, 2)}`,
+  });
+  return object;
+}</code></pre>
+
+      <p><strong>The transport: SSE, no queue.</strong> The route opens a <code>ReadableStream</code> and hands <code>orchestrate</code> a <code>send</code> function that pushes each event as <code>data: {...}</code>. The browser reads it with <code>EventSource</code>. No Redis, no job queue: one request that keeps spitting out progress. A rate limit of 3 per hour per IP keeps my bill from running away.</p>
+      <pre><code class="language-typescript">export async function POST(req: Request) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+  if (!rateLimit(ip, { max: 3, windowMs: 3_600_000 }).allowed)
+    return new Response('Rate limit exceeded.', { status: 429 });
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (e: object) => controller.enqueue(
+        new TextEncoder().encode(`data: ${JSON.stringify(e)}\n\n`));
+      try { await orchestrate(send, body); }
+      finally { controller.close(); }
+    },
+  });
+  return new Response(stream, { headers: { 'Content-Type': 'text/event-stream' } });
+}</code></pre>
+
+      <h2 data-sec="postmortem">What broke, and how I fixed it</h2>
+      <p>The honest part. None of this worked on the first try; several broke silently, which is the worst thing about multi-agent systems.</p>
+
+      <div class="callout warn">
+        <div class="callout-label">Bug · The supervisor deduplicates too much</div>
+        <p>On the SQL-injection example, the three agents produced 16 raw findings and the final report showed <strong>a single one</strong>. It worked, but it wasted the whole multi-agent story. The cause is in the supervisor's prompt: "deduplicate findings that cover the same underlying issue" is too broad and collapses distinct-but-similar findings. The fix is five lines: tighten "deduplicate" to "exact same issue only" and require at least one finding per non-empty category.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-label">Bug · The timeline lied with sequential await</div>
+        <p>The first version awaited the agents one after another and only then updated the UI. The result: the timeline showed "security… then performance… then maintainability," as if they were in a line, even though the goal was parallel. The fix was to emit the three <code>running</code> events before the <code>Promise.all</code>. Parallelism has to <em>be seen</em>, not just happen.</p>
+      </div>
+
+      <div class="callout warn">
+        <div class="callout-label">Bug · The rate limit resets on cold start</div>
+        <p>The 3-per-hour limit lives in an in-memory <code>Map</code>. In serverless, each cold start wipes it, so a determined user can get past it. For a portfolio demo that's fine: it's a cost brake, not a real quota. A serious version would use Upstash or KV, and I left it noted instead of pretending it was solved.</p>
+      </div>
+
+      <h2 data-sec="different">What I'd do differently</h2>
+      <p><strong>Stream findings as they arrive.</strong> Today the UI shows that each agent finished, but the detail only appears when the supervisor closes. Each agent already emits its findings; I didn't paint them the moment they land, which would make the wait feel shorter.</p>
+      <p><strong>Fix the deduplication before showing it off.</strong> It's the flaw that most hurts the demo, because it hides exactly the work of the three agents. It's a five-line change I should have made before publishing.</p>
+      <p><strong>A routing step for the trivial cases.</strong> A ten-line snippet doesn't need three agents and a supervisor. A lightweight router that decides "this is small, one agent is enough" would save three of every four calls on the easy cases.</p>
+
+      <h2 data-sec="pattern">The pattern, generalized</h2>
+      <p>Take away the word "code" and what's left is the pattern from Part 1: <strong>specialists in parallel + a supervisor that consolidates</strong>. Three things made it work here and recur everywhere: each agent has <strong>a single role</strong> (and so performs better than a prompt that does everything), Zod turns the outputs into a <strong>contract</strong> (the supervisor gets data, not prose to guess), and the <code>Promise.all</code> buys <strong>parallelism almost for free</strong>. The cost is real (four calls per run, and coordination one agent didn't have), but when the problem splits into points of view, it pays for itself.</p>
+      <p>If you have a due diligence, a support triage, or a moderation where several experts look at the same thing and someone has to draw a conclusion, this is the shape. The code reviewer is just the excuse to show it with real code.</p>
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="multi-agent-code-reviewer.html">Part 1 · Agents and multi-agents, from zero</a></strong> · <a href="https://github.com/NeryC/multi-agent-code-reviewer">repo</a> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">demo</a> · <a href="../">portfolio</a></p>
+      </div>
+
+    </div>
+  </article>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="Inter, DejaVu Sans, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0E1F3A"/><stop offset="55%" stop-color="#08152A"/><stop offset="100%" stop-color="#06101F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.18" cy="0.05" r="0.75">
+      <stop offset="0%" stop-color="#1F3A68" stop-opacity="0.85"/><stop offset="100%" stop-color="#06101F" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.9" cy="1" r="0.6">
+      <stop offset="0%" stop-color="#2E75B6" stop-opacity="0.35"/><stop offset="100%" stop-color="#06101F" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+  <text x="70" y="140" fill="#7DD3FC" font-size="19" font-weight="700" letter-spacing="4.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">PARTE 2 · EL BUILD</text>
+<text x="70" y="248" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">El revisor de</text><text x="70" y="316" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">código</text><text x="70" y="384" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">multi-agente</text>
+  <rect x="70" y="422" width="86" height="4" rx="2" fill="#7DD3FC"/>
+<text x="70" y="482" fill="#94A3B8" font-size="25">Tres agentes en paralelo +</text><text x="70" y="516" fill="#94A3B8" font-size="25">un supervisor. Código real.</text>
+  <text x="70" y="580" fill="#4FA9E8" font-size="18" font-weight="600" letter-spacing="1.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">NERY CANO · neryc.github.io</text>
+  <g font-family="JetBrains Mono, DejaVu Sans Mono, monospace">
+    <rect x="800" y="150" width="150" height="46" rx="10" fill="#122845" stroke="#4FA9E8" stroke-width="2"/><text x="875" y="179" text-anchor="middle" fill="#E2E8F0" font-size="16">seguridad</text>
+    <rect x="800" y="292" width="150" height="46" rx="10" fill="#122845" stroke="#4FA9E8" stroke-width="2"/><text x="875" y="321" text-anchor="middle" fill="#E2E8F0" font-size="16">rendimiento</text>
+    <rect x="800" y="434" width="150" height="46" rx="10" fill="#122845" stroke="#4FA9E8" stroke-width="2"/><text x="875" y="463" text-anchor="middle" fill="#E2E8F0" font-size="15">mantenibilidad</text>
+    <rect x="1010" y="292" width="130" height="46" rx="10" fill="#1F3A68" stroke="#7DD3FC" stroke-width="2"/><text x="1075" y="321" text-anchor="middle" fill="#7DD3FC" font-size="16">supervisor</text>
+    <path d="M950,173 C985,180 992,300 1008,312" fill="none" stroke="#7DD3FC" stroke-width="2.2"/>
+    <path d="M950,315 L1008,315" fill="none" stroke="#7DD3FC" stroke-width="2.2"/>
+    <path d="M950,457 C985,450 992,330 1008,318" fill="none" stroke="#7DD3FC" stroke-width="2.2"/>
+  </g>
+</svg>

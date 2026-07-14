@@ -3,306 +3,151 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Three AI Agents in Parallel + One Supervisor — Nery Cano</title>
-  <meta name="description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
+  <title>Agents and multi-agents, from zero (Part 1) — Nery Cano</title>
+  <meta name="description" content="What an agent is, what a multi-agent system is, and the patterns to coordinate them. Explained from zero, with lots of diagrams. Part 1 of 2." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Three AI Agents in Parallel + One Supervisor — Nery Cano" />
-  <meta property="og:description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
-  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner.png" />
+  <meta property="og:title" content="Agents and multi-agents, from zero (Part 1)" />
+  <meta property="og:description" content="What an agent is, what a multi-agent system is, and the patterns to coordinate them. Explained from zero, with lots of diagrams. Part 1 of 2." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner_en.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
   <meta property="article:published_time" content="2026-05-19" />
+  <meta property="article:tag" content="AI Agents" />
   <meta property="article:tag" content="Multi-agent" />
-  <meta property="article:tag" content="Anthropic Claude" />
-  <meta property="article:tag" content="Vercel AI SDK" />
-  <meta property="article:tag" content="Zod" />
+  <meta property="article:tag" content="LLM" />
+
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Three AI Agents in Parallel + One Supervisor" />
-  <meta name="twitter:description" content="How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer." />
-  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner.png" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <meta name="twitter:title" content="Agents and multi-agents, from zero (Part 1)" />
+  <meta name="twitter:description" content="What an agent is, what a multi-agent system is, and the patterns to coordinate them. Explained from zero, with lots of diagrams. Part 1 of 2." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner_en.png" />
+
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
   <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/multi-agent-code-reviewer.html" />
   <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <style>
-    :root {
-      --primary: #1F3A68;
-      --accent: #2E75B6;
-      --accent-light: #4FA9E8;
-      --accent-glow: #7DD3FC;
-      --ink: #0F172A;
-      --bg-deep: #06101F;
-      --bg-mid: #0E1F3A;
-      --muted: #94A3B8;
-      --text: #E2E8F0;
-      --text-strong: #F1F5F9;
-      --border: rgba(148, 163, 184, 0.18);
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 19px;
-      line-height: 1.7;
-      color: var(--text);
-      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
-                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
-                  var(--bg-deep);
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
-    a { color: var(--accent-light); text-decoration: none; }
-    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
-    .header-nav {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 28px 24px 0;
-      display: flex; justify-content: space-between; align-items: center;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .header-nav a { color: var(--muted); }
-    .header-nav a:hover { color: var(--accent-glow); }
-    .article {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 24px 80px;
-    }
-    .article-meta {
-      margin-top: 56px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-    }
-    h1.article-title {
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 44px;
-      font-weight: 800;
-      letter-spacing: -1.2px;
-      line-height: 1.15;
-      color: var(--text-strong);
-      margin: 14px 0 12px;
-    }
-    .article-subtitle {
-      font-family: "Source Serif 4", Georgia, serif;
-      font-style: italic;
-      font-size: 22px;
-      line-height: 1.4;
-      color: var(--muted);
-      margin: 0 0 32px;
-    }
-    .byline {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
-    .byline-name {
-      font-family: "Inter", system-ui, sans-serif;
-      font-weight: 600;
-      color: var(--text-strong);
-      font-size: 15px;
-    }
-    .byline-meta {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .banner-img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 8px 0 40px;
-      display: block;
-      border: 1px solid var(--border);
-    }
-    .article-body {
-      font-size: 19px;
-      line-height: 1.75;
-      color: var(--text);
-    }
-    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
-      font-family: "Inter", system-ui, sans-serif;
-      color: var(--text-strong);
-      margin: 48px 0 14px;
-      letter-spacing: -0.4px;
-      line-height: 1.25;
-    }
-    .article-body h1 { font-size: 32px; font-weight: 800; }
-    .article-body h2 { font-size: 26px; font-weight: 700; }
-    .article-body h3 { font-size: 21px; font-weight: 700; }
-    .article-body p { margin: 18px 0; }
-    .article-body strong { color: var(--text-strong); font-weight: 700; }
-    .article-body em { color: var(--text); }
-    .article-body ul, .article-body ol { padding-left: 28px; }
-    .article-body li { margin: 8px 0; }
-    .article-body blockquote {
-      border-left: 3px solid var(--accent);
-      margin: 24px 0;
-      padding: 4px 24px;
-      color: var(--muted);
-      font-style: italic;
-    }
-    .article-body code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.88em;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(46,117,182,0.25);
-    }
-    .article-body pre {
-      background: #1a1f2e !important;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px 20px !important;
-      overflow-x: auto;
-      font-size: 14px;
-      line-height: 1.55;
-      margin: 24px 0;
-    }
-    .article-body pre code {
-      background: transparent;
-      border: none;
-      color: inherit;
-      padding: 0;
-      font-size: 14px;
-    }
-    .article-body hr {
-      border: none;
-      height: 1px;
-      background: var(--border);
-      margin: 48px 0;
-    }
-    .article-body img { max-width: 100%; border-radius: 6px; }
-    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    .article-body th, .article-body td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
-    .figure {
-      margin: 40px -8px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
-    }
-    .figure svg { display: block; width: 100%; height: auto; }
-    .figure-caption {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 18px;
-      text-align: center;
-    }
-    .figure-caption strong {
-      color: var(--accent-glow);
-      letter-spacing: 1.4px;
-    }
-    .callout {
-      margin: 32px 0;
-      padding: 18px 22px;
-      border-radius: 10px;
-      background: rgba(46,117,182,0.10);
-      border: 1px solid rgba(46,117,182,0.30);
-      border-left: 3px solid var(--accent-glow);
-    }
-    .callout-label {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-      margin-bottom: 6px;
-    }
-    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
-    .bug-row {
-      display: flex;
-      gap: 14px;
-      align-items: baseline;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .bug-num {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--accent-glow);
-      flex-shrink: 0;
-      width: 48px;
-    }
-    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
-    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
-    .footer-cta {
-      margin-top: 56px;
-      padding: 32px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
-    }
-    .footer-cta h3 {
-      margin: 0 0 12px;
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 20px;
-      color: var(--text-strong);
-    }
-    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
-    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
-    .footer-cta .links a {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 13px;
-      letter-spacing: 1px;
-      color: var(--accent-glow);
-    }
-    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-pill {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 14px;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      border: 1px solid rgba(46,117,182,0.3);
-      letter-spacing: 1px;
-    }
-    .site-footer {
-      max-width: 760px;
-      margin: 60px auto 40px;
-      padding: 24px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      letter-spacing: 1px;
-      border-top: 1px solid var(--border);
-    }
-    @media (max-width: 600px) {
-      body { font-size: 17px; }
-      h1.article-title { font-size: 32px; }
-      .article-subtitle { font-size: 18px; }
-      .article-body { font-size: 17px; }
-      .article-body h1 { font-size: 26px; }
-      .article-body h2 { font-size: 22px; }
-      .figure { margin: 32px -8px; padding: 16px; }
-    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
   
     /* ── Layout ancho y tipografía fluida ─────────────────────────────────
        En pantallas grandes el problema no es la columna: es que 19px de
@@ -451,420 +296,292 @@
       .sem .h { font-size: 0.55em; }
       .sem ul { font-size: 0.64em; }
     }
-</style>
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
 </head>
-<body>
-  <nav class="header-nav">
-    <a href="../">← Portfolio</a>
-    <a href="./">All writing</a>
-    <a href="es/multi-agent-code-reviewer.html">Español ↗</a>
-  </nav>
-  <article class="article">
-    <!-- structure: build-report — three parallel agents + one supervisor. -->
-    <div class="article-meta">May 19, 2026 · 11 min read</div>
-    <h1 class="article-title">Three AI Agents in Parallel + One Supervisor</h1>
-    <p class="article-subtitle">How Promise.all, Zod, and Server-Sent Events compose into a multi-agent code reviewer.</p>
-    <div class="byline">
-      <div>
-        <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
-      </div>
-    </div>
-    <img class="banner-img" src="post_2_multiagent_banner.png" alt="Three AI Agents in Parallel + One Supervisor" />
 
+<body>
+  <nav class="header-nav"><a href="../">← Portfolio</a><a href="index.html">Blog</a></nav>
+  <article class="article">
+    <!-- structure: guide — Part 1. Agents and multi-agents from zero. Part 2 is the build. -->
+    <div class="article-meta">May 19, 2026 · Part 1 of 2 · ~18 min read</div>
+    <h1 class="article-title">Agents and multi-agents, from zero</h1>
+    <p class="article-subtitle">What an agent is, why you sometimes need several, and the six patterns to coordinate them. The full theory before the code.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">May 19, 2026 · guide</div>
+    </div>
+    <div class="tags"><span class="tag-pill">AI Agents</span> <span class="tag-pill">Multi-agent</span> <span class="tag-pill">LLM</span></div>
+    <img class="banner-img" src="post_2_multiagent_banner_en.png" alt="Agents and multi-agents: an agent is an LLM in a loop with tools; a multi-agent system coordinates several" />
     <div class="article-body">
 
-<p><em>How <code>Promise.all</code>, Zod, and Server-Sent Events compose into a multi-agent code reviewer that's easier to reason about than a single big LLM — and noticeably faster.</em></p>
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="multi-agent-code-reviewer-build.html">Part 2 · How I built the code reviewer</a></strong> · <a href="https://github.com/NeryC/multi-agent-code-reviewer">repo</a> · <a href="../">portfolio</a></p>
+      </div>
 
-<p>A single LLM doing "general code review" is mid.</p>
+      <p><em>An agent isn't a bigger model or a longer prompt. It's a model placed inside a loop, with permission to act and a condition to stop. When one agent isn't enough, multi-agent systems appear. This guide explains both from zero.</em></p>
 
-<p>Not because LLMs are bad — they're great. But ask one model to find security bugs, performance bugs, and maintainability bugs all at once, and you'll see the same failure modes show up over and over: it skews toward whatever category looks most obvious in the snippet, drops findings when the code gets long, and produces <em>unbalanced</em> reports — five style nits, zero security flags, on a SQL injection that's plain as day.</p>
+      <h2 data-sec="glossary">Five words, first</h2>
+      <p>Before anything else, five terms that recur through the whole text. Get these straight and the rest reads on its own.</p>
+      <ul>
+        <li><strong>Agent.</strong> A language model (LLM) placed in a loop: it looks at the state, decides an action, runs it, observes the result, and repeats until done.</li>
+        <li><strong>Tool.</strong> A function the agent can call to do something the model alone can't: search the web, read a file, query a database, run code.</li>
+        <li><strong>Loop</strong> (agent loop). The decide→act→observe repetition. It's what separates an agent from a single model call.</li>
+        <li><strong>Orchestration.</strong> The logic that splits work across several agents and puts back together what they return. In multi-agent, it's the glue.</li>
+        <li><strong>Supervisor.</strong> An agent whose job is to review and consolidate the output of other agents: deduplicate, prioritize, summarize.</li>
+      </ul>
 
-<p>I built a code reviewer that doesn't have that problem. The trick was to stop asking a single agent to be a generalist and instead orchestrate <strong>three specialists in parallel</strong> with a <strong>supervisor</strong> consolidating their findings.</p>
+      <h2 data-sec="definition">What an agent is, in one paragraph</h2>
+      <p>A normal LLM call is a round trip: you send text, it returns text, done. An <strong>agent</strong> breaks that shape. You give the model a goal and a set of tools, and you let it run in a loop: the model decides which tool to use, you run that tool, you hand the result back, and the model decides the next step with that new information. The loop keeps going until the model says "done" or until it hits a limit you set. That ability to <em>act, see the result, and correct</em> is all it takes to be an agent.</p>
 
-<p>This post walks through the architecture, the three engineering decisions I'd defend in any review, and the small but important surprises that came up while building it.</p>
+      <div class="figure">
+        <svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A normal LLM call goes from text to text; an agent cycles between deciding, acting with tools, and observing">
+          <text x="20" y="30" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="12">NORMAL CALL</text>
+          <rect x="20" y="45" width="90" height="40" rx="8" fill="#122845" stroke="#94A3B8" stroke-width="1.5"/>
+          <text x="65" y="70" text-anchor="middle" fill="#E2E8F0" font-size="13">prompt</text>
+          <line x1="110" y1="65" x2="180" y2="65" stroke="#94A3B8" stroke-width="2" marker-end="url(#a)"/>
+          <rect x="180" y="45" width="90" height="40" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+          <text x="225" y="70" text-anchor="middle" fill="#7DD3FC" font-size="13">LLM</text>
+          <line x1="270" y1="65" x2="340" y2="65" stroke="#94A3B8" stroke-width="2" marker-end="url(#a)"/>
+          <rect x="340" y="45" width="90" height="40" rx="8" fill="#122845" stroke="#94A3B8" stroke-width="1.5"/>
+          <text x="385" y="70" text-anchor="middle" fill="#E2E8F0" font-size="13">response</text>
 
-<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
+          <text x="20" y="140" fill="#4FA9E8" font-family="JetBrains Mono, monospace" font-size="12">AGENT (LLM IN A LOOP)</text>
+          <circle cx="330" cy="185" r="52" fill="none" stroke="#2E75B6" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+          <rect x="150" y="163" width="96" height="44" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+          <text x="198" y="190" text-anchor="middle" fill="#7DD3FC" font-size="13">decide</text>
+          <rect x="282" y="120" width="96" height="44" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="330" y="147" text-anchor="middle" fill="#E2E8F0" font-size="13">act</text>
+          <rect x="282" y="206" width="96" height="44" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="330" y="233" text-anchor="middle" fill="#E2E8F0" font-size="13">observe</text>
+          <rect x="430" y="163" width="150" height="44" rx="8" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="4 4"/>
+          <text x="505" y="184" text-anchor="middle" fill="#94A3B8" font-size="11">done?</text>
+          <text x="505" y="199" text-anchor="middle" fill="#94A3B8" font-size="11">yes → exit</text>
+          <defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94A3B8"/></marker></defs>
+        </svg>
+        <p class="figure-caption">Figure 1 · <strong>The difference is the loop.</strong> A normal call ends in one step; an agent decides, acts with a tool, observes the result, and decides again until the goal is met.</p>
+      </div>
 
-<hr />
+      <h2 data-sec="problem">The problem they solve, and why not the alternatives</h2>
+      <p>The honest question is: if an LLM is already capable, why bother with loops and tools? Three concrete reasons.</p>
+      <p><strong>A model alone can't act.</strong> It can write the text of an email but not send it; it can describe a SQL query but not run it against your database. Tools give it hands. The loop gives it the chance to see whether what it did worked, and retry.</p>
+      <p><strong>A giant prompt doesn't scale.</strong> The temptation is to cram everything into one huge instruction: "analyze security, performance, and maintainability, and also summarize and score." It works on toy examples. As soon as the problem grows, the model spreads thin: it does all three halfway and contradicts itself. Splitting the work into steps with state is what keeps it focused.</p>
+      <p><strong>A model isn't an expert at everything at once.</strong> Asking it in the same turn to think like a security attacker and a performance engineer lowers its quality at both. Giving it one clear role at a time raises the level of each answer. That's where the idea of several specialized agents comes from, which is the subject of Part 2.</p>
+      <p>The classic alternatives (a function with fixed rules, a data pipeline, a single model call) are still better when the problem is fixed and known. The agent wins when the path isn't known ahead of time and decisions have to be made along the way.</p>
 
-<h2>What it is, in one paragraph</h2>
+      <h2 data-sec="anatomy">How it works: the anatomy</h2>
+      <p>Every agent, however elaborate, is built from four pieces. It's worth seeing them separately before putting them together.</p>
+      <ul>
+        <li><strong>A goal and a role.</strong> The system prompt that tells it who it is and what it has to achieve. "You are a security reviewer; find vulnerabilities" is a role; "analyze this code" is a goal.</li>
+        <li><strong>Tools.</strong> The set of functions it can call. Without tools, an agent can only think out loud. With them, it can read, write, search, and run.</li>
+        <li><strong>Memory (context).</strong> What the agent "remembers" while it works: the history of what it already tried and observed. Without memory, it would repeat the same step forever.</li>
+        <li><strong>A stop condition.</strong> How it knows it's done: because the model declares it, because it hit a maximum number of steps, or because it spent the budget. Without a limit, an agent can loop.</li>
+      </ul>
 
-<p>A Next.js 16 app where you paste a code snippet (or a GitHub URL) and three specialized LLM agents — Security, Performance, Maintainability — each run their own pass over the code <em>in parallel</em>. A fourth agent, the Supervisor, deduplicates and scores the combined findings into a 0–100 review report. Every step streams back to the browser as Server-Sent Events, so the user sees a live timeline instead of a single 30-second spinner. The whole pipeline runs in one Vercel function invocation, no Redis, no job queue.</p>
+      <div class="figure">
+        <svg viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The agent loop with its four pieces: role, tools, memory, and stop condition">
+          <rect x="245" y="24" width="150" height="40" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+          <text x="320" y="43" text-anchor="middle" fill="#7DD3FC" font-size="12">ROLE + GOAL</text>
+          <text x="320" y="57" text-anchor="middle" fill="#94A3B8" font-size="10">system prompt</text>
+          <circle cx="320" cy="175" r="70" fill="none" stroke="#2E75B6" stroke-width="2.5" stroke-dasharray="8 10" class="flow"/>
+          <rect x="250" y="105" width="140" height="42" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="320" y="131" text-anchor="middle" fill="#E2E8F0" font-size="13">1 · decide action</text>
+          <rect x="392" y="154" width="150" height="42" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="467" y="180" text-anchor="middle" fill="#E2E8F0" font-size="13">2 · call tool</text>
+          <rect x="250" y="203" width="140" height="42" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="320" y="229" text-anchor="middle" fill="#E2E8F0" font-size="13">3 · observe</text>
+          <rect x="98" y="154" width="150" height="42" rx="8" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.5"/>
+          <text x="173" y="175" text-anchor="middle" fill="#94A3B8" font-size="11">4 · done?</text>
+          <text x="173" y="189" text-anchor="middle" fill="#94A3B8" font-size="11">no → repeat</text>
+          <rect x="392" y="248" width="150" height="40" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <text x="467" y="266" text-anchor="middle" fill="#4FA9E8" font-size="11">TOOLS</text>
+          <text x="467" y="280" text-anchor="middle" fill="#94A3B8" font-size="10">search, read, run</text>
+          <rect x="98" y="248" width="150" height="40" rx="8" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="4 4"/>
+          <text x="173" y="266" text-anchor="middle" fill="#E2E8F0" font-size="11">MEMORY</text>
+          <text x="173" y="280" text-anchor="middle" fill="#94A3B8" font-size="10">step history</text>
+        </svg>
+        <p class="figure-caption">Figure 2 · <strong>The four pieces in motion.</strong> The role sets the goal; the loop decides, acts with tools, and observes; memory keeps the history; the stop condition cuts the cycle.</p>
+      </div>
 
-<div class="figure">
-<svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
-    </marker>
-    <linearGradient id="boxB" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#122845"/>
-      <stop offset="1" stop-color="#0E1F3A"/>
-    </linearGradient>
-    <linearGradient id="boxSup" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1F3A68"/>
-      <stop offset="1" stop-color="#0E1F3A"/>
-    </linearGradient>
-  </defs>
+      <h2 data-sec="detail">The pieces, in detail</h2>
+      <p>With the map in view, now the slow walk. First an agent from the inside; then what changes when there are several.</p>
 
-  <!-- Input -->
-  <g transform="translate(20, 30)">
-    <rect width="160" height="56" rx="10" fill="url(#boxB)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">parseInput</text>
-    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">snippet | github url</text>
-  </g>
+      <h3>An agent from the inside</h3>
+      <p><strong>The loop, step by step.</strong> The model gets the goal and the current state, and produces one of two things: a <em>tool call</em> ("search X", "read file Y") or a <em>final answer</em>. If it's a tool call, the system runs it, takes the result, and hands it back to the model as new input. The model decides again. Each turn adds information to the context, so the agent "learns" about the problem as it goes.</p>
+      <p><strong>Tools are the limit of what's possible.</strong> An agent can never do more than its tools. If it has no network tool, it can't touch the internet, no matter how much the model "wants" to. That's why designing an agent is mostly deciding which tools to give it and with what permissions. Fewer tools, more predictable; more tools, more capable and more risky.</p>
+      <p><strong>Memory: context versus persistent memory.</strong> There are two different memories, and they get confused often. <em>Working memory</em> is this run's context: the step history that fits in the model's window and is lost when it ends. <em>Persistent memory</em> is what the agent stores between runs (in a database, say) to remember conversations or facts beyond one session. Every agent has the first; the second is optional and costlier to build.</p>
+      <p><strong>When to stop.</strong> It's the most underrated part. Three brakes coexist: the model declares it's done, a step cap ("max 6 iterations"), and a budget (of tokens or time). The step cap exists precisely because a model can convince itself it's almost done and never close. A good agent always has a hard limit, not just the model's goodwill.</p>
+      <h3>From one to many: multi-agent systems</h3>
+      <p>A multi-agent system is, without mystery, several agents collaborating on a problem too big for one. The gain isn't "more models means better." The gain shows up when the problem <em>splits</em> into parts that are solved better separately: parts that run at the same time, or that need a different expert, or that are worth reviewing against each other. If your problem doesn't split like that, one well-built agent wins almost always.</p>
+      <p>There are six ways to coordinate them. They aren't exclusive (real systems mix several), but it's worth knowing them one at a time.</p>
 
-  <!-- Meta -->
-  <g transform="translate(220, 30)">
-    <rect width="160" height="56" rx="10" fill="url(#boxB)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">extractMeta</text>
-    <text x="80" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">lang · lines · complexity</text>
-  </g>
+      <div class="figure">
+        <svg viewBox="0 0 660 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Gallery of six multi-agent patterns: orchestrator-worker, parallel, supervisor, pipeline, debate, and routing">
+          <g font-family="Inter, sans-serif">
+          <text x="20" y="24" fill="#7DD3FC" font-size="12" font-weight="700">1 · Orchestrator–worker</text>
+          <circle cx="45" cy="70" r="15" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/><text x="45" y="74" text-anchor="middle" fill="#7DD3FC" font-size="11">O</text>
+          <circle cx="120" cy="50" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="120" cy="80" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="120" cy="110" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <line x1="60" y1="66" x2="108" y2="52" stroke="#94A3B8" stroke-width="1.3"/>
+          <line x1="60" y1="70" x2="108" y2="80" stroke="#94A3B8" stroke-width="1.3"/>
+          <line x1="60" y1="74" x2="108" y2="108" stroke="#94A3B8" stroke-width="1.3"/>
+          <text x="240" y="24" fill="#7DD3FC" font-size="12" font-weight="700">2 · Parallel (fan-out)</text>
+          <rect x="238" y="60" width="20" height="20" rx="4" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.3"/>
+          <circle cx="320" cy="50" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="320" cy="80" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="320" cy="110" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <line x1="258" y1="68" x2="308" y2="52" stroke="#94A3B8" stroke-width="1.3"/>
+          <line x1="258" y1="70" x2="308" y2="80" stroke="#94A3B8" stroke-width="1.3"/>
+          <line x1="258" y1="72" x2="308" y2="108" stroke="#94A3B8" stroke-width="1.3"/>
+          <text x="455" y="24" fill="#7DD3FC" font-size="12" font-weight="700">3 · Supervisor</text>
+          <circle cx="470" cy="50" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="470" cy="80" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="470" cy="110" r="12" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="560" cy="80" r="15" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/><text x="560" y="84" text-anchor="middle" fill="#7DD3FC" font-size="11">S</text>
+          <line x1="482" y1="52" x2="546" y2="76" stroke="#94A3B8" stroke-width="1.3"/>
+          <line x1="482" y1="80" x2="545" y2="80" stroke="#94A3B8" stroke-width="1.3"/>
+          <line x1="482" y1="108" x2="546" y2="84" stroke="#94A3B8" stroke-width="1.3"/>
+          <text x="20" y="190" fill="#7DD3FC" font-size="12" font-weight="700">4 · Pipeline</text>
+          <rect x="20" y="215" width="34" height="30" rx="6" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/><text x="37" y="234" text-anchor="middle" fill="#E2E8F0" font-size="11">A</text>
+          <rect x="88" y="215" width="34" height="30" rx="6" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/><text x="105" y="234" text-anchor="middle" fill="#E2E8F0" font-size="11">B</text>
+          <rect x="156" y="215" width="34" height="30" rx="6" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/><text x="173" y="234" text-anchor="middle" fill="#E2E8F0" font-size="11">C</text>
+          <line x1="54" y1="230" x2="86" y2="230" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#g)"/>
+          <line x1="122" y1="230" x2="154" y2="230" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#g)"/>
+          <text x="240" y="190" fill="#7DD3FC" font-size="12" font-weight="700">5 · Debate / critique</text>
+          <circle cx="270" cy="230" r="15" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/><text x="270" y="234" text-anchor="middle" fill="#E2E8F0" font-size="11">A</text>
+          <circle cx="360" cy="230" r="15" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/><text x="360" y="234" text-anchor="middle" fill="#E2E8F0" font-size="11">B</text>
+          <path d="M287,222 Q315,208 343,222" fill="none" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#g)"/>
+          <path d="M343,240 Q315,254 287,240" fill="none" stroke="#94A3B8" stroke-width="1.3" marker-end="url(#g)"/>
+          <text x="455" y="190" fill="#7DD3FC" font-size="12" font-weight="700">6 · Routing</text>
+          <path d="M460,230 L488,230" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#g)"/>
+          <rect x="488" y="216" width="30" height="28" rx="6" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/><text x="503" y="234" text-anchor="middle" fill="#7DD3FC" font-size="11">R</text>
+          <circle cx="580" cy="205" r="11" fill="#122845" stroke="#4FA9E8" stroke-width="1.3"/>
+          <circle cx="580" cy="235" r="11" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.3" stroke-dasharray="3 3"/>
+          <circle cx="580" cy="262" r="11" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.3" stroke-dasharray="3 3"/>
+          <line x1="518" y1="228" x2="569" y2="207" stroke="#7DD3FC" stroke-width="1.6"/>
+          <line x1="518" y1="232" x2="569" y2="235" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="518" y1="236" x2="569" y2="260" stroke="#94A3B8" stroke-width="1" stroke-dasharray="3 3"/>
+          </g>
+          <defs><marker id="g" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#94A3B8"/></marker></defs>
+        </svg>
+        <p class="figure-caption">Figure 3 · <strong>The six patterns at a glance.</strong> They differ in who decides, who aggregates, and in what order the agents run. Most real systems combine two or more.</p>
+      </div>
 
-  <!-- Promise.all label -->
-  <g transform="translate(420, 30)">
-    <rect width="260" height="56" rx="10" fill="rgba(46,117,182,0.10)" stroke="rgba(46,117,182,0.4)" stroke-dasharray="4,3"/>
-    <text x="130" y="24" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="1.5" fill="#7DD3FC">PROMISE.ALL</text>
-    <text x="130" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">3 specialists run concurrently</text>
-  </g>
+      <table>
+        <thead><tr><th>Pattern</th><th>When to use it</th><th>Who coordinates</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Orchestrator–worker</strong></td><td>A task that splits into subtasks not known ahead of time</td><td>The orchestrator decides, delegates, and aggregates</td></tr>
+          <tr><td><strong>Parallel (fan-out)</strong></td><td>Independent subtasks that can run at the same time</td><td>Nobody, until the results are collected</td></tr>
+          <tr><td><strong>Supervisor / aggregator</strong></td><td>Several outputs that must be reconciled into one</td><td>One agent consolidates: dedup, prioritize, summarize</td></tr>
+          <tr><td><strong>Pipeline (sequential)</strong></td><td>One step's output is the next step's input</td><td>The fixed order; no extra coordinator</td></tr>
+          <tr><td><strong>Debate / critique</strong></td><td>Raise quality by having agents review each other</td><td>Back-and-forth rounds between agents</td></tr>
+          <tr><td><strong>Routing</strong></td><td>Pick the right specialist based on the input</td><td>A router classifies and forwards</td></tr>
+        </tbody>
+      </table>
 
-  <!-- Three specialists -->
-  <g transform="translate(40, 140)">
-    <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Security agent</text>
-    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
-    <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
-    <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
-  </g>
+      <p><strong>Orchestrator–worker.</strong> A central agent reads the problem, splits it into subtasks, and hands them to worker agents; then it puts together what they return. It's like a project lead. It works when the subtasks aren't known ahead of time and depend on what the orchestrator discovers when it reads the input.</p>
+      <p><strong>Parallel (fan-out).</strong> The same input goes to several agents that work at the same time, without talking to each other. Because they don't coordinate during the run, it's the fastest pattern: total time is the slowest agent's, not the sum. It's the basis of the code reviewer in Part 2.</p>
+      <p><strong>Supervisor / aggregator.</strong> Several agents produce partial outputs and a supervisor turns them into a single coherent answer: it removes duplicates, orders by priority, writes the summary. It almost always accompanies fan-out, because three unconsolidated lists of findings are of no use to anyone.</p>
+      <p><strong>Pipeline (sequential).</strong> The agents chain up: the first produces something, the second takes it and transforms it, and so on. It works when each stage depends on the previous one: extract, then summarize, then translate. It's simple and predictable, but gains no speed because nothing runs in parallel.</p>
+      <p><strong>Debate / critique.</strong> Two or more agents critique each other in rounds: one proposes, another points out flaws, the first corrects. It raises quality on reasoning tasks in exchange for more calls and more time. Useful when getting it wrong is expensive and the back-and-forth is worth it.</p>
+      <p><strong>Routing.</strong> A lightweight agent looks at the input and decides who should handle it: "this is a billing question" → to the billing agent. It doesn't solve the problem; it picks who solves it. It's the pattern of assistants with many specialties.</p>
 
-  <g transform="translate(230, 140)">
-    <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Performance agent</text>
-    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
-    <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
-    <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
-  </g>
+      <div class="figure">
+        <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The reviewer pattern: one input fans out to three parallel agents that converge on a supervisor that emits the report">
+          <rect x="20" y="110" width="96" height="44" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+          <text x="68" y="132" text-anchor="middle" fill="#7DD3FC" font-size="12">code</text>
+          <text x="68" y="147" text-anchor="middle" fill="#94A3B8" font-size="10">input</text>
+          <rect x="250" y="26" width="150" height="42" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="325" y="52" text-anchor="middle" fill="#E2E8F0" font-size="12">security agent</text>
+          <rect x="250" y="111" width="150" height="42" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="325" y="137" text-anchor="middle" fill="#E2E8F0" font-size="12">performance agent</text>
+          <rect x="250" y="196" width="150" height="42" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+          <text x="325" y="222" text-anchor="middle" fill="#E2E8F0" font-size="12">maintainability agent</text>
+          <path d="M116,128 C170,120 190,52 248,47" fill="none" stroke="#2E75B6" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+          <path d="M116,132 L248,132" fill="none" stroke="#2E75B6" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+          <path d="M116,136 C170,144 190,213 248,217" fill="none" stroke="#2E75B6" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+          <rect x="470" y="110" width="96" height="44" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+          <text x="518" y="130" text-anchor="middle" fill="#7DD3FC" font-size="12">supervisor</text>
+          <text x="518" y="145" text-anchor="middle" fill="#94A3B8" font-size="10">consolidates</text>
+          <path d="M400,47 C452,52 470,120 500,128" fill="none" stroke="#4FA9E8" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+          <path d="M400,132 L470,132" fill="none" stroke="#4FA9E8" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+          <path d="M400,217 C452,213 470,144 500,136" fill="none" stroke="#4FA9E8" stroke-width="2" stroke-dasharray="7 9" class="flow"/>
+        </svg>
+        <p class="figure-caption">Figure 4 · <strong>Fan-out + supervisor.</strong> The reviewer pattern from Part 2: the same input fans out to three specialists that run at the same time, and a supervisor merges their findings into a single report.</p>
+      </div>
 
-  <g transform="translate(420, 140)">
-    <rect width="170" height="80" rx="10" fill="url(#boxB)" stroke="rgba(125,211,252,0.4)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Maintainability</text>
-    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">claude-sonnet-4.6</text>
-    <text x="85" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">generateObject</text>
-    <text x="85" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Finding[]</text>
-  </g>
+      <h3>What a multi-agent costs</h3>
+      <p>Splitting the work isn't free, and it's worth knowing the price before paying it. <strong>Money:</strong> each agent is at least one model call, so three specialists plus a supervisor are four calls per run, not one. <strong>Latency:</strong> fan-out helps because it runs in parallel, but a pipeline or a debate add up the times. <strong>Coordination:</strong> a new problem appears that one agent didn't have: merging outputs that don't match, resolving contradictions, deciding who wins. <strong>Failure modes:</strong> with more pieces there are more things that can break, and some fail silently (a supervisor that deletes too much, as you'll see in Part 2). The rule of thumb: start with one agent, and move to several only when the problem genuinely splits.</p>
 
-  <!-- Supervisor -->
-  <g transform="translate(180, 264)">
-    <rect width="360" height="72" rx="10" fill="url(#boxSup)" stroke="rgba(125,211,252,0.6)" stroke-width="1.5"/>
-    <text x="180" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Supervisor</text>
-    <text x="180" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#7DD3FC">claude-haiku-4.5</text>
-    <text x="180" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">dedupe · prioritize · score 0–100 → ReviewReport</text>
-  </g>
+      <div class="callout">
+        <div class="callout-label">The takeaway</div>
+        <p>An agent is an LLM in a loop with tools and a brake. A multi-agent is worth it when the problem <em>splits</em>: into parallel tasks, into different experts, or into cross-checks. If it doesn't split, one well-built agent wins.</p>
+      </div>
 
-  <!-- arrows -->
-  <line x1="180" y1="58" x2="218" y2="58" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-  <line x1="380" y1="58" x2="418" y2="58" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
+      <h2 data-sec="code">The minimal multi-agent, in code</h2>
+      <p>The smallest version that teaches the fan-out + supervisor pattern: two specialists that run at the same time and a supervisor that consolidates. It's exactly the shape of the Part 2 project, without the infrastructure around it. It uses the <a href="https://sdk.vercel.ai/">AI SDK</a> and <a href="https://zod.dev/">Zod</a> to force structured output.</p>
+      <pre><code class="language-typescript">import { generateObject } from 'ai';
+import { z } from 'zod';
 
-  <!-- to three specialists -->
-  <line x1="300" y1="86" x2="125" y2="138" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-  <line x1="300" y1="86" x2="315" y2="138" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-  <line x1="300" y1="86" x2="505" y2="138" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-
-  <!-- merge to supervisor -->
-  <line x1="125" y1="222" x2="280" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-  <line x1="315" y1="222" x2="360" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-  <line x1="505" y1="222" x2="440" y2="262" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrB)"/>
-</svg>
-<p class="figure-caption">Figure 1 · <strong>The orchestration.</strong> Three Sonnet specialists run inside a single <code>Promise.all</code>; each emits its own SSE event the moment it finishes. The Haiku supervisor consumes the merged <code>Finding[]</code> and emits a typed <code>ReviewReport</code> with a 0–100 score.</p>
-</div>
-
-<hr />
-
-<h2>Decision 1 · <code>Promise.all</code>, not sequential</h2>
-
-<p>The naive way to run three agents is to await them one after another:</p>
-
-<pre><code class="language-ts">const sec = await runSecurityAgent(code, meta);
-const perf = await runPerformanceAgent(code, meta);
-const maint = await runMaintainabilityAgent(code, meta);</code></pre>
-
-<p>That works, but it's <strong>3× slower than it has to be</strong>. Each agent makes an independent LLM call; none of them needs the others' output. A 15-second per-agent latency adds up to ~45 seconds of "loading…"</p>
-
-<p><code>Promise.all</code> parallelizes the three calls trivially:</p>
-
-<pre><code class="language-ts">const [secFindings, perfFindings, maintFindings] = await Promise.all([
-  runSecurityAgent(code, meta).then((findings) =&gt; {
-    send({ type: 'agent', name: 'security', status: 'done', findings });
-    return findings;
-  }),
-  runPerformanceAgent(code, meta).then((findings) =&gt; {
-    send({ type: 'agent', name: 'performance', status: 'done', findings });
-    return findings;
-  }),
-  runMaintainabilityAgent(code, meta).then((findings) =&gt; {
-    send({ type: 'agent', name: 'maintainability', status: 'done', findings });
-    return findings;
-  }),
-]);
-
-// Supervisor needs all three — runs after.
-const report = await runSupervisorAgent(
-  [...secFindings, ...perfFindings, ...maintFindings],
-  meta,
-);</code></pre>
-
-<p>Three things to notice:</p>
-
-<ol>
-<li><strong>Total latency is now <code>max(t_sec, t_perf, t_maint)</code> ≈ 15s</strong>, not their sum.</li>
-<li>The <code>.then(...)</code> chains let me <strong>send an SSE event the moment each agent finishes</strong>, in whatever order they happen to finish. The UI shows "✓ Maintainability done · 🔄 Security still running" without me having to plumb anything special.</li>
-<li>The supervisor naturally runs <em>after</em> <code>Promise.all</code> resolves — no extra awaits needed; the data dependency is enforced by the call site.</li>
-</ol>
-
-<p>If your agents <em>do</em> depend on each other (e.g. agent B needs agent A's output to plan its query), <code>Promise.all</code> won't help and you should keep the sequential pattern. But for code review, where each specialist has a different lens on the same input, parallel is free latency.</p>
-
-<hr />
-
-<h2>Decision 2 · Zod schemas as agent contracts</h2>
-
-<p>This is the single most important pattern I've adopted in 2026 for working with LLMs.</p>
-
-<p>The old way: ask the model nicely to return JSON, then <code>JSON.parse()</code> and hope nothing weird happens. This fails in three ways:</p>
-
-<ul>
-<li>The model returns <code>```json ... ```</code> markdown-fenced output and your parser breaks.</li>
-<li>The model invents a field that doesn't exist in your TypeScript type.</li>
-<li>The model omits a required field; you don't notice until production.</li>
-</ul>
-
-<p>The new way: pass a <strong>Zod schema</strong> to AI SDK v6's <code>generateObject</code>, and let the SDK enforce the shape on the way out of the model.</p>
-
-<pre><code class="language-ts">const FindingSchema = z.object({
-  severity: z.enum(['critical', 'high', 'medium', 'low', 'info']),
-  category: z.enum(['security', 'performance', 'maintainability']),
+const Finding = z.object({
   title: z.string(),
-  line: z.number().int().positive().optional(),
-  description: z.string(),
-  suggestion: z.string(),
-  codeExample: z.object({
-    before: z.string(),
-    after: z.string(),
-  }).optional(),
+  severity: z.enum(['low', 'medium', 'high']),
 });
 
-const FindingArraySchema = z.array(FindingSchema);
-
-export async function runSecurityAgent(code: string, meta: CodeMetadata): Promise&lt;Finding[]&gt; {
+// One specialist = one call with a clear role and an output schema
+async function specialist(role: string, code: string) {
   const { object } = await generateObject({
-    model: REVIEW_MODEL,         // claude-sonnet-4.6
-    schema: FindingArraySchema,  // ← the contract
-    system: SYSTEM_PROMPT_SECURITY,
-    prompt: `Language: ${meta.lang}\nLines: ${meta.lines}\n\nCode:\n\`\`\`${meta.lang}\n${code}\n\`\`\``,
-  });
-  return object; // already typed as Finding[]
-}</code></pre>
-
-<p>Three things to notice:</p>
-
-<ol>
-<li><strong>No parsing.</strong> No regex. No <code>try { JSON.parse(text) } catch</code>. The SDK does it.</li>
-<li><strong>No casting.</strong> <code>object</code> is typed as <code>Finding[]</code>, end of story.</li>
-<li><strong>No "did the model hallucinate a field?" anxiety.</strong> If the model returns something that doesn't match the schema, the SDK retries or throws. Either way, the bug never escapes into your business logic.</li>
-</ol>
-
-<div class="callout">
-<div class="callout-label">Pattern · Schema as contract</div>
-<p>Treat the Zod schema as a hard boundary between "untrusted LLM text" and "trusted typed data." Your business logic should never touch a raw model response — only the validated, parsed output. Once you internalize this, every downstream component gets simpler because it can rely on its inputs being well-shaped.</p>
-</div>
-
-<p>The same pattern works for the supervisor:</p>
-
-<pre><code class="language-ts">const ReviewReportSchema = z.object({
-  score: z.number().int().min(0).max(100),
-  summary: z.string(),
-  recommendation: z.string(),
-  findings: FindingArraySchema,
-});
-
-export async function runSupervisorAgent(findings: Finding[], meta: CodeMetadata) {
-  const { object } = await generateObject({
-    model: SUPERVISOR_MODEL,    // claude-haiku-4.5
-    schema: ReviewReportSchema,
-    system: SUPERVISOR_PROMPT,
-    prompt: `Code metadata: ${meta.lang}, ${meta.lines} lines\n\nRaw findings:\n${JSON.stringify(findings, null, 2)}`,
+    model: REVIEW_MODEL,                 // e.g. claude-sonnet-4.6
+    schema: z.array(Finding),
+    system: `You are a ${role} reviewer. Return a list of findings.`,
+    prompt: code,
   });
   return object;
-}</code></pre>
+}
 
-<p>Same idea, different schema. The supervisor's prompt is a few sentences telling it to deduplicate, prioritize by severity (security &gt; performance &gt; maintainability when severity ties), and assign a 0–100 score with cutoffs (90+ = production-ready, &lt;50 = significant problems). The schema enforces that the score is an integer 0–100, the summary is a string, and the findings are still valid <code>Finding[]</code>.</p>
+// Fan-out: both run AT THE SAME TIME (Promise.all), not one after another
+const [security, performance] = await Promise.all([
+  specialist('security', code),
+  specialist('performance', code),
+]);
 
-<hr />
+// Supervisor: one call that reconciles the two lists into a report
+const { object: report } = await generateObject({
+  model: SUPERVISOR_MODEL,               // a cheaper one is enough
+  schema: z.object({ score: z.number(), findings: z.array(Finding) }),
+  system: 'Consolidate the findings: remove duplicates and score 0-100.',
+  prompt: JSON.stringify([...security, ...performance]),
+});</code></pre>
+      <p>That's the whole skeleton. Three things make the pattern: each specialist has <strong>a single role</strong>, the <code>Promise.all</code> runs them <strong>in parallel</strong>, and the supervisor gets outputs already <strong>structured</strong> by Zod, so it doesn't have to guess the format. Part 2 takes this and adds three real specialists, live streaming, and a UI.</p>
 
-<h2>Decision 3 · Single SSE endpoint, no Redis</h2>
+      <h2 data-sec="pattern">The pattern, generalized</h2>
+      <p>"Specialists in parallel + a supervisor that consolidates" isn't about reviewing code. It's the shape of any problem where several points of view look at the same thing and someone has to draw a single conclusion. A due diligence where one agent reads the legal side, another the financial, another the technical, and a supervisor writes the memo. A support triage where three agents classify by urgency, area, and sentiment, and one decides the queue. A moderation where different agents look for different kinds of harm and a supervisor merges the verdict.</p>
+      <p>The signal that this pattern applies is simple: when you catch yourself asking a single prompt to be an expert at several things at once, and the result comes out mediocre at all of them. That's when it pays to split into specialists and put someone in charge of consolidating. What that looks like in a real project (with its bugs) is Part 2.</p>
 
-<p>The most tempting bad architecture for "long-running multi-step jobs" is:</p>
-
-<ol>
-<li>Client <code>POST /jobs/start</code> → returns a <code>jobId</code>.</li>
-<li>Client polls <code>GET /jobs/:id/status</code> every second.</li>
-<li>Server writes job state to Redis or KV between calls.</li>
-</ol>
-
-<p>This adds a whole external dependency (Redis), introduces stale-state bugs, and gives the user a worse UX (1-second polling intervals look chunky).</p>
-
-<p>The cleaner pattern: the <code>POST</code> request itself <strong>is</strong> the stream. The browser opens the connection, the server pushes events as the job progresses, and when the job is done the connection closes.</p>
-
-<p>Server side:</p>
-
-<pre><code class="language-ts">export async function POST(req: Request) {
-  const body = await req.json();
-
-  const encoder = new TextEncoder();
-  const stream = new ReadableStream({
-    async start(controller) {
-      const send = (event: object) =&gt; {
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
-      };
-
-      try {
-        await orchestrate(send, body);
-      } catch (err) {
-        send({ type: 'error', message: String(err) });
-      } finally {
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-    },
-  });
-}</code></pre>
-
-<p>The <code>send</code> function is a simple closure that emits a Server-Sent Event. Inside <code>orchestrate</code>, every step calls <code>send()</code> when it starts, when it produces results, when it errors:</p>
-
-<pre><code class="language-ts">send({ type: 'started', jobId });
-send({ type: 'step', name: 'parseInput', status: 'done' });
-send({ type: 'agent', name: 'security', status: 'running' });
-// ... agent runs in parallel ...
-send({ type: 'agent', name: 'security', status: 'done', findings });
-// ... supervisor runs ...
-send({ type: 'report', report });
-send({ type: 'done' });</code></pre>
-
-<p>Client side, the browser reads the stream:</p>
-
-<pre><code class="language-ts">const res = await fetch('/api/review', { method: 'POST', body: JSON.stringify({ ... }) });
-const reader = res.body!.getReader();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  buffer += decoder.decode(value, { stream: true });
-  const events = buffer.split('\n\n');
-  buffer = events.pop() ?? '';
-  for (const event of events) {
-    if (!event.startsWith('data: ')) continue;
-    const parsed = JSON.parse(event.slice(6));
-    setEvents(prev =&gt; [...prev, parsed]);
-  }
-}</code></pre>
-
-<p>That's it. No <code>setInterval</code>. No second endpoint. No Redis. The state lives in the streaming response, the job dies when the connection closes, and the client gets real-time updates with zero polling overhead.</p>
-
-<p>The only constraint: this works inside a single function invocation. If your job is too slow for the platform's max function duration, you do need a real job queue. But for "three agents + a supervisor in 30 seconds total," it's perfect.</p>
-
-<hr />
-
-<h2>Why Haiku for the supervisor</h2>
-
-<p>A small but cost-relevant choice: I use Sonnet for the three specialists and <strong>Haiku</strong> for the supervisor.</p>
-
-<p>The specialists are doing real reasoning: parsing code, identifying vulnerabilities, suggesting fixes with diffs. They benefit from Sonnet's depth.</p>
-
-<p>The supervisor is doing <strong>mechanical work</strong>: sort, deduplicate, prioritize, summarize, score. None of those require deep reasoning about the code itself — the supervisor never sees the code, only the structured findings. Haiku is plenty.</p>
-
-<p>Concretely:</p>
-
-<ul>
-<li>A typical review fires 4 LLM calls (3 specialists + 1 supervisor).</li>
-<li>Three of those are Sonnet, one is Haiku — significantly cheaper than four Sonnet calls, and indistinguishable in output quality for the supervisor's specific job.</li>
-</ul>
-
-<p>This is a generalizable lesson: <strong>the model you pick should match the cognitive complexity of the task, not the impressiveness of the system overall.</strong> A multi-agent system with a Haiku-powered supervisor is still a sophisticated system. You don't gain anything by paying Sonnet rates for a task Haiku does fine.</p>
-
-<hr />
-
-<h2>What I learned</h2>
-
-<p>Three things I'll carry forward:</p>
-
-<ol>
-<li><strong>Specialists + supervisor beats one big agent.</strong> Splitting a fuzzy task into focused sub-tasks gives the model less cognitive overhead per call and produces more balanced output. The mental model is closer to a human team than a brain-in-a-vat.</li>
-<li><strong>Zod schemas are non-negotiable for LLM tool outputs.</strong> Treat the schema as the contract. Your business logic should never see free-form model text — only validated typed data.</li>
-<li><strong>Streams beat polling for any job that takes 5–60 seconds.</strong> SSE inside a single POST is the cleanest pattern I've found. Use it as the default; reach for a real job queue only when you actually exceed function duration.</li>
-</ol>
-
-<hr />
-
-<h2>What I'd do differently</h2>
-
-<ol>
-<li><strong>Add a "languages" agent dimension instead of a hard-coded set of three.</strong> The current Security / Performance / Maintainability split is generic; a Python-specific reviewer or a SQL-specific reviewer would find a different (and probably better) class of issue. The architecture supports it for free — adding agents is one entry in the <code>Promise.all</code> array — I just didn't generalize the orchestrator to accept a runtime list of specialists.</li>
-<li><strong>Persist reports in the database so they're shareable by URL.</strong> Right now a review lives only in the client's memory; refresh the page and it's gone. A small <code>reviews</code> table with the input snippet and the report JSON would let a user share <code>/review/{id}</code> and would also produce a great dataset for evaluating the agents against each other over time.</li>
-<li><strong>Stream the supervisor's reasoning, not just its final report.</strong> The user sees a live timeline up to the supervisor step, then a sudden block of output. Switching the supervisor to <code>streamObject</code> would let the score and the summary appear progressively, which is a noticeably better UX for a 5–8 second tail.</li>
-</ol>
-
-<hr />
-
-<h2>The pattern, generalized</h2>
-
-<p>"Specialists in parallel + a supervisor to consolidate" is a pattern that pays off any time the work decomposes along independent axes. Some other places it fits:</p>
-
-<ul>
-<li><strong>Document review</strong> — legal, factual, stylistic specialists; an editor-supervisor that produces the consolidated edit list.</li>
-<li><strong>Search reranking</strong> — relevance, freshness, diversity specialists; a supervisor that picks the final top-10.</li>
-<li><strong>Multi-source data extraction</strong> — one agent per source format (PDF, HTML, image); a supervisor that merges the extracted records and resolves conflicts.</li>
-</ul>
-
-<p>The shape is always the same: bounded sub-tasks running concurrently, a cheaper model on top consolidating the structured outputs, every step streamed back to the user so the latency feels like ~max(individual) rather than ~sum(individual).</p>
-
-<p>The full code, including the <code>code-input</code> editor, the <code>workflow-progress</code> timeline component, and all four agent prompts, is on GitHub. Live demo accepts both pasted snippets and GitHub file URLs.</p>
-
-<p>🔗 <strong>github.com/NeryC/multi-agent-code-reviewer</strong> · <a href="https://multi-agent-code-reviewer-sable.vercel.app">live demo</a></p>
-
-    </div>
-    <div class="tag-pills">
-      <span class="tag-pill">Multi-agent</span>
-      <span class="tag-pill">Anthropic Claude</span>
-      <span class="tag-pill">Vercel AI SDK</span>
-      <span class="tag-pill">Zod</span>
-    </div>
-    <div class="footer-cta">
-      <h3>About this project</h3>
-      <p>The full source code, README, and live demo:</p>
-      <div class="links">
-        <a href="https://github.com/NeryC/multi-agent-code-reviewer">💻 github.com/NeryC/multi-agent-code-reviewer ↗</a>
-        <a href="https://multi-agent-code-reviewer-sable.vercel.app">🔗 Live demo ↗</a>
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="multi-agent-code-reviewer-build.html">Part 2 · How I built the code reviewer</a></strong> · <a href="https://github.com/NeryC/multi-agent-code-reviewer">repo</a> · <a href="../">portfolio</a></p>
       </div>
-      <h3 style="margin-top:24px;">About the author</h3>
-      <p>I'm Nery Cano, a senior full-stack engineer based in Paraguay, building production AI systems on Anthropic Claude + Next.js + Vercel AI SDK v6. Open to remote senior / staff / AI engineering roles.</p>
-      <div class="links">
-        <a href="../">Portfolio ↗</a>
-        <a href="https://github.com/NeryC">GitHub ↗</a>
-        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
-        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
-      </div>
+
     </div>
   </article>
-  <footer class="site-footer">
-    © 2026 Nery Cano · Built with Next.js in mind · Shipped as plain HTML because it's 200ms faster
-  </footer>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
