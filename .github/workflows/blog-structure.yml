@@ -1,0 +1,26 @@
+# Structure sensor for the blog. The guide is blog/BLOG_STRUCTURE.md;
+# this is the feedback half of the harness — it fails on its own so a
+# structurally broken post can't reach GitHub Pages quietly.
+name: blog structure
+
+on:
+  push:
+    paths:
+      - 'blog/**'
+      - '.github/workflows/blog-structure.yml'
+  pull_request:
+    paths:
+      - 'blog/**'
+      - '.github/workflows/blog-structure.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Zero dependencies — the sensor is a single Node ESM file, no install step.
+      - name: Validate every post against BLOG_STRUCTURE.md
+        run: node blog/tools/validate.mjs
