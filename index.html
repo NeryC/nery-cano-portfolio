@@ -301,6 +301,52 @@
       color: var(--accent-glow) !important;
       border: 1px solid rgba(46,117,182,0.30);
     }
+
+    /* ============================================================ */
+    /* Dark-theme gap fixes — utility classes the map above missed. */
+    /* Each one rendered light-on-light or dark-on-dark before.     */
+    /* ============================================================ */
+
+    /* The Platzi "Learning" card is an <a>, not an <article>, so the
+       gradient-card override skipped it and its `to-white` stop
+       painted a solid white panel under light text. Give it the same
+       dark card treatment, tinted with the Platzi green. */
+    a[href*="platzi"].bg-gradient-to-br {
+      background: linear-gradient(160deg, rgba(152,202,63,0.12), var(--bg-mid)) !important;
+      border-color: rgba(152,202,63,0.28) !important;
+    }
+    /* Platzi badge label #4a6b1c (dark green) → readable light green. */
+    .text-\[\#4a6b1c\] { color: #A3D95B !important; }
+
+    /* Emerald status pills (● Active / Certificate ✓): bg-emerald-50
+       stayed light while the text was lightened → light-on-light. */
+    .bg-emerald-50 { background-color: rgba(16,185,129,0.14) !important; }
+    .border-emerald-200 { border-color: rgba(16,185,129,0.32) !important; }
+
+    /* slate-600 text (↗ GitHub / "2 repos") was never remapped. */
+    .text-slate-600 { color: var(--text-muted) !important; }
+
+    /* ---- Category safety nets --------------------------------- */
+    /* Map the WHOLE light end of the neutral scales, not just the
+       shades that happen to be used today, so a new card built with
+       standard Tailwind classes can't reopen the light-on-light bug.
+       Translucent white reads as a subtle raised surface on dark. */
+    .bg-slate-50, .bg-slate-100, .bg-slate-200,
+    .bg-gray-50, .bg-gray-100, .bg-neutral-50 {
+      background-color: rgba(255,255,255,0.05) !important;
+    }
+    .border-slate-50, .border-slate-200, .border-slate-300,
+    .border-gray-100, .border-gray-200 {
+      border-color: var(--border-mid) !important;
+    }
+    /* Remaining muted text shades → readable on dark. */
+    .text-slate-300, .text-slate-800, .text-slate-900,
+    .text-gray-500, .text-gray-600, .text-gray-700 {
+      color: var(--text-muted) !important;
+    }
+
+    /* Mobile menu panel needs an opaque surface (it sits over content). */
+    #mobileMenu { background: var(--bg-deep) !important; }
   </style>
 </head>
 <body class="bg-white text-ink antialiased">
@@ -315,7 +361,7 @@
       <div class="hidden md:flex items-center gap-8 text-sm text-muted">
         <a href="#about" class="hover:text-primary transition link-underline">About</a>
         <a href="#work" class="hover:text-primary transition link-underline">Work</a>
-        <a href="./blog/" class="hover:text-primary transition link-underline">Writing</a>
+        <a href="./blog/" class="hover:text-primary transition link-underline">Blog</a>
         <a href="#experience" class="hover:text-primary transition link-underline">Experience</a>
         <a href="#stack" class="hover:text-primary transition link-underline">Stack</a>
         <a href="#learning" class="hover:text-primary transition link-underline">Learning</a>
@@ -323,7 +369,28 @@
         <a href="#volunteering" class="hover:text-primary transition link-underline">Community</a>
         <a href="#contact" class="hover:text-primary transition link-underline">Contact</a>
       </div>
-      <a href="#contact" class="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition font-medium">Hire me</a>
+      <div class="flex items-center gap-3">
+        <a href="#contact" class="text-sm bg-primary text-white px-4 py-2 rounded-lg hover:bg-accent transition font-medium">Hire me</a>
+        <button id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu"
+                class="md:hidden inline-flex items-center justify-center w-10 h-10 -mr-2 rounded-lg text-ink hover:text-primary transition">
+          <svg id="menuIconOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16M4 12h16M4 17h16"/></svg>
+          <svg id="menuIconClose" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile menu panel -->
+    <div id="mobileMenu" class="md:hidden hidden border-t border-slate-100">
+      <div class="max-w-6xl mx-auto px-6 py-3 flex flex-col text-sm">
+        <a href="#about" class="py-2.5 text-muted hover:text-primary transition">About</a>
+        <a href="#work" class="py-2.5 text-muted hover:text-primary transition">Work</a>
+        <a href="./blog/" class="py-2.5 text-muted hover:text-primary transition">Blog</a>
+        <a href="#experience" class="py-2.5 text-muted hover:text-primary transition">Experience</a>
+        <a href="#stack" class="py-2.5 text-muted hover:text-primary transition">Stack</a>
+        <a href="#learning" class="py-2.5 text-muted hover:text-primary transition">Learning</a>
+        <a href="#open-source" class="py-2.5 text-muted hover:text-primary transition">Open source</a>
+        <a href="#volunteering" class="py-2.5 text-muted hover:text-primary transition">Community</a>
+        <a href="#contact" class="py-2.5 text-muted hover:text-primary transition">Contact</a>
+      </div>
     </div>
   </nav>
 
@@ -337,7 +404,7 @@
       </div>
       <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-ink leading-[1.05]">
         Hi, I'm Nery.<br/>
-        I ship <span class="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">AI-powered web products.</span>
+        I ship <span class="text-accent">AI-powered web products.</span>
       </h1>
       <p class="mt-8 text-lg md:text-xl text-muted max-w-3xl leading-relaxed">
         Senior Full-Stack Engineer with <strong class="text-ink">7+ years</strong> of experience building production apps for US and global clients.
@@ -373,7 +440,7 @@
         </a>
         <button onclick="copyEmail()" class="hover:text-primary transition flex items-center gap-1" title="Click to copy">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-          nalbertoc132@gmail.com
+          nerycano798@gmail.com
         </button>
       </div>
     </div>
@@ -440,15 +507,15 @@
       </div>
       <div class="md:col-span-2 space-y-5 text-muted leading-relaxed text-lg">
         <p>
-          I help teams ship <strong class="text-ink">AI-powered web products</strong> — not demos, actual production systems
-          that clinicians, students, and building managers rely on every day.
+          I help teams ship <strong class="text-ink">AI-powered web products</strong>
+          that clinicians, students, and building managers rely on every day. Production systems, not demos.
         </p>
         <p>
           Most of my recent work sits at the intersection of <strong class="text-ink">LLM integration, complex
           front-end architecture, and multi-tenant SaaS</strong>. That means entity-grounded prompting with <strong class="text-ink">Anthropic Claude</strong> + multi-agent orchestration, streaming responses for real-time UX, RAG pipelines, accessibility-first UIs, and the dozens of small decisions around a model that turn a cool demo into a product people trust.
         </p>
         <p>
-          I'm also an <strong class="text-ink">AI-augmented developer</strong>: Claude Code with the superpowers framework drives my spec-driven workflow, <strong class="text-ink">Supabase MCP</strong> gives Claude live schema awareness, Cursor handles inline edits, Gemini cross-checks. As a one-person team I currently ship a 4-product SaaS ecosystem (web + API + Flutter mobile + e-invoicing microservice) <strong class="text-ink">nearly daily</strong> because of this workflow.
+          I'm also an <strong class="text-ink">AI-augmented developer</strong>: Claude Code with the superpowers framework drives my spec-driven workflow, <strong class="text-ink">Supabase MCP</strong> gives Claude live schema awareness, Cursor handles inline edits, Gemini cross-checks. As a one-person team I currently ship a 4-product SaaS suite (web + API + Flutter mobile + e-invoicing microservice) <strong class="text-ink">nearly daily</strong> because of this workflow.
         </p>
         <p>
           Before the AI chapter, I built high-performance storefronts for <strong class="text-ink">Hollister</strong> and
@@ -542,7 +609,7 @@
             </div>
             <div>
               <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">What I'm building</div>
-              <p class="text-muted leading-relaxed">A full ecosystem: <strong class="text-ink">web admin (Next.js 16)</strong>, <strong class="text-ink">API (Flask 3)</strong>, <strong class="text-ink">mobile app (Flutter 3)</strong>, and a <strong class="text-ink">multi-tenant e-invoicing microservice (SIFEN-Core)</strong> with XAdES-BES digital signatures. Designed offline-first, role-aware (Owner / Tenant / Admin), and tax-compliant by default.</p>
+              <p class="text-muted leading-relaxed">A full suite: <strong class="text-ink">web admin (Next.js 16)</strong>, <strong class="text-ink">API (Flask 3)</strong>, <strong class="text-ink">mobile app (Flutter 3)</strong>, and a <strong class="text-ink">multi-tenant e-invoicing microservice (SIFEN-Core)</strong> with XAdES-BES digital signatures. Designed offline-first, role-aware (Owner / Tenant / Admin), and tax-compliant by default.</p>
             </div>
             <div>
               <div class="font-semibold text-ink mb-1 font-mono text-xs uppercase tracking-wider">Status &amp; impact</div>
@@ -693,7 +760,7 @@
               <span class="bg-accent/10 text-accent px-2.5 py-1 rounded-md">Multi-tenant SaaS billing</span>
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=AdminRent%20%E2%80%94%20ecosystem%20walkthrough" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=AdminRent%20%E2%80%94%20ecosystem%20walkthrough" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20see%20a%20walkthrough%20of%20AdminRent." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
               <span class="text-xs text-slate-400 font-mono ml-auto">🔒 Code private · architecture open · live demo on request</span>
             </div>
@@ -798,7 +865,7 @@
               They cover the three load-bearing patterns of modern AI/LLM products: <strong class="text-ink">retrieval-augmented memory</strong> (RAG with persistent user facts), <strong class="text-ink">parallel multi-agent orchestration with structured outputs</strong> (Promise.all + Zod via generateObject), and <strong class="text-ink">autonomous tool-use loops with clean termination</strong> (ToolLoopAgent + no-execute terminal tool). Built end-to-end in TypeScript on Next.js 16 + Vercel AI SDK v6, deployed to Vercel, with READMEs deep enough to onboard another engineer in an afternoon.
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=Public%20AI%20portfolio%20%E2%80%94%20RAG%2C%20multi-agent%2C%20research%20walkthrough" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=Public%20AI%20portfolio%20%E2%80%94%20RAG%2C%20multi-agent%2C%20research%20walkthrough" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20see%20a%20walkthrough%20of%20your%20three%20AI%20agents." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
               <span class="text-xs text-slate-400 font-mono ml-auto">📂 All public · MIT-style · live demos linked</span>
             </div>
@@ -856,7 +923,7 @@
               <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">WCAG 2.1 AA</span>
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=Ebervetter%20%E2%80%94%20clinician%20AI%20documentation%20platform" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=Ebervetter%20%E2%80%94%20clinician%20AI%20documentation%20platform" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20discuss%20your%20Ebervetter%20clinician%20AI%20work." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
             </div>
           </div>
@@ -908,7 +975,7 @@
               <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Testing</span>
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=CodePro%20%E2%80%94%20bootcamp%20platform%20%2899.9%25%20uptime%29" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=CodePro%20%E2%80%94%20bootcamp%20platform%20%2899.9%25%20uptime%29" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20discuss%20the%20CodePro%20bootcamp%20platform." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
             </div>
           </div>
@@ -957,7 +1024,7 @@
               <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Tailwind</span>
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=Hollister%20%2F%20A%26F%20%E2%80%94%20global%20retail%20storefronts" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=Hollister%20%2F%20A%26F%20%E2%80%94%20global%20retail%20storefronts" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20discuss%20the%20Hollister%20%2F%20A%26F%20storefronts." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
             </div>
           </div>
@@ -993,7 +1060,7 @@
               <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Tailwind</span>
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=ZenBusiness%20%E2%80%94%20SMB%20legal%20%2F%20finance%20platform" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=ZenBusiness%20%E2%80%94%20SMB%20legal%20%2F%20finance%20platform" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20discuss%20the%20ZenBusiness%20platform%20work." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
             </div>
           </div>
@@ -1029,7 +1096,7 @@
               <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md">Node.js</span>
             </div>
             <div class="mt-5 flex flex-wrap gap-4 text-sm">
-              <a href="mailto:nalbertoc132@gmail.com?subject=Oktana%20%E2%80%94%20enterprise%20Salesforce%20solutions" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
+              <a href="mailto:nerycano798@gmail.com?subject=Oktana%20%E2%80%94%20enterprise%20Salesforce%20solutions" class="text-accent font-medium hover:text-primary transition link-underline">Discuss this work →</a>
               <a href="https://wa.me/595984292520?text=Hi%20Nery%2C%20I%27d%20like%20to%20discuss%20your%20Salesforce%20%2F%20Oktana%20experience." target="_blank" rel="noopener" class="text-emerald-700 font-medium hover:text-emerald-900 transition link-underline">WhatsApp ↗</a>
             </div>
           </div>
@@ -1273,62 +1340,16 @@
               </ul>
             </div>
             <div class="mt-4">
-              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">Web · Admin dashboard</div>
+              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">Full stack</div>
               <div class="flex flex-wrap gap-1.5">
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Next.js 16 (App Router)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">React 19</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TypeScript</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Tailwind v4</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">TanStack Query</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Supabase SSR</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Axios</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Next.js 16 · React 19</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flask 3 · SQLAlchemy 2</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flutter · Riverpod</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Express · TypeScript (SIFEN)</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PostgreSQL · Supabase</span>
+                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Railway · Docker</span>
               </div>
-            </div>
-            <div class="mt-3">
-              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">API · Backend</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Python · Flask 3</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">SQLAlchemy 2 + Alembic</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PostgreSQL</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PyJWT (asymmetric)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flask-Limiter</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Resend (email)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">WeasyPrint (PDF)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">OpenPyXL (Excel)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Gunicorn</span>
-              </div>
-            </div>
-            <div class="mt-3">
-              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">Mobile · Residents</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Flutter (Dart 3)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Riverpod</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Dio</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Firebase Auth + FCM</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">sqflite (offline)</span>
-              </div>
-            </div>
-            <div class="mt-3">
-              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">SIFEN microservice · e-invoicing</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Node.js + TypeScript</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Express</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">PostgreSQL</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">SOAP</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">xml-crypto + node-forge</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Zod</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">node-cron</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Docker</span>
-              </div>
-            </div>
-            <div class="mt-3">
-              <div class="text-xs font-mono text-muted uppercase tracking-wider mb-2">DevOps</div>
-              <div class="flex flex-wrap gap-1.5">
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Railway (multi-service)</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Docker</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Auto Alembic migrations on release</span>
-                <span class="text-xs font-mono bg-slate-100 text-slate-700 px-2 py-0.5 rounded">Env-scoped config</span>
-              </div>
+              <p class="mt-3 text-xs text-muted">Per-service breakdown (deploys, commits, XAdES-BES signing) is in the <a href="#work" class="text-accent hover:text-primary transition link-underline">AdminRent case study above</a>.</p>
             </div>
             <p class="mt-4 text-xs text-muted leading-relaxed">Source code is private — happy to walk through the architecture, the SIFEN signing flow or the auth model on a call.</p>
           </article>
@@ -1494,7 +1515,7 @@
           </div>
           <div class="p-6 bg-white border border-slate-100 rounded-2xl card-hover">
             <div class="text-xs font-mono uppercase tracking-wider text-accent mb-2">Building (own SaaS)</div>
-            <p class="text-sm text-muted leading-relaxed"><strong class="text-ink">AdminRent</strong> — 4-product residential mgmt ecosystem: Next.js 16 web, Flask 3 API, Flutter mobile, SIFEN-Core e-invoicing microservice. 220+ commits in 2 months. Spec-driven with Claude Code + Supabase MCP.</p>
+            <p class="text-sm text-muted leading-relaxed"><strong class="text-ink">AdminRent</strong> — 4-product residential mgmt suite: Next.js 16 web, Flask 3 API, Flutter mobile, SIFEN-Core e-invoicing microservice. 220+ commits in 2 months. Spec-driven with Claude Code + Supabase MCP.</p>
           </div>
           <div class="p-6 bg-white border border-slate-100 rounded-2xl card-hover">
             <div class="text-xs font-mono uppercase tracking-wider text-accent mb-2">Open to</div>
@@ -1573,7 +1594,7 @@
           <div class="mt-10 space-y-3 text-sm">
             <div class="flex items-center gap-3">
               <span class="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">📧</span>
-              <button onclick="copyEmail()" class="text-white/90 hover:text-white transition font-mono">nalbertoc132@gmail.com</button>
+              <button onclick="copyEmail()" class="text-white/90 hover:text-white transition font-mono">nerycano798@gmail.com</button>
               <span class="text-xs text-white/50">(click to copy)</span>
             </div>
             <div class="flex items-center gap-3">
@@ -1601,13 +1622,13 @@
         <!-- Direct contact CTAs -->
         <div class="space-y-5">
           <!-- Email CTA -->
-          <a href="mailto:nalbertoc132@gmail.com?subject=Hi%20Nery%20%E2%80%94%20let's%20talk&body=Hi%20Nery%2C%0A%0A" class="group block bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-7 hover:bg-white/10 hover:border-white/30 transition">
+          <a href="mailto:nerycano798@gmail.com?subject=Hi%20Nery%20%E2%80%94%20let's%20talk&body=Hi%20Nery%2C%0A%0A" class="group block bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-7 hover:bg-white/10 hover:border-white/30 transition">
             <div class="flex items-start justify-between gap-4">
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 bg-accent/20 border border-accent/30 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">📧</div>
                 <div>
                   <div class="text-xs uppercase tracking-widest text-accent font-mono font-semibold">Email me</div>
-                  <div class="mt-1 text-xl font-semibold text-white">nalbertoc132@gmail.com</div>
+                  <div class="mt-1 text-xl font-semibold text-white">nerycano798@gmail.com</div>
                   <p class="mt-2 text-sm text-white/60 leading-relaxed">Best for role details, contract scopes, or anything longer than a few lines. Usually reply within 24h.</p>
                 </div>
               </div>
@@ -1654,7 +1675,7 @@
         <ul class="space-y-1.5">
           <li><a href="#about" class="hover:text-white transition">About</a></li>
           <li><a href="#work" class="hover:text-white transition">Selected work</a></li>
-          <li><a href="./blog/" class="hover:text-white transition">Writing →</a></li>
+          <li><a href="./blog/" class="hover:text-white transition">Blog →</a></li>
           <li><a href="#experience" class="hover:text-white transition">Experience</a></li>
           <li><a href="#learning" class="hover:text-white transition">Learning</a></li>
           <li><a href="#open-source" class="hover:text-white transition">Open source</a></li>
@@ -1669,7 +1690,7 @@
           <li><a href="https://www.linkedin.com/in/nery-cano-dev/" target="_blank" rel="noopener" class="hover:text-white transition">LinkedIn →</a></li>
           <li><a href="https://github.com/NeryC" target="_blank" rel="noopener" class="hover:text-white transition">GitHub →</a></li>
           <li><a href="https://platzi.com/p/alberto-cano-ortigoza/" target="_blank" rel="noopener" class="hover:text-white transition">Platzi →</a></li>
-          <li><a href="mailto:nalbertoc132@gmail.com" class="hover:text-white transition">Email →</a></li>
+          <li><a href="mailto:nerycano798@gmail.com" class="hover:text-white transition">Email →</a></li>
           <li><a href="https://wa.me/595984292520" target="_blank" rel="noopener" class="hover:text-white transition">WhatsApp →</a></li>
           <li><a href="https://drive.google.com/file/d/1_5A8e-xGep_Wd1lRP6r0sFIMgUQvmkQ9/view?usp=sharing" target="_blank" rel="noopener" class="hover:text-white transition">CV (PDF) ↓</a></li>
         </ul>
@@ -1685,7 +1706,7 @@
   <script>
     // Copy email helper
     function copyEmail() {
-      const email = 'nalbertoc132@gmail.com';
+      const email = 'nerycano798@gmail.com';
       navigator.clipboard.writeText(email).then(() => {
         const toast = document.getElementById('toast');
         toast.textContent = 'Email copied: ' + email;
@@ -1696,6 +1717,24 @@
       });
     }
 
+    // Mobile menu toggle
+    (function () {
+      const btn = document.getElementById('menuBtn');
+      const menu = document.getElementById('mobileMenu');
+      const iOpen = document.getElementById('menuIconOpen');
+      const iClose = document.getElementById('menuIconClose');
+      if (!btn || !menu) return;
+      function setOpen(open) {
+        menu.classList.toggle('hidden', !open);
+        iOpen.classList.toggle('hidden', open);
+        iClose.classList.toggle('hidden', !open);
+        btn.setAttribute('aria-expanded', String(open));
+        btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      }
+      btn.addEventListener('click', () => setOpen(menu.classList.contains('hidden')));
+      menu.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setOpen(false)));
+      window.addEventListener('resize', () => { if (window.innerWidth >= 768) setOpen(false); });
+    })();
   </script>
 
   <!-- Talk-to-my-portfolio AI chat widget (MCP-backed FAB) -->

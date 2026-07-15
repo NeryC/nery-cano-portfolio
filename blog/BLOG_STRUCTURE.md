@@ -122,7 +122,7 @@ When adding NEW components, append to the existing style block — don't fragmen
         <a href="../">Portfolio ↗</a>
         <a href="https://github.com/NeryC">GitHub ↗</a>
         <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
-        <a href="mailto:nalbertoc132@gmail.com">Email ↗</a>
+        <a href="mailto:nerycano798@gmail.com">Email ↗</a>
       </div>
     </div>
   </article>

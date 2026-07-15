@@ -13,8 +13,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, basename, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const BLOG = resolve(new URL('..', import.meta.url).pathname);   // .../blog
+// fileURLToPath handles Windows drive letters correctly; URL.pathname yields
+// "/C:/..." which resolve() then turns into "C:\C:\..." on Windows.
+const BLOG = resolve(fileURLToPath(new URL('..', import.meta.url)));   // .../blog
 let errors = 0, warnings = 0;
 const isES = (rel) => rel.startsWith('es/') || rel.includes('/es/');
 
@@ -62,7 +65,9 @@ function prose(html) {
 }
 
 function validatePost(file) {
-  const rel = file.replace(BLOG + '/', '');
+  // Normalize separators so the es/ detection (isES) works on Windows too,
+  // where file paths use "\" and BLOG + "/" would never match.
+  const rel = file.replaceAll('\\', '/').replace(BLOG.replaceAll('\\', '/') + '/', '');
   const raw = readFileSync(file);
   const s = raw.toString('utf8');
   const es = isES(rel);
