@@ -3,311 +3,153 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible — Nery Cano</title>
-  <meta name="description" content="Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel." />
+  <title>MCP desde cero: qué es, qué problema resuelve y cuándo usarlo — Nery Cano</title>
+  <meta name="description" content="Qué es el Model Context Protocol, el problema que vino a resolver, cómo funciona por dentro y cuándo conviene usarlo. Explicado desde cero." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible — Nery Cano" />
-  <meta property="og:description" content="Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel." />
-  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_banner.png" />
-  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/talk-to-my-portfolio.html" />
-  <meta property="article:published_time" content="2026-05-17" />
+  <meta property="og:title" content="MCP desde cero: qué es, qué problema resuelve y cuándo usarlo" />
+  <meta property="og:description" content="Qué es el Model Context Protocol, el problema que vino a resolver, cómo funciona por dentro y cuándo conviene usarlo. Explicado desde cero." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_guide_banner_es.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/talk-to-my-portfolio.html" />
+  <meta property="article:published_time" content="2026-07-17" />
   <meta property="article:tag" content="MCP" />
+  <meta property="article:tag" content="Model Context Protocol" />
+  <meta property="article:tag" content="JSON-RPC" />
+  <meta property="article:tag" content="LLM" />
   <meta property="article:tag" content="AI Agents" />
-  <meta property="article:tag" content="Anthropic Claude" />
-  <meta property="article:tag" content="Next.js" />
-  <meta property="article:tag" content="Vercel AI SDK" />
-  <meta property="article:tag" content="Preact" />
+
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible" />
-  <meta name="twitter:description" content="Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel." />
-  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_banner.png" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <meta name="twitter:title" content="MCP desde cero: qué es, qué problema resuelve y cuándo usarlo" />
+  <meta name="twitter:description" content="Qué es el Model Context Protocol, el problema que vino a resolver, cómo funciona por dentro y cuándo conviene usarlo. Explicado desde cero." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_4_talk_guide_banner_es.png" />
+
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/talk-to-my-portfolio.html" />
   <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/talk-to-my-portfolio.html" />
   <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/talk-to-my-portfolio.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <style>
-    :root {
-      --primary: #1F3A68;
-      --accent: #2E75B6;
-      --accent-light: #4FA9E8;
-      --accent-glow: #7DD3FC;
-      --ink: #0F172A;
-      --bg-deep: #06101F;
-      --bg-mid: #0E1F3A;
-      --muted: #94A3B8;
-      --text: #E2E8F0;
-      --text-strong: #F1F5F9;
-      --border: rgba(148, 163, 184, 0.18);
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 19px;
-      line-height: 1.7;
-      color: var(--text);
-      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
-                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
-                  var(--bg-deep);
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
-    a { color: var(--accent-light); text-decoration: none; }
-    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
-    .header-nav {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 28px 24px 0;
-      display: flex; justify-content: space-between; align-items: center;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .header-nav a { color: var(--muted); }
-    .header-nav a:hover { color: var(--accent-glow); }
-    .article {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 24px 80px;
-    }
-    .article-meta {
-      margin-top: 56px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-    }
-    h1.article-title {
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 44px;
-      font-weight: 800;
-      letter-spacing: -1.2px;
-      line-height: 1.15;
-      color: var(--text-strong);
-      margin: 14px 0 12px;
-    }
-    .article-subtitle {
-      font-family: "Source Serif 4", Georgia, serif;
-      font-style: italic;
-      font-size: 22px;
-      line-height: 1.4;
-      color: var(--muted);
-      margin: 0 0 32px;
-    }
-    .byline {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
-    .byline-name {
-      font-family: "Inter", system-ui, sans-serif;
-      font-weight: 600;
-      color: var(--text-strong);
-      font-size: 15px;
-    }
-    .byline-meta {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .banner-img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 8px 0 40px;
-      display: block;
-      border: 1px solid var(--border);
-    }
-    .article-body {
-      font-size: 19px;
-      line-height: 1.75;
-      color: var(--text);
-    }
-    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
-      font-family: "Inter", system-ui, sans-serif;
-      color: var(--text-strong);
-      margin: 48px 0 14px;
-      letter-spacing: -0.4px;
-      line-height: 1.25;
-    }
-    .article-body h1 { font-size: 32px; font-weight: 800; }
-    .article-body h2 { font-size: 26px; font-weight: 700; }
-    .article-body h3 { font-size: 21px; font-weight: 700; }
-    .article-body p { margin: 18px 0; }
-    .article-body strong { color: var(--text-strong); font-weight: 700; }
-    .article-body em { color: var(--text); }
-    .article-body ul, .article-body ol { padding-left: 28px; }
-    .article-body li { margin: 8px 0; }
-    .article-body blockquote {
-      border-left: 3px solid var(--accent);
-      margin: 24px 0;
-      padding: 4px 24px;
-      color: var(--muted);
-      font-style: italic;
-    }
-    .article-body code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.88em;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(46,117,182,0.25);
-    }
-    .article-body pre {
-      background: #1a1f2e !important;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px 20px !important;
-      overflow-x: auto;
-      font-size: 14px;
-      line-height: 1.55;
-      margin: 24px 0;
-    }
-    .article-body pre code {
-      background: transparent;
-      border: none;
-      color: inherit;
-      padding: 0;
-      font-size: 14px;
-    }
-    .article-body hr {
-      border: none;
-      height: 1px;
-      background: var(--border);
-      margin: 48px 0;
-    }
-    .article-body img { max-width: 100%; border-radius: 6px; }
-    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    .article-body th, .article-body td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
 
-    /* Didactic figures */
-    .figure {
-      margin: 40px -8px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
-    }
-    .figure svg { display: block; width: 100%; height: auto; }
-    .figure-caption {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 18px;
-      text-align: center;
-    }
-    .figure-caption strong {
-      color: var(--accent-glow);
-      letter-spacing: 1.4px;
-    }
-    .callout {
-      margin: 32px 0;
-      padding: 18px 22px;
-      border-radius: 10px;
-      background: rgba(46,117,182,0.10);
-      border: 1px solid rgba(46,117,182,0.30);
-      border-left: 3px solid var(--accent-glow);
-    }
-    .callout-label {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-      margin-bottom: 6px;
-    }
-    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
-    .bug-row {
-      display: flex;
-      gap: 14px;
-      align-items: baseline;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .bug-num {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--accent-glow);
-      flex-shrink: 0;
-      width: 48px;
-    }
-    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
-    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
-
-    .footer-cta {
-      margin-top: 56px;
-      padding: 32px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
-    }
-    .footer-cta h3 {
-      margin: 0 0 12px;
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 20px;
-      color: var(--text-strong);
-    }
-    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
-    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
-    .footer-cta .links a {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 13px;
-      letter-spacing: 1px;
-      color: var(--accent-glow);
-    }
-    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-pill {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 14px;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      border: 1px solid rgba(46,117,182,0.3);
-      letter-spacing: 1px;
-    }
-    .site-footer {
-      max-width: 760px;
-      margin: 60px auto 40px;
-      padding: 24px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      letter-spacing: 1px;
-      border-top: 1px solid var(--border);
-    }
-    @media (max-width: 600px) {
-      body { font-size: 17px; }
-      h1.article-title { font-size: 32px; }
-      .article-subtitle { font-size: 18px; }
-      .article-body { font-size: 17px; }
-      .article-body h1 { font-size: 26px; }
-      .article-body h2 { font-size: 22px; }
-      .figure { margin: 32px -8px; padding: 16px; }
-    }
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
   
     /* ── Layout ancho y tipografía fluida ─────────────────────────────────
        En pantallas grandes el problema no es la columna: es que 19px de
@@ -456,846 +298,562 @@
       .sem .h { font-size: 0.55em; }
       .sem ul { font-size: 0.64em; }
     }
-</style>
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
 </head>
 <body>
-  <nav class="header-nav">
-    <a href="../../">← Portfolio</a>
-    <a href="../">Todos los artículos</a>
-    <a href="../talk-to-my-portfolio.html">English ↗</a>
-  </nav>
+  <nav class="header-nav"><a href="../">&larr; Portfolio</a><a href="index.html">Blog</a></nav>
   <article class="article">
-    <!-- structure: postmortem — MCP server + widget build with a six-bug postmortem. -->
-    <div class="article-meta">17 may 2026 · 18 min de lectura</div>
-    <h1 class="article-title">Construyendo «Talk to My Portfolio»: un servidor MCP + widget de IA embebible</h1>
-    <p class="article-subtitle">Cómo lancé un widget de chat que deja a quien me visita interrogar mi CV, mis proyectos y mis 164 certificados de Platzi — y los seis bugs de producción que tuve que arreglar para que funcionara en Vercel.</p>
+    <!-- structure: guide -->
+    <div class="article-meta">17 de julio, 2026 · Parte 1 de 2 · ~18 min de lectura</div>
+    <h1 class="article-title">MCP desde cero: qué es, qué problema resuelve y cuándo usarlo</h1>
+    <p class="article-subtitle">Un protocolo, tres primitivas y un saludo obligatorio. Todo lo que hay que entender de MCP antes de escribir una línea de código.</p>
     <div class="byline">
-      <div>
-        <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Ingeniero Full-Stack Senior · Sistemas de IA/LLM · github.com/NeryC</div>
-      </div>
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
     </div>
-    <img class="banner-img" src="../post_4_talk_banner.svg" alt="Talk to my portfolio — MCP server + embeddable AI widget" />
-
+    <div class="tags"><span class="tag-pill">MCP</span> <span class="tag-pill">Model Context Protocol</span> <span class="tag-pill">JSON-RPC</span> <span class="tag-pill">LLM</span> <span class="tag-pill">AI Agents</span></div>
+    <img class="banner-img" src="../post_4_talk_guide_banner_es.png" alt="Qué es el Model Context Protocol, el problema que vino a resolver, cómo funciona por dentro y cuándo conviene usarlo. Explicado desde cero." />
     <div class="article-body">
 
-<p><em>Este es el cuarto y más ambicioso proyecto de la serie de portfolio Talent Global. Los tres anteriores (research agent, revisor multi-agente, RAG con memoria) eran apps Next.js independientes. Este es una <strong>implementación de protocolo, un monorepo multi-paquete y una pieza de JavaScript que tiene que incrustarse en la página HTML de otra persona</strong> — mi propio portfolio.</em></p>
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="talk-to-my-portfolio-build.html">Parte 2 · El servidor MCP que construí</a></strong> · <a href="https://github.com/NeryC/talk-to-my-portfolio">repo</a> · <a href="../">portfolio</a></p>
+      </div>
 
-<p>Si abriste este post desde la esquina inferior derecha de <a href="../../">neryc.github.io/nery-cano-portfolio</a>, ya hiciste clic en el FAB. Ese pequeño botón 💬 carga <code>widget.js</code>, monta un componente Preact, abre un iframe que apunta a una página Next.js y desde ahí habla con un servidor Model Context Protocol que expone una vista estructurada de toda mi trayectoria profesional.</p>
+      <p><em>MCP es un estándar abierto para que una aplicación con un modelo de lenguaje adentro le pida datos y acciones a programas externos. Esta guía explica qué es, qué problema vino a resolver, cómo funciona por dentro y cuándo conviene usarlo. Sin dar nada por sabido.</em></p>
 
-<p>Lo divertido: diseñarlo tomó diez minutos y depurarlo, varias horas. Seis bugs de producción separaban «pasa los 115 tests en local» de «de verdad funciona en Vercel». Esta es la versión larga de lo que hay dentro.</p>
+      <p>Tenés un asistente de IA que contesta bien sobre el mundo y nada sobre lo tuyo. Le querés dar acceso a tu base de datos, a tu repositorio y a tu calendario, así que escribís tres integraciones. Andan bien. Al mes siguiente tu equipo empieza a usar otro asistente, y las tres integraciones no sirven: están escritas contra la API del primero. Escribís tres más.</p>
 
-<p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong> · <a href="https://talk-to-my-portfolio.vercel.app">demo en vivo</a> · <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">endpoint MCP</a></p>
+      <p>Ese es el problema entero, y no es el que parece. Conectar un modelo a una herramienta es fácil. Lo difícil es que esa conexión sirva para más de un modelo, y que la herramienta la pueda escribir alguien que no sos vos, sin coordinar nada con vos.</p>
 
-<hr />
+      <p>MCP (Model Context Protocol) es la respuesta de Anthropic a eso. Lo publicaron en noviembre de 2024 como estándar abierto, y hoy lo implementan Claude, varios IDEs y una lista larga de servidores de terceros. Al terminar esta guía vas a poder explicar qué es, qué problema resuelve, qué mensajes viajan por el cable y en qué casos no vale la pena.</p>
 
-<h2>Qué es, en un párrafo</h2>
+      <hr />
 
-<p>Un <strong>servidor MCP</strong> expone 9 tools, 4 resources y 3 prompts que leen de archivos JSON/Markdown que describen mi CV, mis proyectos, mi experiencia laboral, mis skills y 164 diplomas reales de Platzi extraídos con Playwright. Cualquier cliente compatible con MCP (Claude Desktop, ChatGPT desktop, tu propio agente) puede conectarse por Streamable HTTP y preguntar cosas como <em>«¿Qué proyectos ha construido Nery con TypeScript y Anthropic Claude?»</em>. Las respuestas vienen de los datos estructurados, no del set de entrenamiento del modelo — así que no hay alucinaciones sobre mi perfil.</p>
+      <h2 data-sec="glossary">Ocho palabras, primero</h2>
 
-<p>El mismo servidor también alimenta un widget de chat que embebo en este mismo portfolio. Eso le da a quien recluta una forma, a un clic, de preguntar lo que sea sobre mí sin tener que scrollear 1.500 líneas de HTML.</p>
+      <p>Si nunca tocaste el tema, con estos ocho términos alcanza para leer todo lo que sigue. Ninguno se explica con otro que todavía no definí.</p>
 
-<div class="figure">
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arrowEnd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
-    </marker>
-    <linearGradient id="boxFill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#122845"/>
-      <stop offset="1" stop-color="#0E1F3A"/>
-    </linearGradient>
-  </defs>
+      <p><strong>Modelo de lenguaje (LLM).</strong> El motor detrás de Claude o ChatGPT. Predice texto. Sabe muchísimo del mundo hasta la fecha en que lo entrenaron, y nada de tus datos privados.</p>
 
-  <!-- Browser host -->
-  <g transform="translate(20, 30)">
-    <rect width="160" height="100" rx="10" fill="url(#boxFill)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Portfolio (host)</text>
-    <text x="80" y="50" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">neryc.github.io</text>
-    <text x="80" y="70" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#7DD3FC">&lt;script src="widget.js"&gt;</text>
-    <text x="80" y="86" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">+ FAB · iframe shell</text>
-  </g>
+      <p><strong>Contexto.</strong> Todo el texto que le pasás al modelo en una consulta: tu pregunta, la conversación previa y cualquier dato que le adjuntes. Es lo único que el modelo "ve" en ese momento.</p>
 
-  <!-- Vercel Next.js -->
-  <g transform="translate(260, 30)">
-    <rect width="200" height="100" rx="10" fill="url(#boxFill)" stroke="rgba(46,117,182,0.45)"/>
-    <text x="100" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">apps/web · Next.js 16</text>
-    <text x="100" y="48" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">talk-to-my-portfolio.vercel.app</text>
-    <text x="100" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">/widget · /demo · /api/agent</text>
-    <text x="100" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">/api/mcp (Streamable HTTP)</text>
-  </g>
+      <p><strong>Protocolo.</strong> Un acuerdo sobre cómo dos programas se hablan: qué mensajes existen, qué forma tienen y quién habla primero. HTTP es un protocolo, y por eso cualquier navegador entiende a cualquier servidor web sin que se hayan puesto de acuerdo antes.</p>
 
-  <!-- MCP server -->
-  <g transform="translate(540, 30)">
-    <rect width="160" height="100" rx="10" fill="url(#boxFill)" stroke="rgba(125,211,252,0.5)"/>
-    <text x="80" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">@neryc/portfolio-mcp</text>
-    <text x="80" y="48" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">in-process MCP server</text>
-    <text x="80" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">9 tools · 4 resources</text>
-    <text x="80" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">3 prompts · sampling/elicit</text>
-  </g>
+      <p><strong>Cliente y servidor.</strong> Dos roles, no dos máquinas. El cliente pide, el servidor responde. Pueden estar en continentes distintos o ser dos procesos en tu notebook.</p>
 
-  <!-- Data -->
-  <g transform="translate(540, 200)">
-    <rect width="160" height="120" rx="10" fill="url(#boxFill)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">@neryc/portfolio-shared</text>
-    <text x="80" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">Zod schemas + JSON/MD</text>
-    <text x="80" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">cv.json · experience.json</text>
-    <text x="80" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">skills.json · courses.json</text>
-    <text x="80" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">projects/*.md · cv.md</text>
-  </g>
+      <p><strong>JSON-RPC 2.0.</strong> Una convención para pedirle a otro programa que ejecute una función, escrita en JSON. Le mandás el nombre del método y sus argumentos, te devuelve un resultado o un error. Nada más que eso.</p>
 
-  <!-- Widget pkg -->
-  <g transform="translate(20, 200)">
-    <rect width="160" height="120" rx="10" fill="url(#boxFill)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">packages/widget</text>
-    <text x="80" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">Preact + esbuild bundle</text>
-    <text x="80" y="68" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">FAB · iframe wrapper</text>
-    <text x="80" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">→ apps/web/public/widget.js</text>
-    <text x="80" y="100" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">13 KB minified</text>
-  </g>
+      <p><strong>Herramienta (tool).</strong> Una función que el modelo puede pedir que se ejecute: consultar una base, mandar un mail, buscar en la web. El modelo no la ejecuta, la pide.</p>
 
-  <!-- arrows -->
-  <line x1="180" y1="80" x2="258" y2="80" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
-  <text x="219" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">iframe</text>
+      <p><strong>Host.</strong> La aplicación con la que interactuás y que tiene el modelo adentro: Claude Desktop, tu IDE, tu propia app. Es quien manda.</p>
 
-  <line x1="462" y1="80" x2="538" y2="80" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
-  <text x="500" y="72" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">in-process</text>
+      <p><strong>Transporte.</strong> El caño por donde viajan los mensajes. Puede ser la entrada y salida estándar de un proceso local, o HTTP contra un servidor remoto.</p>
 
-  <line x1="620" y1="130" x2="620" y2="198" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
-  <text x="660" y="170" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">readFileSync</text>
+      <hr />
 
-  <line x1="100" y1="198" x2="100" y2="132" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrowEnd)"/>
-  <text x="62" y="170" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">build</text>
-</svg>
-<p class="figure-caption">Figura 1 · <strong>Panorama general.</strong> El portfolio carga <code>widget.js</code>, que monta un FAB y un iframe apuntando a <code>/widget</code> en Vercel. De ahí en adelante todo es un único despliegue de Next.js — el servidor MCP corre in-process junto al agente.</p>
-</div>
+      <h2 data-sec="definition">Qué es MCP, en un párrafo</h2>
 
-<h2>El monorepo, en breve</h2>
+      <p>MCP es un protocolo abierto que estandariza cómo una aplicación con un LLM adentro le pide contexto y acciones a programas externos. Define tres cosas: el formato de los mensajes (JSON-RPC 2.0), un arranque obligatorio donde las dos partes se cuentan qué saben hacer, y un catálogo de lo que un servidor puede ofrecer (datos para leer, funciones para ejecutar, plantillas para disparar). Un servidor MCP que escribís una vez funciona con cualquier cliente que hable el protocolo, sin que ese cliente sepa nada de tu código.</p>
 
-<p>Cuatro paquetes del workspace de pnpm:</p>
+      <p>La analogía que usa la documentación oficial es USB-C: un conector para todo, en lugar de un cargador propietario por dispositivo. Sirve para entender la forma del problema, y conviene bajarla enseguida. USB-C no le enseña a tu notebook qué es un monitor: define el conector, los voltajes y cómo se negocia quién da energía y quién la recibe. El monitor sigue siendo responsable de ser un monitor. MCP hace exactamente eso: no sabe nada de tu base de datos, define el enchufe y la negociación. Tu servidor sigue siendo responsable de saber qué es una factura.</p>
 
-<ul>
-<li><strong><code>apps/web</code></strong> — Next.js 16 (App Router, Turbopack). Aloja <code>/widget</code> (la UI del iframe), <code>/demo</code> (el chat independiente), <code>/api/agent</code> (la ruta del agente con streaming) y <code>/api/mcp</code> (el transporte MCP por Streamable HTTP).</li>
-<li><strong><code>packages/mcp-server</code></strong> — <code>@neryc/portfolio-mcp</code>. TypeScript puro que registra tools/resources/prompts contra el SDK de MCP. Tiene su propio binario de CLI para el modo stdio (para que Claude Desktop pueda lanzarlo en local).</li>
-<li><strong><code>packages/shared</code></strong> — schemas de Zod + cargadores de datos tipados + los archivos semilla JSON/Markdown. Tanto las apps como el servidor MCP importan de aquí.</li>
-<li><strong><code>packages/widget</code></strong> — El bundle de Preact + esbuild que se convierte en <code>widget.js</code>. La salida se deja en <code>apps/web/public/</code> para que Vercel lo sirva desde el origen público.</li>
-</ul>
-
-<p>Más <code>scripts/sync-platzi</code> — un scraper de Playwright que inicia sesión en Platzi una vez, recorre el perfil público + el dashboard de aprendizaje y vuelca 164 cursos reales con sus URLs de diploma en <code>packages/shared/data/courses.json</code>. Esos datos son los que devuelve el servidor MCP cuando un agente pide <em>«muéstrame los certificados de Python de Nery».</em></p>
-
-<hr />
-
-<h2>¿Qué es MCP y por qué usarlo para esto?</h2>
-
-<p>El Model Context Protocol es un pequeño protocolo JSON-RPC que Anthropic publicó a finales de 2024 para estandarizar la conversación entre un cliente LLM y un backend de tools/datos. Un servidor expone:</p>
-
-<ul>
-<li><strong>Tools</strong> — funciones invocables con parámetros Zod (o JSON Schema). El mismo rol que el function calling de OpenAI, salvo que es portable entre proveedores.</li>
-<li><strong>Resources</strong> — URIs de solo lectura que el cliente puede traer. Piensa en archivos, pero direccionables por esquema (<code>portfolio://cv/full</code>, <code>portfolio://projects/research-agent/case-study</code>).</li>
-<li><strong>Prompts</strong> — plantillas de prompt parametrizadas que agrupan instrucciones + argumentos + preferencias de sampling.</li>
-</ul>
-
-<p>También soporta <strong>sampling</strong> (el servidor le pide al cliente que ejecute una llamada al LLM) y <strong>elicitation</strong> (el servidor le pide al cliente que recoja input estructurado del usuario). Estas son las piezas que hacen que MCP se sienta distinto de «solo function calling».</p>
-
-<div class="figure">
-<svg viewBox="0 0 720 280" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arrTip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
-    </marker>
-  </defs>
-  <!-- Two columns -->
-  <g transform="translate(60, 30)">
-    <rect width="180" height="40" rx="8" fill="rgba(46,117,182,0.18)" stroke="rgba(46,117,182,0.45)"/>
-    <text x="90" y="25" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">MCP Client</text>
-    <text x="90" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">(Claude Desktop · Cursor)</text>
-    <text x="90" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">(my /api/agent · ChatGPT)</text>
-  </g>
-  <g transform="translate(480, 30)">
-    <rect width="180" height="40" rx="8" fill="rgba(125,211,252,0.18)" stroke="rgba(125,211,252,0.45)"/>
-    <text x="90" y="25" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">MCP Server</text>
-    <text x="90" y="60" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">@neryc/portfolio-mcp</text>
-  </g>
-
-  <!-- protocol lines -->
-  <g font-family="JetBrains Mono, monospace" font-size="11" fill="#94A3B8">
-    <line x1="150" y1="120" x2="570" y2="120" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
-    <text x="360" y="113" text-anchor="middle" fill="#7DD3FC">initialize  ·  client capabilities</text>
-
-    <line x1="570" y1="148" x2="150" y2="148" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
-    <text x="360" y="141" text-anchor="middle" fill="#7DD3FC">initialized  ·  server info + tools/resources/prompts</text>
-
-    <line x1="150" y1="186" x2="570" y2="186" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
-    <text x="360" y="179" text-anchor="middle" fill="#7DD3FC">tools/list  →  tools/call({ name, arguments })</text>
-
-    <line x1="570" y1="214" x2="150" y2="214" stroke="#7DD3FC" stroke-width="1.5" marker-end="url(#arrTip)"/>
-    <text x="360" y="207" text-anchor="middle" fill="#7DD3FC">result  ·  may include resource refs</text>
-
-    <line x1="150" y1="244" x2="570" y2="244" stroke="rgba(125,211,252,0.5)" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arrTip)"/>
-    <text x="360" y="237" text-anchor="middle" fill="rgba(125,211,252,0.7)">sampling/elicitation (server → client)</text>
+      <div class="figure">
+        <svg viewBox="0 0 660 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Una pregunta viaja desde la persona hasta los datos y vuelve">
+  <defs><marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="11">
+    <circle cx="46" cy="76" r="20" fill="#122845" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="46" y="80" text-anchor="middle" fill="#F1F5F9" font-size="15">?</text>
+    <text x="46" y="118" text-anchor="middle" fill="#94A3B8">vos</text>
+    <rect x="120" y="34" width="150" height="84" rx="10" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.8"/>
+    <text x="195" y="58" text-anchor="middle" fill="#7DD3FC" font-size="12">HOST</text>
+    <text x="195" y="78" text-anchor="middle" fill="#F1F5F9" font-size="11">Claude Desktop,</text>
+    <text x="195" y="94" text-anchor="middle" fill="#F1F5F9" font-size="11">tu IDE, tu app</text>
+    <text x="195" y="112" text-anchor="middle" fill="#94A3B8" font-size="10">+ el modelo</text>
+    <rect x="320" y="52" width="104" height="48" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.8"/>
+    <text x="372" y="72" text-anchor="middle" fill="#E2E8F0" font-size="11">cliente MCP</text>
+    <text x="372" y="88" text-anchor="middle" fill="#94A3B8" font-size="10">JSON-RPC</text>
+    <rect x="474" y="34" width="150" height="84" rx="10" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.8"/>
+    <text x="549" y="58" text-anchor="middle" fill="#4FA9E8" font-size="12">SERVIDOR MCP</text>
+    <text x="549" y="80" text-anchor="middle" fill="#F1F5F9" font-size="11">tu base, tu repo,</text>
+    <text x="549" y="96" text-anchor="middle" fill="#F1F5F9" font-size="11">tu calendario</text>
+    <line x1="70" y1="76" x2="112" y2="76" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#a1)"/>
+    <line x1="272" y1="76" x2="312" y2="76" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#a1)"/>
+    <line x1="426" y1="76" x2="466" y2="76" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#a1)"/>
+    <path d="M549,126 L549,156 L195,156 L195,126" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a1)"/>
+    <text x="372" y="176" text-anchor="middle" fill="#94A3B8" font-size="10.5">la respuesta vuelve como datos, no como texto suelto</text>
   </g>
 </svg>
-<p class="figure-caption">Figura 2 · <strong>El handshake de MCP.</strong> El cliente inicializa con sus capabilities; el servidor responde con lo que puede hacer; las llamadas a tools van y vienen; las peticiones de sampling y elicitation van también en el <em>otro</em> sentido — el servidor le pregunta al cliente.</p>
-</div>
+        <p class="figure-caption">Figura 1 · <strong>El recorrido de una pregunta.</strong> El modelo nunca toca tus datos directamente: se los pide al host, que se los pide a un servidor a través del cliente MCP.</p>
+      </div>
 
-<p>El formato de transmisión es JSON-RPC 2.0 plano. El transporte puede ser <strong>stdio</strong> (subproceso local, usado por Claude Desktop) o <strong>Streamable HTTP</strong> (un POST único que devuelve o bien JSON o un stream SSE, usado por clientes remotos). El SDK trae los transportes de servidor y de cliente para cada uno.</p>
+      <hr />
 
-<p>Entonces, ¿por qué molestarse con MCP para el chatbot de un portfolio? Podría haber escrito una simple ruta de API en Next.js. Tres respuestas:</p>
+      <h2 data-sec="problem">El problema que resuelve, y por qué no las alternativas</h2>
 
-<ol>
-<li><strong>Portabilidad.</strong> El mismo servidor corre en local por stdio (para que un hiring manager pueda añadirlo a Claude Desktop y preguntar desde su herramienta de siempre) y en remoto por HTTP (para que yo pueda alimentar un widget público). Un solo camino de código, dos transportes.</li>
-<li><strong>Es el proyecto, no solo un medio.</strong> Al rol que apunto (LLM/AI Full-Stack Engineer) le importa que sepa implementar protocolos, no solo llamarlos. MCP es lo más parecido a un «estándar» en tooling de agentes ahora mismo; hacerlo bien es la demo.</li>
-<li><strong>Sampling y elicitation.</strong> Sin esto, «agendar una llamada» sería un stub del lado del servidor que solo manda un email a Cal.com. <em>Con</em> ellos, el flujo de reserva puede pedirle al cliente el nombre del usuario + su horario preferido vía un formulario estructurado, y luego pedirle al LLM del cliente que redacte un mensaje de confirmación personalizado. El servidor orquesta; el cliente renderiza.</li>
-</ol>
+      <p>Antes de MCP, cada app con IA tenía su propia forma de conectarse a herramientas externas. Si escribías una integración con Postgres, servía para esa app. Para la siguiente había que reescribirla contra otra API, con otro formato de esquemas y otro ciclo de vida. Con M aplicaciones y N herramientas hacen falta M×N integraciones, y cada app nueva cuesta N.</p>
 
-<hr />
+      <p>Un protocolo en el medio cambia la aritmética. Cada app implementa el protocolo una vez, cada herramienta lo implementa una vez, y quedan M+N piezas. La diferencia entre 9 y 6 no impresiona con números chicos. Con 20 aplicaciones y 100 herramientas, la diferencia es entre 2000 integraciones y 120.</p>
 
-<h2>El servidor MCP: 9 tools, 4 resources, 3 prompts</h2>
+      <div class="figure">
+        <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Nueve conexiones a medida contra seis conexiones a un protocolo comun">
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <text x="130" y="22" text-anchor="middle" fill="#e88a8a" font-size="11.5" letter-spacing="1.5">SIN PROTOCOLO · 3 × 3 = 9</text>
+    <line x1="76" y1="54" x2="184" y2="54" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="54" x2="184" y2="106" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="54" x2="184" y2="158" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="106" x2="184" y2="54" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="106" x2="184" y2="106" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="106" x2="184" y2="158" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="158" x2="184" y2="54" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="158" x2="184" y2="106" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/><line x1="76" y1="158" x2="184" y2="158" stroke="#e88a8a" stroke-width="1.1" stroke-opacity="0.75"/>
+    <circle cx="76" cy="54" r="13" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.6"/><circle cx="76" cy="106" r="13" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.6"/><circle cx="76" cy="158" r="13" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.6"/>
+    <circle cx="184" cy="54" r="13" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/><circle cx="184" cy="106" r="13" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/><circle cx="184" cy="158" r="13" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/>
+    <text x="76" y="228" text-anchor="middle" fill="#94A3B8">apps</text>
+    <text x="184" y="228" text-anchor="middle" fill="#94A3B8">herramientas</text>
+    <line x1="350" y1="18" x2="350" y2="232" stroke="#94A3B8" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="530" y="22" text-anchor="middle" fill="#7DD3FC" font-size="11.5" letter-spacing="1.5">CON MCP · 3 + 3 = 6</text>
+    <line x1="416" y1="54" x2="492" y2="106" stroke="#7DD3FC" stroke-width="1.4"/><line x1="416" y1="106" x2="492" y2="106" stroke="#7DD3FC" stroke-width="1.4"/><line x1="416" y1="158" x2="492" y2="106" stroke="#7DD3FC" stroke-width="1.4"/><line x1="556" y1="106" x2="616" y2="54" stroke="#7DD3FC" stroke-width="1.4"/><line x1="556" y1="106" x2="616" y2="106" stroke="#7DD3FC" stroke-width="1.4"/><line x1="556" y1="106" x2="616" y2="158" stroke="#7DD3FC" stroke-width="1.4"/>
+    <circle cx="416" cy="54" r="13" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.6"/><circle cx="416" cy="106" r="13" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.6"/><circle cx="416" cy="158" r="13" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.6"/>
+    <rect x="492" y="88" width="64" height="36" rx="8" fill="#122845" stroke="#7DD3FC" stroke-width="1.8"/>
+    <text x="524" y="111" text-anchor="middle" fill="#7DD3FC" font-size="11">MCP</text>
+    <circle cx="616" cy="54" r="13" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/><circle cx="616" cy="106" r="13" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/><circle cx="616" cy="158" r="13" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/>
+    <text x="416" y="228" text-anchor="middle" fill="#94A3B8">apps</text>
+    <text x="616" y="228" text-anchor="middle" fill="#94A3B8">servidores</text>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 2 · <strong>De M×N a M+N.</strong> Cada app que agregás a la izquierda cuesta tres integraciones nuevas; a la derecha cuesta una, y sirve para todos los servidores que ya existen.</p>
+      </div>
 
-<p>Cada tool es un objeto diminuto: un input schema de Zod y una función async <code>execute</code>. El mismo patrón que <code>tool()</code> del Vercel AI SDK, solo que agnóstico al transporte.</p>
+      <p>Lo interesante no es el ahorro de código: es quién puede escribirlo. Con M×N, la integración con Postgres la tiene que escribir el equipo de cada app, porque está atada a su API interna. Con M+N, la escribe una vez el que más sabe de Postgres, y la usan todos. Eso es lo que hizo crecer el ecosistema.</p>
 
-<pre><code class="language-ts">// packages/mcp-server/src/tools/list-projects.ts
-import { z } from 'zod';
-import { loadProjects } from '@neryc/portfolio-shared';
+      <p>Ahora, MCP no es la única salida, y no siempre es la mejor. Las alternativas reales:</p>
 
-export const listProjectsTool = {
-  name: 'listProjects',
-  description: 'List all portfolio projects with slug, title, and tagline.',
-  inputSchema: z.object({}),
-  execute: async () =&gt; {
-    const projects = loadProjects();
-    return {
-      projects: projects.map((p) =&gt; ({
-        slug: p.slug,
-        title: p.title,
-        tagline: p.tagline,
-        tags: p.tags,
-        demoUrl: p.demoUrl,
-        githubUrl: p.githubUrl,
-      })),
-    };
+      <table>
+        <thead><tr><th>Enfoque</th><th>Cómo funciona</th><th>Dónde se rompe</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Pegar todo en el prompt</strong></td><td>Volcás tus datos en el contexto y listo</td><td>No entra, cuesta en tokens cada vez, y el dato queda congelado al momento de pegarlo. No sirve para acciones.</td></tr>
+          <tr><td><strong>Function calling a mano</strong></td><td>Declarás funciones en la API del modelo y las ejecutás vos</td><td>Anda perfecto, y es la base de todo esto. El problema es que lo escribís contra un proveedor: cambiar de modelo o compartir la integración implica reescribir.</td></tr>
+          <tr><td><strong>Plugins propietarios</strong></td><td>El formato de un solo vendor (por ejemplo GPT Actions)</td><td>Funciona dentro de ese jardín. Tu integración no existe fuera de él, y el dueño del jardín define las reglas.</td></tr>
+          <tr><td><strong>Un framework</strong></td><td>Herramientas de LangChain, del AI SDK y similares</td><td>Te abstrae del proveedor, no del framework. Tu herramienta vive en Python o en TypeScript, dentro de ese ecosistema, y corre en tu proceso.</td></tr>
+          <tr><td><strong>MCP</strong></td><td>Un proceso aparte que habla un protocolo público</td><td>Te cuesta un proceso más, un handshake y latencia. Si tenés una app y una integración, es infraestructura que no necesitás.</td></tr>
+        </tbody>
+      </table>
+
+      <p>Fijate que las primeras cuatro filas no están mal. Son razonables, y en muchos proyectos son la respuesta correcta. MCP paga cuando la integración tiene que sobrevivir a la app que la vio nacer.</p>
+
+      <div class="callout">
+        <div class="callout-label">Cuándo NO usarlo</div>
+        <p>Una sola app, una sola herramienta, un solo equipo y sin planes de abrirla: usá function calling directo y ahorrate el proceso. MCP recién empieza a devolver lo que cuesta cuando hay más de un consumidor, o cuando el que escribe la herramienta no es el que escribe la app.</p>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="anatomy">La anatomía: host, cliente, servidor</h2>
+
+      <p>Son tres roles y conviene no confundirlos, porque los nombres son engañosos.</p>
+
+      <p>El <strong>host</strong> es la aplicación que ves y que tiene el modelo: Claude Desktop, un IDE, tu propia web. Manda él. Decide a qué servidores conectarse, qué mostrarte y qué autorizar.</p>
+
+      <p>El <strong>cliente</strong> vive adentro del host y es la pieza que habla el protocolo. Acá está la parte contraintuitiva: el host abre un cliente por cada servidor, y esa relación es uno a uno para siempre. Tres servidores conectados, tres clientes. No hay un cliente multiplexando.</p>
+
+      <p>El <strong>servidor</strong> es un programa aparte que expone capacidades: puede ser un binario que corre en tu máquina o un servicio HTTP en la nube. No sabe quién lo llama y no le importa.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 660 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Un host contiene varios clientes y cada cliente habla con un solo servidor">
+  <defs><marker id="a3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <rect x="20" y="18" width="300" height="282" rx="12" fill="rgba(31,58,104,0.35)" stroke="#7DD3FC" stroke-width="1.6" stroke-dasharray="6 4"/>
+    <text x="40" y="42" fill="#7DD3FC" font-size="11.5" letter-spacing="1.5">HOST</text>
+    <rect x="44" y="54" width="252" height="46" rx="8" fill="#1F3A68" stroke="#94A3B8" stroke-width="1.4"/>
+    <text x="170" y="75" text-anchor="middle" fill="#F1F5F9" font-size="11.5">el modelo + la interfaz + los permisos</text>
+    <text x="170" y="92" text-anchor="middle" fill="#94A3B8" font-size="10">decide a quién le pregunta y qué autoriza</text>
+    <line x1="170" y1="100" x2="170" y2="254" stroke="#94A3B8" stroke-width="1.2"/>
+    <line x1="170" y1="138" x2="204" y2="138" stroke="#94A3B8" stroke-width="1.2"/>
+    <line x1="170" y1="196" x2="204" y2="196" stroke="#94A3B8" stroke-width="1.2"/>
+    <line x1="170" y1="254" x2="204" y2="254" stroke="#94A3B8" stroke-width="1.2"/>
+    <rect x="206" y="120" width="90" height="36" rx="7" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="251" y="143" text-anchor="middle" fill="#E2E8F0">cliente</text>
+    <rect x="206" y="178" width="90" height="36" rx="7" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="251" y="201" text-anchor="middle" fill="#E2E8F0">cliente</text>
+    <rect x="206" y="236" width="90" height="36" rx="7" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="251" y="259" text-anchor="middle" fill="#E2E8F0">cliente</text>
+    <text x="170" y="288" text-anchor="middle" fill="#94A3B8" font-size="10">un cliente por servidor, sin excepción</text>
+    <rect x="420" y="116" width="200" height="44" rx="8" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="520" y="143" text-anchor="middle" fill="#E2E8F0">servidor · GitHub</text>
+    <rect x="420" y="174" width="200" height="44" rx="8" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="520" y="201" text-anchor="middle" fill="#E2E8F0">servidor · Postgres</text>
+    <rect x="420" y="232" width="200" height="44" rx="8" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="520" y="259" text-anchor="middle" fill="#E2E8F0">servidor · calendario</text>
+    <line x1="296" y1="138" x2="414" y2="138" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a3)"/>
+    <line x1="296" y1="196" x2="414" y2="196" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a3)"/>
+    <line x1="296" y1="254" x2="414" y2="254" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a3)"/>
+    <text x="355" y="128" text-anchor="middle" fill="#94A3B8" font-size="10">1:1</text>
+    <text x="355" y="186" text-anchor="middle" fill="#94A3B8" font-size="10">1:1</text>
+    <text x="355" y="244" text-anchor="middle" fill="#94A3B8" font-size="10">1:1</text>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 3 · <strong>Quién es quién.</strong> El host es la aplicación que ves; adentro abre un cliente por cada servidor, y esa relación es siempre uno a uno.</p>
+      </div>
+
+      <p>Un servidor puede ofrecer tres cosas, y la diferencia entre ellas no es técnica sino de <em>quién decide usarlas</em>. Esta tabla es la que más me costó entender y la que más ordena todo lo demás:</p>
+
+      <table>
+        <thead><tr><th>Primitiva</th><th>Qué es</th><th>Quién la dispara</th></tr></thead>
+        <tbody>
+          <tr><td><code>tools</code></td><td>Funciones con efectos: escribir, mandar, reservar</td><td><strong>El modelo</strong>, cuando decide que las necesita</td></tr>
+          <tr><td><code>resources</code></td><td>Datos para leer, identificados por una URI</td><td><strong>La aplicación</strong>, que decide qué cargar al contexto</td></tr>
+          <tr><td><code>prompts</code></td><td>Plantillas de conversación con argumentos</td><td><strong>La persona</strong>, que la elige de un menú</td></tr>
+        </tbody>
+      </table>
+
+      <p>Y hay tres capacidades que van al revés, del cliente hacia el servidor: <code>sampling</code> (el servidor pide una completación al modelo del cliente), <code>elicitation</code> (el servidor pide un dato a la persona) y <code>roots</code> (el cliente le dice al servidor sobre qué carpetas puede trabajar). Las tres las desarrollo más abajo.</p>
+
+      <hr />
+
+      <h2 data-sec="detail">Las piezas, en detalle</h2>
+
+      <p>Hasta acá el mapa. Ahora cada pieza por separado, con el detalle suficiente para que puedas leer la especificación sin traductor.</p>
+
+      <h3>JSON-RPC 2.0: el idioma</h3>
+
+      <p>MCP no inventó un formato de mensajes: usa JSON-RPC 2.0, que existe desde 2010 y cabe en una página. Hay tres tipos de mensaje y ninguno tiene truco.</p>
+
+      <p>Una <strong>request</strong> lleva un <code>id</code> y espera respuesta:</p>
+
+      <pre><code class="language-json">{ "jsonrpc": "2.0", "id": 7, "method": "tools/call",
+  "params": { "name": "getClima", "arguments": { "ciudad": "Asunción" } } }</code></pre>
+
+      <p>Una <strong>response</strong> vuelve con el mismo <code>id</code>, y trae <code>result</code> o <code>error</code>, nunca los dos:</p>
+
+      <pre><code class="language-json">{ "jsonrpc": "2.0", "id": 7,
+  "result": { "content": [{ "type": "text", "text": "24°C y despejado" }] } }</code></pre>
+
+      <p>Una <strong>notification</strong> no lleva <code>id</code> y por lo tanto nadie contesta. Sirve para avisar, no para preguntar:</p>
+
+      <pre><code class="language-json">{ "jsonrpc": "2.0", "method": "notifications/tools/list_changed" }</code></pre>
+
+      <p>Eso es todo el idioma. Cuando leas "el servidor manda una notificación de que cambió la lista de tools", ya sabés que es un JSON de una línea sin <code>id</code>. Y como es JSON-RPC y no REST, no hay verbos ni rutas: hay métodos con nombre, como <code>tools/list</code>, <code>resources/read</code> o <code>prompts/get</code>.</p>
+
+      <h3>El ciclo de vida: nadie trabaja antes de presentarse</h3>
+
+      <p>Toda conexión MCP arranca igual, y es obligatorio. El cliente manda <code>initialize</code> con la versión del protocolo que habla y sus capacidades. El servidor contesta con la versión que acepta y las suyas. El cliente manda una notificación <code>notifications/initialized</code> y recién ahí empieza el trabajo real.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 660 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Secuencia de tres mensajes entre cliente y servidor al iniciar la conexion">
+  <defs><marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker>
+  <marker id="a4b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#4FA9E8"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <rect x="60" y="16" width="120" height="34" rx="7" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.6"/>
+    <text x="120" y="38" text-anchor="middle" fill="#7DD3FC" font-size="11">cliente</text>
+    <rect x="480" y="16" width="120" height="34" rx="7" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="540" y="38" text-anchor="middle" fill="#4FA9E8" font-size="11">servidor</text>
+    <line x1="120" y1="50" x2="120" y2="264" stroke="#94A3B8" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <line x1="540" y1="50" x2="540" y2="264" stroke="#94A3B8" stroke-opacity="0.4" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <line x1="120" y1="92" x2="534" y2="92" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a4)"/>
+    <text x="327" y="84" text-anchor="middle" fill="#E2E8F0" font-size="11">initialize</text>
+    <text x="327" y="108" text-anchor="middle" fill="#94A3B8" font-size="9.5">versión que hablo + lo que sé hacer</text>
+    <line x1="540" y1="164" x2="126" y2="164" stroke="#4FA9E8" stroke-width="1.6" marker-end="url(#a4b)"/>
+    <text x="333" y="156" text-anchor="middle" fill="#E2E8F0" font-size="11">InitializeResult</text>
+    <text x="333" y="180" text-anchor="middle" fill="#94A3B8" font-size="9.5">versión que acepto + lo que ofrezco</text>
+    <line x1="120" y1="236" x2="534" y2="236" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a4)"/>
+    <text x="327" y="228" text-anchor="middle" fill="#E2E8F0" font-size="11">notifications/initialized</text>
+    <text x="327" y="252" text-anchor="middle" fill="#94A3B8" font-size="9.5">listo, ya podemos trabajar</text>
+    <circle class="loop-token" r="4.5" fill="#7DD3FC">
+      <animateMotion dur="5s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.06;0.30;1" calcMode="linear" path="M120,92 L534,92"/>
+    </circle>
+    <circle class="loop-token" r="4.5" fill="#4FA9E8">
+      <animateMotion dur="5s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.38;0.62;1" calcMode="linear" path="M540,164 L126,164"/>
+    </circle>
+    <circle class="loop-token" r="4.5" fill="#7DD3FC">
+      <animateMotion dur="5s" repeatCount="indefinite" keyPoints="0;0;1;1" keyTimes="0;0.70;0.94;1" calcMode="linear" path="M120,236 L534,236"/>
+    </circle>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 4 · <strong>El handshake.</strong> Tres mensajes antes de cualquier trabajo útil: mirá viajar los puntos. Si el cliente no declara <code>sampling</code> acá, el servidor ya sabe que no puede pedirlo después.</p>
+      </div>
+
+      <p>Este intercambio parece burocracia y es la pieza más importante del diseño. Se llama <strong>negociación de capacidades</strong>, y significa que las dos partes acuerdan qué features existen en <em>esta</em> sesión antes de usarlas. Un servidor que quiere pedirle una completación al modelo del cliente mira si el cliente declaró <code>sampling</code>. Si no lo declaró, el servidor tiene que funcionar igual, con un camino alternativo. No hay descubrimiento por prueba y error, ni fallas a mitad de camino: se sabe desde el mensaje uno.</p>
+
+      <p>Es también donde se acuerda la versión. El cliente pide la última que conoce; si el servidor no la tiene, responde con la última suya y el cliente decide si sigue o corta. Sobre HTTP, además, la versión acordada viaja en un header <code>MCP-Protocol-Version</code> en cada request posterior.</p>
+
+      <div class="callout">
+        <div class="callout-label">Patrón · Negociar antes de usar</div>
+        <p>Declarar capacidades en el saludo y no asumir nada después es un patrón viejo (SMTP y TLS hacen lo mismo) y se roba de gratis. Si estás diseñando cualquier integración entre dos sistemas que evolucionan por separado, esto te ahorra la mitad de los bugs de compatibilidad.</p>
+      </div>
+
+      <h3>Tools: lo que el modelo puede pedir</h3>
+
+      <p>Una tool es una función que el servidor expone con tres cosas: un nombre, una descripción en prosa y un esquema JSON de sus argumentos. El cliente pide el catálogo con <code>tools/list</code> y se lo pasa al modelo. Cuando el modelo decide usar una, el cliente manda <code>tools/call</code>.</p>
+
+      <p>La descripción no es documentación: es <em>el prompt</em>. Es el texto que lee el modelo para decidir si esta herramienta sirve para lo que le preguntaron. Una descripción vaga ("busca cosas") produce un modelo que la llama cuando no debe, o que no la llama cuando debe. Escribila pensando en el lector, que es un LLM sin más contexto que ese renglón.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Recorrido completo de una llamada a una herramienta y su vuelta">
+  <defs><marker id="a5" markerWidth="8" markerHeight="8" refX="6" refY="2.6" orient="auto"><path d="M0,0 L0,5.2 L6,2.6 z" fill="#94A3B8"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10">
+    <rect x="16" y="86" width="96" height="52" rx="8" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.6"/>
+    <text x="64" y="108" text-anchor="middle" fill="#7DD3FC" font-size="10.5">modelo</text>
+    <text x="64" y="124" text-anchor="middle" fill="#94A3B8" font-size="9">"quiero X"</text>
+    <rect x="156" y="86" width="96" height="52" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="204" y="102" text-anchor="middle" fill="#E2E8F0" font-size="10.5">host</text>
+    <text x="204" y="118" text-anchor="middle" fill="#f0b873" font-size="9">¿autorizás?</text>
+    <text x="204" y="131" text-anchor="middle" fill="#94A3B8" font-size="8.5">acá parás vos</text>
+    <rect x="296" y="86" width="96" height="52" rx="8" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="344" y="108" text-anchor="middle" fill="#E2E8F0" font-size="10.5">cliente</text>
+    <text x="344" y="124" text-anchor="middle" fill="#94A3B8" font-size="9">tools/call</text>
+    <rect x="436" y="86" width="96" height="52" rx="8" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="484" y="108" text-anchor="middle" fill="#E2E8F0" font-size="10.5">servidor</text>
+    <text x="484" y="124" text-anchor="middle" fill="#94A3B8" font-size="9">valida args</text>
+    <rect x="576" y="86" width="88" height="52" rx="8" fill="#08152A" stroke="#94A3B8" stroke-width="1.4"/>
+    <text x="620" y="116" text-anchor="middle" fill="#E2E8F0" font-size="10.5">tu API</text>
+    <line x1="114" y1="112" x2="152" y2="112" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#a5)"/>
+    <line x1="254" y1="112" x2="292" y2="112" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#a5)"/>
+    <line x1="394" y1="112" x2="432" y2="112" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#a5)"/>
+    <line x1="534" y1="112" x2="572" y2="112" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#a5)"/>
+    <path d="M620,146 L620,186 L64,186 L64,142" fill="none" stroke="#7DD3FC" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#a5)"/>
+    <text x="342" y="206" text-anchor="middle" fill="#94A3B8" font-size="9.5">el resultado vuelve al contexto del modelo y el bucle sigue</text>
+    <text x="64" y="60" text-anchor="middle" fill="#94A3B8" font-size="9">1</text>
+    <text x="204" y="60" text-anchor="middle" fill="#94A3B8" font-size="9">2</text>
+    <text x="344" y="60" text-anchor="middle" fill="#94A3B8" font-size="9">3</text>
+    <text x="484" y="60" text-anchor="middle" fill="#94A3B8" font-size="9">4</text>
+    <text x="620" y="60" text-anchor="middle" fill="#94A3B8" font-size="9">5</text>
+    <circle class="loop-token" r="4.5" fill="#7DD3FC">
+      <animateMotion dur="6s" repeatCount="indefinite" calcMode="linear"
+        keyPoints="0;0.09;0.09;0.28;0.46;0.64;0.64;1;1" keyTimes="0;0.10;0.24;0.36;0.48;0.60;0.68;0.94;1"
+        path="M64,112 L204,112 L344,112 L484,112 L620,112 L620,186 L64,186 L64,112"/>
+    </circle>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 5 · <strong>Un tool call, de punta a punta.</strong> Seguí el punto: el paso 2 es el que la mayoría olvida, y es el único lugar donde una persona puede decir que no.</p>
+      </div>
+
+      <p>El paso 2 de esa figura merece atención. El modelo <em>pide</em>, no ejecuta. Entre el pedido y la ejecución está el host, y ahí es donde una persona autoriza. La especificación es explícita: el host debe obtener consentimiento antes de invocar una tool, y las descripciones de un servidor en el que no confiás se tratan como texto no confiable. Una tool es ejecución de código arbitrario con otro nombre.</p>
+
+      <h3>Resources: datos con URI</h3>
+
+      <p>Un resource es un dato para leer, identificado por una URI que inventás vos: <code>portfolio://cv/full</code>, <code>file:///notas.md</code>, <code>postgres://tabla/clientes</code>. El cliente los lista con <code>resources/list</code> y los lee con <code>resources/read</code>. No tienen efectos secundarios: leer un resource dos veces no cambia nada.</p>
+
+      <p>La diferencia con una tool está en quién decide. Una tool la elige el modelo en medio de su razonamiento. Un resource lo elige la aplicación (o vos, desde la interfaz) para meterlo en el contexto antes de preguntar. Por eso los clientes suelen mostrar los resources como archivos adjuntos y las tools como acciones.</p>
+
+      <p>Acá hay una trampa que casi nadie explica y que me mordió en mi propio servidor. Los resources tienen dos formas: <strong>concretos</strong> (una URI fija, como <code>portfolio://cv/full</code>) y <strong>plantillas</strong> (un patrón con variables, como <code>portfolio://courses/{slug}/certificate</code>). Cuando escribís el servidor pensás en plantillas, porque son cuatro líneas de código. Cuando un cliente llama a <code>resources/list</code>, recibe la lista <em>expandida</em>, con una entrada por cada ítem que exista. Cuatro plantillas en el código pueden ser 171 entradas en el cable. Volveré sobre esto en la Parte 2, porque el número exacto es 171 y durante meses yo escribí "4" en mi propio README.</p>
+
+      <table>
+        <thead><tr><th></th><th><code>tools</code></th><th><code>resources</code></th></tr></thead>
+        <tbody>
+          <tr><td>Efectos</td><td>Sí, puede escribir y cobrar</td><td>No, solo lee</td></tr>
+          <tr><td>Lo elige</td><td>El modelo</td><td>La aplicación o la persona</td></tr>
+          <tr><td>Se identifica por</td><td>Nombre</td><td>URI</td></tr>
+          <tr><td>Si dudás</td><td colspan="2">¿Tiene efectos o hace falta razonar para elegirlo? Tool. ¿Es un documento que se lee entero? Resource.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Prompts: lo que la persona elige</h3>
+
+      <p>Un prompt es una plantilla de conversación con argumentos, que el servidor expone y la persona dispara. En Claude Desktop aparecen como comandos en un menú. El servidor los lista con <code>prompts/list</code> y devuelve los mensajes armados con <code>prompts/get</code>.</p>
+
+      <p>Son la primitiva que más se ignora, y es una lástima: es el lugar donde el que escribió el servidor puede empaquetar <em>cómo se usa bien</em>. El que hizo el servidor de Postgres sabe mejor que vos cómo pedirle a un modelo que analice un plan de ejecución. Un prompt es esa receta, versionada junto al servidor, y no un párrafo en el README que nadie lee.</p>
+
+      <h3>Del otro lado: sampling, elicitation y roots</h3>
+
+      <p>Las tres primitivas anteriores van del servidor al cliente. Estas tres van al revés, y son las que hacen que MCP sea más que un catálogo de funciones.</p>
+
+      <p><strong>Sampling.</strong> El servidor le pide al cliente que corra una completación con <em>su</em> modelo, mandando <code>sampling/createMessage</code>. Suena raro hasta que ves para qué: tu servidor necesita inteligencia (resumir, clasificar, comparar) y no quiere depender de tener su propia clave de API. Con sampling, el servidor pide prestado el modelo que el usuario ya está pagando.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="El servidor pide una completacion al modelo del cliente en lugar de usar una propia">
+  <defs><marker id="a6" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <text x="165" y="24" text-anchor="middle" fill="#94A3B8" font-size="11" letter-spacing="1.5">LO HABITUAL</text>
+    <rect x="70" y="46" width="86" height="40" rx="7" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+    <text x="113" y="71" text-anchor="middle" fill="#7DD3FC">cliente</text>
+    <rect x="216" y="46" width="86" height="40" rx="7" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="259" y="71" text-anchor="middle" fill="#E2E8F0">servidor</text>
+    <line x1="158" y1="66" x2="210" y2="66" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a6)"/>
+    <text x="184" y="112" text-anchor="middle" fill="#94A3B8" font-size="9.5">el cliente pide,</text>
+    <text x="184" y="126" text-anchor="middle" fill="#94A3B8" font-size="9.5">el servidor responde</text>
+    <line x1="330" y1="14" x2="330" y2="186" stroke="#94A3B8" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="495" y="24" text-anchor="middle" fill="#7DD3FC" font-size="11" letter-spacing="1.5">SAMPLING</text>
+    <rect x="400" y="46" width="86" height="40" rx="7" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+    <text x="443" y="71" text-anchor="middle" fill="#7DD3FC">cliente</text>
+    <rect x="546" y="46" width="86" height="40" rx="7" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="589" y="71" text-anchor="middle" fill="#E2E8F0">servidor</text>
+    <path d="M540,66 L494,66" fill="none" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#a6)"/>
+    <text x="516" y="40" text-anchor="middle" fill="#94A3B8" font-size="9">sampling/createMessage</text>
+    <rect x="400" y="118" width="86" height="34" rx="7" fill="#122845" stroke="#94A3B8" stroke-width="1.4"/>
+    <text x="443" y="140" text-anchor="middle" fill="#E2E8F0" font-size="10">el modelo</text>
+    <line x1="443" y1="88" x2="443" y2="116" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text x="589" y="112" text-anchor="middle" fill="#94A3B8" font-size="9.5">el servidor pide,</text>
+    <text x="589" y="126" text-anchor="middle" fill="#94A3B8" font-size="9.5">el cliente decide</text>
+    <text x="516" y="176" text-anchor="middle" fill="#f0b873" font-size="9.5">quien paga los tokens es el cliente, no vos</text>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 6 · <strong>Sampling invierte la flecha.</strong> El servidor pide inteligencia prestada al modelo del cliente, así no necesita su propia clave de API ni te cobra los tokens.</p>
+      </div>
+
+      <p>El diseño tiene un límite deliberado: el cliente puede ver, editar o rechazar lo que el servidor pidió, y la especificación dice que el usuario debe aprobar las solicitudes de sampling. Un servidor no puede usar tu modelo a tus espaldas.</p>
+
+      <p><strong>Elicitation.</strong> El servidor pide un dato a la persona en medio de una operación, con un esquema de qué necesita. Sirve cuando falta información que el modelo no puede inventar: tu email, qué horario preferís, cuál de estas tres opciones. La respuesta tiene tres formas posibles (<code>accept</code>, <code>decline</code>, <code>cancel</code>) y tu servidor tiene que manejar las tres, porque la persona puede cerrar el diálogo y seguir con su vida.</p>
+
+      <p><strong>Roots.</strong> El cliente le dice al servidor sobre qué carpetas o URIs tiene permiso de trabajar. Es un límite, no una capacidad: le recorta el mundo al servidor.</p>
+
+      <p>El patrón detrás de las tres es el mismo, y es la parte del diseño que más me gusta: <strong>el servidor puede pedir, nunca tomar</strong>. Pide inteligencia, pide datos, pide permiso. El cliente siempre puede decir que no, y el servidor está obligado a tener un plan B. Un servidor que se rompe porque el cliente no soporta sampling es un servidor mal escrito.</p>
+
+      <h3>Transportes: dónde vive el servidor</h3>
+
+      <p>La especificación define dos transportes estándar. Los mensajes son idénticos en los dos; lo que cambia es dónde corre el servidor y quién lo puede alcanzar.</p>
+
+      <div class="figure">
+        <svg viewBox="0 0 660 220" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Comparacion entre el transporte stdio local y Streamable HTTP remoto">
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <text x="165" y="24" text-anchor="middle" fill="#7DD3FC" font-size="11" letter-spacing="1.5">STDIO · LOCAL</text>
+    <rect x="52" y="48" width="94" height="42" rx="7" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+    <text x="99" y="74" text-anchor="middle" fill="#7DD3FC">cliente</text>
+    <rect x="188" y="48" width="94" height="42" rx="7" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="235" y="68" text-anchor="middle" fill="#E2E8F0" font-size="10">subproceso</text>
+    <text x="235" y="82" text-anchor="middle" fill="#94A3B8" font-size="9">servidor</text>
+    <line x1="148" y1="62" x2="186" y2="62" stroke="#7DD3FC" stroke-width="1.5"/>
+    <text x="167" y="56" text-anchor="middle" fill="#94A3B8" font-size="8">stdin</text>
+    <line x1="186" y1="80" x2="148" y2="80" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="167" y="95" text-anchor="middle" fill="#94A3B8" font-size="8">stdout</text>
+    <rect x="40" y="120" width="254" height="66" rx="8" fill="rgba(8,16,31,0.5)" stroke="#94A3B8" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="167" y="142" text-anchor="middle" fill="#94A3B8" font-size="9.5">misma máquina, mismo usuario</text>
+    <text x="167" y="160" text-anchor="middle" fill="#94A3B8" font-size="9.5">sin red, sin auth, sin cold start</text>
+    <text x="167" y="178" text-anchor="middle" fill="#7fd3a3" font-size="9.5">el cliente lo arranca y lo mata</text>
+    <line x1="330" y1="14" x2="330" y2="206" stroke="#94A3B8" stroke-opacity="0.3" stroke-width="1"/>
+    <text x="495" y="24" text-anchor="middle" fill="#7DD3FC" font-size="11" letter-spacing="1.5">STREAMABLE HTTP · REMOTO</text>
+    <rect x="382" y="48" width="94" height="42" rx="7" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/>
+    <text x="429" y="74" text-anchor="middle" fill="#7DD3FC">cliente</text>
+    <rect x="518" y="48" width="104" height="42" rx="7" fill="#0E1F3A" stroke="#4FA9E8" stroke-width="1.5"/>
+    <text x="570" y="68" text-anchor="middle" fill="#E2E8F0" font-size="10">/mcp</text>
+    <text x="570" y="82" text-anchor="middle" fill="#94A3B8" font-size="9">POST + GET</text>
+    <line x1="478" y1="62" x2="516" y2="62" stroke="#7DD3FC" stroke-width="1.5"/>
+    <text x="497" y="56" text-anchor="middle" fill="#94A3B8" font-size="8">POST</text>
+    <line x1="516" y1="80" x2="478" y2="80" stroke="#4FA9E8" stroke-width="1.5" stroke-dasharray="3 2"/>
+    <text x="497" y="95" text-anchor="middle" fill="#94A3B8" font-size="8">SSE</text>
+    <rect x="370" y="120" width="254" height="66" rx="8" fill="rgba(8,16,31,0.5)" stroke="#94A3B8" stroke-width="1" stroke-dasharray="4 4"/>
+    <text x="497" y="142" text-anchor="middle" fill="#94A3B8" font-size="9.5">cualquiera con la URL puede conectarse</text>
+    <text x="497" y="160" text-anchor="middle" fill="#94A3B8" font-size="9.5">un endpoint, sesión por Mcp-Session-Id</text>
+    <text x="497" y="178" text-anchor="middle" fill="#f0b873" font-size="9.5">acá sí necesitás auth y validar Origin</text>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 7 · <strong>Los dos transportes.</strong> Cambia dónde vive el servidor y quién puede alcanzarlo; los mensajes que viajan por adentro son exactamente los mismos.</p>
+      </div>
+
+      <p><strong>stdio.</strong> El cliente arranca el servidor como subproceso y le habla por entrada y salida estándar, un mensaje JSON por línea. Sin red, sin puertos, sin autenticación: el servidor corre con tus permisos, en tu máquina. Es el transporte que la especificación recomienda soportar siempre que se pueda, y el que usan casi todos los servidores locales. Detalle que muerde: el servidor no puede escribir nada que no sea protocolo en <code>stdout</code>, así que tus <code>console.log</code> de depuración van a <code>stderr</code> o rompen la sesión.</p>
+
+      <p><strong>Streamable HTTP.</strong> El servidor es un servicio independiente con un solo endpoint que atiende POST y GET. El cliente manda mensajes con POST; el servidor contesta con un JSON o abre un stream SSE si necesita mandar varias cosas. La sesión, si existe, viaja en un header <code>Mcp-Session-Id</code>. Reemplaza al viejo transporte HTTP+SSE de la versión 2024-11-05, que quedó deprecado y solo se mantiene por compatibilidad.</p>
+
+      <table>
+        <thead><tr><th></th><th>stdio</th><th>Streamable HTTP</th></tr></thead>
+        <tbody>
+          <tr><td>Dónde corre</td><td>Tu máquina, como subproceso</td><td>Donde quieras, como servicio</td></tr>
+          <tr><td>Quién lo alcanza</td><td>Solo el cliente que lo arrancó</td><td>Cualquiera con la URL</td></tr>
+          <tr><td>Autenticación</td><td>No aplica</td><td>Necesaria</td></tr>
+          <tr><td>Estado</td><td>Vive y muere con el proceso</td><td>Sesión por header, o sin estado</td></tr>
+          <tr><td>Usalo para</td><td>Archivos locales, herramientas del sistema</td><td>Un servicio compartido por muchos</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Seguridad: por qué el host pregunta tanto</h3>
+
+      <p>Un servidor MCP es código que corre pedidos de un modelo. La especificación no puede imponer seguridad a nivel protocolo, así que se apoya en el host, y define principios explícitos: la persona tiene que consentir cada acceso a datos y cada invocación de tool; el host no puede mandar tus datos a otro lado sin permiso; las descripciones de un servidor no confiable se tratan como texto hostil.</p>
+
+      <p>Ese último punto merece que te detengas. La descripción de una tool entra al contexto del modelo. Un servidor malicioso puede escribir en su descripción algo diseñado para que el modelo haga otra cosa. Conectar un servidor MCP de un desconocido es equivalente a instalar una extensión de navegador de un desconocido, con la diferencia de que acá también le estás dando un LLM con acceso a tus otras herramientas.</p>
+
+      <p>Si vas a exponer un servidor por HTTP hay dos cosas concretas que la especificación exige: validar el header <code>Origin</code> (para que una web cualquiera no pueda hablarle a tu servidor local desde el navegador de la víctima) y, en local, bindear a <code>127.0.0.1</code> y no a <code>0.0.0.0</code>.</p>
+
+      <hr />
+
+      <h2 data-sec="code">El MCP mínimo, en código</h2>
+
+      <p>Un servidor entero, funcional, con una sola herramienta. Es TypeScript con el SDK oficial (<code>@modelcontextprotocol/sdk</code>, la línea 1.x, que hoy es la de producción) sobre stdio. No hay nada omitido: esto corre.</p>
+
+      <pre><code class="language-ts">import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new McpServer({ name: "clima", version: "1.0.0" });
+
+server.registerTool(
+  "getClima",
+  {
+    title: "Clima actual",
+    description:
+      "Devuelve el clima actual de una ciudad. Usala cuando pregunten por temperatura o pronóstico de un lugar concreto.",
+    inputSchema: { ciudad: z.string().describe("Nombre de la ciudad") },
   },
-};</code></pre>
-
-<p>El registro completo de tools:</p>
-
-<table>
-<thead><tr><th>Tool</th><th>Qué hace</th></tr></thead>
-<tbody>
-<tr><td><code>listProjects</code></td><td>Todos los proyectos, vista resumen</td></tr>
-<tr><td><code>getProject</code></td><td>Detalle completo de un proyecto por slug</td></tr>
-<tr><td><code>searchByTech</code></td><td>Busca proyectos + cursos + experiencia por palabra clave de tecnología</td></tr>
-<tr><td><code>searchCourses</code></td><td>Busca entre 164 certificados de Platzi por tema</td></tr>
-<tr><td><code>getCourse</code></td><td>Un curso con URL de diploma verificable</td></tr>
-<tr><td><code>getExperience</code></td><td>Historial laboral completo (empresas, roles, impacto)</td></tr>
-<tr><td><code>getSkills</code></td><td>Skills agrupadas por área (lenguajes, frameworks, infra, IA)</td></tr>
-<tr><td><code>getAvailability</code></td><td>Disponibilidad de Cal.com para un rango de fechas</td></tr>
-<tr><td><code>bookCall</code></td><td>Agenda una llamada de 30 minutos (solicita nombre + email + horario)</td></tr>
-</tbody>
-</table>
-
-<p>Los resources exponen URIs legibles que los clientes LLM pueden traer directamente:</p>
-
-<pre><code class="language-ts">// portfolio://cv/full                       → text/markdown, the full CV
-// portfolio://projects/{slug}/readme         → text/markdown, project README
-// portfolio://projects/{slug}/case-study     → text/markdown, project case study
-// portfolio://courses/{slug}/certificate     → application/json, diploma metadata
-</code></pre>
-
-<p>Y los prompts codifican tres flujos de agente reutilizables. Cada uno se obtiene con <code>prompts/get</code> y se aplica a la conversación:</p>
-
-<pre><code class="language-ts">// pitch-for-role          → tailored pitch for a job description (uses sampling)
-// tech-deep-dive          → focused walkthrough of one technology (uses sampling)
-// compare-with-jd         → side-by-side fit analysis (uses sampling + elicitation)</code></pre>
-
-<p>La anotación «uses sampling» es real: <code>pitch-for-role</code> primero le pide al servidor hechos respaldados por tools y luego emite una petición de sampling de vuelta al cliente para <em>componer</em> el pitch usando el LLM del cliente. El servidor nunca llama a Anthropic por sí mismo — solo orquesta.</p>
-
-<div class="callout">
-<div class="callout-label">Patrón · Sampling</div>
-<p>Sampling significa que el <strong>servidor</strong> le pide al <strong>cliente</strong> que ejecute una llamada al LLM. El cliente decide qué modelo, aplica sus propios rate-limits y filtros de seguridad, y devuelve la completion. Para un servidor de portfolio esto sale gratis: yo no pago por tokens, paga el cliente (Claude Desktop, mi agente, etc.). Para tooling interno es cómo dejas que un servidor componga resúmenes sin darle su propia API key.</p>
-</div>
-
-<hr />
-
-<h2>El agente de chat: AI SDK v6 + MCP in-process</h2>
-
-<p>El chat del widget (la página <code>/widget</code>) habla con <code>/api/agent</code>. Esa ruta construye un <code>ToolLoopAgent</code> del AI SDK v6, le pasa las tools descubiertas por MCP y devuelve la respuesta en streaming como un UI Message Stream.</p>
-
-<p>Lo ingenioso es <em>cómo</em> descubre las tools. Hay dos clientes MCP en este codebase:</p>
-
-<ol>
-<li>Un <strong>cliente HTTP</strong> para servidores MCP externos (p. ej. GitHub MCP, si quisieras enchufarlo).</li>
-<li>Un <strong>cliente in-process</strong> para el servidor MCP del portfolio, ya que vive en el mismo proceso de Node que la ruta del agente.</li>
-</ol>
-
-<div class="figure">
-<svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="badArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#F87171"/>
-    </marker>
-    <marker id="goodArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#86EFAC"/>
-    </marker>
-  </defs>
-
-  <!-- Title -->
-  <text x="60" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Antes: auto-llamada HTTP</text>
-  <text x="400" y="30" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">Después: InMemoryTransport</text>
-
-  <!-- BEFORE -->
-  <g transform="translate(40, 60)">
-    <rect x="0" y="0" width="140" height="60" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.45)"/>
-    <text x="70" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">/api/agent</text>
-    <text x="70" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Vercel function</text>
-
-    <rect x="170" y="0" width="140" height="60" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.45)"/>
-    <text x="240" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">/api/mcp</text>
-    <text x="240" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">another function</text>
-
-    <!-- arrows -->
-    <line x1="140" y1="22" x2="168" y2="22" stroke="#F87171" stroke-width="1.5" marker-end="url(#badArr)"/>
-    <text x="154" y="14" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F87171">POST /init</text>
-
-    <line x1="168" y1="42" x2="142" y2="42" stroke="#F87171" stroke-width="1.5" marker-end="url(#badArr)"/>
-    <text x="154" y="56" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F87171">session ID</text>
-
-    <!-- pain points -->
-    <g transform="translate(0, 90)" font-family="JetBrains Mono, monospace" font-size="10" fill="#FCA5A5">
-      <text x="0" y="0">× Dos cold starts por petición</text>
-      <text x="0" y="18">× Sesión con estado fijada por worker</text>
-      <text x="0" y="36">× Resolver su propia URL (VERCEL_URL)</text>
-      <text x="0" y="54">× Duplica el costo serverless</text>
-    </g>
-  </g>
-
-  <!-- divider -->
-  <line x1="360" y1="60" x2="360" y2="370" stroke="rgba(148,163,184,0.2)" stroke-dasharray="4,4"/>
-
-  <!-- AFTER -->
-  <g transform="translate(400, 60)">
-    <rect x="0" y="0" width="280" height="60" rx="8" fill="rgba(134,239,172,0.08)" stroke="rgba(134,239,172,0.45)"/>
-    <text x="140" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">/api/agent (same process)</text>
-    <text x="140" y="42" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">Vercel function</text>
-
-    <!-- linked pair inside -->
-    <g transform="translate(40, 90)">
-      <rect x="0" y="0" width="80" height="48" rx="6" fill="rgba(46,117,182,0.18)" stroke="rgba(46,117,182,0.5)"/>
-      <text x="40" y="20" text-anchor="middle" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#F1F5F9">MCP client</text>
-      <text x="40" y="36" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">web-host</text>
-
-      <rect x="120" y="0" width="80" height="48" rx="6" fill="rgba(125,211,252,0.15)" stroke="rgba(125,211,252,0.5)"/>
-      <text x="160" y="20" text-anchor="middle" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#F1F5F9">MCP server</text>
-      <text x="160" y="36" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">portfolio</text>
-
-      <line x1="80" y1="24" x2="118" y2="24" stroke="#86EFAC" stroke-width="1.5" marker-end="url(#goodArr)"/>
-      <line x1="118" y1="32" x2="82" y2="32" stroke="#86EFAC" stroke-width="1.5" marker-end="url(#goodArr)"/>
-    </g>
-
-    <text x="100" y="160" font-family="JetBrains Mono, monospace" font-size="9" fill="#86EFAC">InMemoryTransport.createLinkedPair()</text>
-
-    <!-- wins -->
-    <g transform="translate(0, 190)" font-family="JetBrains Mono, monospace" font-size="10" fill="#86EFAC">
-      <text x="0" y="0">✓ Un cold start (solo /api/agent)</text>
-      <text x="0" y="18">✓ Estado de sesión en un proceso</text>
-      <text x="0" y="36">✓ Sin resolver URLs</text>
-      <text x="0" y="54">✓ Roundtrip cliente ↔ servidor sub-ms</text>
-    </g>
-  </g>
-</svg>
-<p class="figure-caption">Figura 3 · <strong>El arreglo que más importó.</strong> La primera versión de <code>/api/agent</code> hacía una auto-llamada HTTP a <code>/api/mcp</code>. Eso funciona en local pero en Vercel las dos funciones caen en workers distintos, el transporte MCP tiene estado, y la segunda llamada falla con <em>«Server not initialized».</em> El arreglo: enlazar cliente y servidor con el <code>InMemoryTransport</code> del SDK, todo en el mismo proceso.</p>
-</div>
-
-<p>El puente in-process son doce líneas:</p>
-
-<pre><code class="language-ts">// apps/web/lib/mcp-client.ts
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import { buildServer } from '@neryc/portfolio-mcp/server';
-
-export async function connectInProcessPortfolio(name: string) {
-  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
-  const { server } = buildServer();
-  await server.connect(serverTransport);
-  const client = new Client(
-    { name: 'web-host', version: '0.0.0' },
-    { capabilities: { sampling: {}, elicitation: {} } },
-  );
-  await client.connect(clientTransport);
-  return { name, client };
-}</code></pre>
-
-<p>El agente en sí es corto. Descubre las tools, las envuelve para que el AI SDK pueda llamarlas y se las pasa a <code>ToolLoopAgent</code>:</p>
-
-<pre><code class="language-ts">// apps/web/lib/agent.ts
-export function buildAgent(discovered: DiscoveredTool[]) {
-  const aiTools = Object.fromEntries(
-    discovered.map((t) =&gt; [
-      t.name,
-      tool({
-        description: t.description,
-        // The MCP server returns JSON Schema, not Zod. Wrap with jsonSchema()
-        // so the AI SDK knows it's a schema-like object, not a Zod instance.
-        inputSchema: jsonSchema(t.inputSchema) as never,
-        execute: async (args) =&gt; {
-          const result = await t.invoke(args);
-          const first = result.content[0];
-          if (first?.type === 'text') {
-            try { return JSON.parse(first.text); } catch { return { text: first.text }; }
-          }
-          return result;
-        },
-      }),
-    ]),
-  );
-
-  return new ToolLoopAgent({
-    model: 'anthropic/claude-sonnet-4-6', // routes through Vercel AI Gateway
-    instructions: SYSTEM_PROMPT,
-    tools: aiTools,
-    stopWhen: stepCountIs(10),
-  });
-}</code></pre>
-
-<p>Y la ruta son veinte líneas, en su mayoría rate-limiting y conversión de mensajes:</p>
-
-<pre><code class="language-ts">// apps/web/app/api/agent/route.ts
-export const runtime = 'nodejs';
-export const maxDuration = 300;
-
-let _ctxPromise: Promise&lt;AgentContext&gt; | null = null;
-
-function getAgentContext() {
-  if (_ctxPromise) return _ctxPromise;
-  _ctxPromise = (async () =&gt; {
-    const portfolio = await connectInProcessPortfolio('portfolio');
-    const tools = await discoverToolsFromServers([portfolio]);
-    return { agent: buildAgent(tools) };
-  })();
-  return _ctxPromise;
-}
-
-export async function POST(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0] ?? 'anon';
-  const limit = await rateLimit(ip);
-  if (!limit.allowed) return new Response(JSON.stringify({ error: 'rate-limited' }), { status: 429 });
-
-  const { messages } = await req.json() as { messages: UIMessage[] };
-  const { agent } = await getAgentContext();
-  const modelMessages = await convertToModelMessages(messages);
-  const result = await agent.stream({ messages: modelMessages });
-  return result.toUIMessageStreamResponse();
-}</code></pre>
-
-<p>El contexto del agente está memoizado a nivel de módulo, así que las invocaciones en caliente reutilizan el cliente MCP in-process. En Vercel el worker se recicla cada pocos minutos; el costo de cold-start es de ~50 ms.</p>
-
-<hr />
-
-<h2>El widget embebible: Preact + esbuild + una sola etiqueta &lt;script&gt;</h2>
-
-<p>Para que el FAB encaje en cualquier página HTML (incluyendo mi portfolio estático en GitHub Pages), el bundle del widget tiene tres restricciones:</p>
-
-<ol>
-<li><strong>Tiene que caber en un presupuesto.</strong> 13 KB minificado, sin React, sin Tailwind enviado al host.</li>
-<li><strong>Tiene que aislar los estilos.</strong> Si la página host tiene resets de CSS agresivos o sus propias clases utilitarias, el widget no puede romperse. Meter la UI pesada dentro de un iframe esquiva ese problema por completo.</li>
-<li><strong>Tiene que conocer su propio origen.</strong> El script se aloja en <code>talk-to-my-portfolio.vercel.app/widget.js</code>; el iframe necesita cargar desde el mismo host. Hardcodear la URL es frágil, así que el bundle lee <code>document.currentScript.src</code> al cargar y recorta el <code>/widget.js</code>.</li>
-</ol>
-
-<p>El código completo tiene &lt;100 líneas:</p>
-
-<pre><code class="language-tsx">// packages/widget/src/index.tsx
-import { h, render } from 'preact';
-import { useState } from 'preact/hooks';
-
-const WIDGET_HOST =
-  (document.currentScript as HTMLScriptElement | null)?.src?.replace(/\/widget\.js.*$/, '') ??
-  'https://talk-to-my-portfolio.vercel.app';
-
-const COLOR_ACCENT = '#2E75B6';
-const COLOR_ACCENT_HOVER = '#4FA9E8';
-const COLOR_PANEL_BG = '#06101F';
-
-function FAB() {
-  const [open, setOpen] = useState(false);
-  const [hover, setHover] = useState(false);
-  return (
-    &lt;div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 999999, fontFamily: 'Inter, system-ui, sans-serif' }}&gt;
-      {open &amp;&amp; (
-        &lt;div style={{
-          width: 'min(440px, calc(100vw - 32px))',
-          height: 'min(640px, calc(100vh - 96px))',
-          marginBottom: 12, borderRadius: 16, overflow: 'hidden',
-          boxShadow: '0 20px 40px -8px rgba(6,16,31,0.55), 0 8px 16px -4px rgba(46,117,182,0.25)',
-          background: COLOR_PANEL_BG,
-          border: '1px solid rgba(148, 163, 184, 0.14)',
-        }}&gt;
-          &lt;iframe src={`${WIDGET_HOST}/widget`} style={{ width: '100%', height: '100%', border: 0 }} /&gt;
-        &lt;/div&gt;
-      )}
-      &lt;button onClick={() =&gt; setOpen(!open)} /* ...styled FAB... */&gt;
-        {open ? '×' : '💬'}
-      &lt;/button&gt;
-    &lt;/div&gt;
-  );
-}
-
-const mount = document.createElement('div');
-mount.id = 'portfolio-widget-root';
-document.body.appendChild(mount);
-render(&lt;FAB /&gt;, mount);</code></pre>
-
-<p>esbuild lo empaqueta como un IIFE, hace alias de <code>react</code> y <code>react-dom</code> a <code>preact/compat</code>, y escribe la salida directamente en <code>apps/web/public/widget.js</code> para que Vercel lo sirva bajo el origen público:</p>
-
-<pre><code class="language-js">// packages/widget/esbuild.config.mjs
-await build({
-  entryPoints: ['src/index.tsx'],
-  bundle: true,
-  outfile: '../../apps/web/public/widget.js',
-  format: 'iife',
-  globalName: 'PortfolioWidget',
-  target: 'es2020',
-  minify: true,
-  jsx: 'automatic',
-  jsxImportSource: 'preact',
-  alias: { react: 'preact/compat', 'react-dom': 'preact/compat' },
-});</code></pre>
-
-<p>En el host (este portfolio), la integración es exactamente una línea encima de <code>&lt;/body&gt;</code>:</p>
-
-<pre><code class="language-html">&lt;script src="https://talk-to-my-portfolio.vercel.app/widget.js" async defer&gt;&lt;/script&gt;</code></pre>
-
-<p>Dos bytes de trabajo para el host, un archivo cacheado en CDN, sin lock-in de framework.</p>
-
-<hr />
-
-<h2>Los seis bugs que rompieron producción</h2>
-
-<p>Los tests locales pasaban. <code>pnpm test</code> reportaba 115 en verde. <code>pnpm build</code> compilaba. Hice push a Vercel y abrí <code>/api/mcp</code> desde <code>curl</code> — y obtuve un 500. Luego <code>/api/agent</code> también dio 500. Seis bugs separaban «funciona en local» de «está en vivo».</p>
-
-<p>Lo que sigue es la cronología, en el orden en que aparecieron. Cada uno es del tipo de cosa que no sale en los unit tests porque tiene que ver con cómo la plataforma <em>empaqueta</em> y <em>ejecuta</em> el código, no con la lógica.</p>
-
-<div class="bug-row">
-<div class="bug-num">BUG 1</div>
-<div>
-  <div class="bug-title"><code>ENOENT</code>: no puede abrir <code>/var/task/packages/mcp-server/package.json</code></div>
-  <div class="bug-desc">El <code>buildServer()</code> del servidor MCP lee su propio <code>package.json</code> al evaluar el módulo para obtener su nombre y versión. En local ese archivo existe. En Vercel, Turbopack empaqueta cada módulo de ruta en un único chunk en <code>.next/server/...</code>, y la ruta relativa original <code>../package.json</code> no resuelve a ningún lado. La función serverless lanza una excepción en el <em>import</em>, así que la ruta ni siquiera llega a ejecutarse.</div>
-</div>
-</div>
-
-<pre><code class="language-ts">// BEFORE
-const pkg = JSON.parse(
-  readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf-8')
+  async ({ ciudad }) => ({
+    content: [{ type: "text", text: `En ${ciudad} hay 24°C y está despejado.` }],
+  })
 );
 
-// AFTER — JSON import that Turbopack inlines at build time
-import pkg from '../package.json' with { type: 'json' };</code></pre>
+await server.connect(new StdioServerTransport());</code></pre>
 
-<div class="bug-row">
-<div class="bug-num">BUG 2</div>
-<div>
-  <div class="bug-title">La auto-llamada HTTP se cae en los workers serverless</div>
-  <div class="bug-desc">La primera versión de <code>/api/agent</code> construía un cliente MCP por HTTP apuntando a su propia ruta <code>/api/mcp</code>. En local todo es un solo proceso de Node. En Vercel las dos rutas viven en funciones serverless separadas. La petición <code>initialize</code> llega al worker A y crea una sesión ahí; el <code>tools/list</code> siguiente llega al worker B, que no tiene sesión para ese ID y devuelve <em>«Bad Request: Server not initialized».</em></div>
-</div>
-</div>
+      <p>Veinte líneas y ya es un servidor MCP legítimo. El SDK se encarga del handshake, de publicar las capacidades, de traducir tu esquema de Zod a JSON Schema y de responder <code>tools/list</code>. Vos escribís el nombre, la descripción y la función.</p>
 
-<p>El arreglo es el cliente MCP in-process que se ve en la Figura 3 de arriba: <code>InMemoryTransport.createLinkedPair()</code> conecta un cliente y un servidor dentro del mismo isolate de V8. Sin HTTP, sin pérdida de sesión, sin un segundo cold start.</p>
+      <p>Para conectarlo a Claude Desktop no hace falta publicar nada: se declara en su archivo de configuración, y el host lo arranca como subproceso cuando lo necesita.</p>
 
-<div class="bug-row">
-<div class="bug-num">BUG 3</div>
-<div>
-  <div class="bug-title"><code>Invalid prompt: messages do not match the ModelMessage[] schema</code></div>
-  <div class="bug-desc">El cliente usa <code>useChat</code> de <code>@ai-sdk/react</code>, que envía <code>UIMessage[]</code> (basado en parts, con tokens con forma <code>{ type: 'text', text: '…' }</code>). <code>ToolLoopAgent.stream()</code> quiere <code>ModelMessage[]</code>. El AI SDK v6 expone <code>convertToModelMessages()</code> como el puente de conversión — se me había olvidado llamarlo.</div>
-</div>
-</div>
-
-<pre><code class="language-ts">const modelMessages = await convertToModelMessages(messages);
-const result = await agent.stream({ messages: modelMessages });</code></pre>
-
-<div class="bug-row">
-<div class="bug-num">BUG 4</div>
-<div>
-  <div class="bug-title"><code>TypeError: e is not a function</code> durante la ejecución de una tool</div>
-  <div class="bug-desc">El servidor MCP devuelve los input schemas de las tools como objetos JSON Schema. El <code>tool()</code> del AI SDK espera o bien un schema de Zod (que tiene <code>.parse</code>) o un <code>Schema</code> creado con el wrapper <code>jsonSchema()</code> del SDK. Pasar el JSON Schema crudo funcionaba en tiempo de compilación pero explotaba en runtime cuando el SDK intentaba validar los inputs.</div>
-</div>
-</div>
-
-<pre><code class="language-ts">// BEFORE
-inputSchema: t.inputSchema as never,
-
-// AFTER
-inputSchema: jsonSchema(t.inputSchema) as never,</code></pre>
-
-<div class="bug-row">
-<div class="bug-num">BUG 5</div>
-<div>
-  <div class="bug-title">SDK de Anthropic directo sin una API key</div>
-  <div class="bug-desc">El agente originalmente fijaba un modelo con <code>anthropic('claude-sonnet-4-6')</code>, que llama a Anthropic directamente y necesita <code>ANTHROPIC_API_KEY</code>. Todo el portfolio corre a través de Vercel AI Gateway (una key, failover automático de proveedor, dashboard de uso). Cambiar a la forma de modelo-string deja que el AI SDK v6 enrute por el Gateway siempre que <code>AI_GATEWAY_API_KEY</code> esté configurada.</div>
-</div>
-</div>
-
-<pre><code class="language-ts">// BEFORE — direct Anthropic
-model: anthropic('claude-sonnet-4-6'),
-
-// AFTER — routed through Vercel AI Gateway
-model: 'anthropic/claude-sonnet-4-6',</code></pre>
-
-<div class="bug-row">
-<div class="bug-num">BUG 6</div>
-<div>
-  <div class="bug-title"><code>ENOENT</code>: no puede abrir <code>packages/shared/data/projects/_index.json</code></div>
-  <div class="bug-desc">El cargador de datos lee archivos JSON y Markdown de <code>packages/shared/data/</code> vía <code>readFileSync</code>. El rastreador de dependencias de Next.js sigue los imports estáticos, así que envía cada archivo JS <em>importado</em> — pero las llamadas crudas a <code>readFileSync</code> son opacas para el rastreador, y el directorio de datos quedó fuera del bundle de despliegue.</div>
-</div>
-</div>
-
-<pre><code class="language-ts">// apps/web/next.config.ts
-const nextConfig: NextConfig = {
-  outputFileTracingRoot: path.join(process.cwd(), '..', '..'),
-  outputFileTracingIncludes: {
-    '/api/mcp/[[...path]]': ['../../packages/shared/data/**/*'],
-    '/api/agent': ['../../packages/shared/data/**/*'],
-  },
-};</code></pre>
-
-<p>Seis arreglos, seis commits, todos en vivo. El diff completo son unas 80 líneas de código repartidas entre los seis commits, pero cada línea es la diferencia entre «despliega» y «produce un 500 en la primera petición».</p>
-
-<div class="callout">
-<div class="callout-label">Para llevar</div>
-<p>Los tests de producción no sustituyen a los unit tests; son ortogonales. De estos seis bugs, <strong>cero</strong> eran detectables desde <code>pnpm test</code> porque todos viven en la frontera entre el código de la aplicación y la plataforma — layout del sistema de archivos, fronteras de los workers serverless, tracing del bundler, contratos de variables de entorno. La forma más barata de cazarlos es desplegar un preview <em>pronto</em> y golpear los endpoints con <code>curl</code>.</p>
-</div>
-
-<hr />
-
-<h2>El bucle de pulido de UX</h2>
-
-<p>Una vez que la API funcionaba, el widget en sí no se parecía en nada a un producto terminado. La primera versión tenía Geist como tipografía, la salida JSON cruda de las tools renderizada inline, celdas de tabla partiéndose a mitad de palabra a 360 px de ancho, y un tema claro genérico que chocaba con el portfolio oscuro. Seis iteraciones más lo llevaron a la versión embebida en esta página.</p>
-
-<div class="figure">
-<svg viewBox="0 0 720 320" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="evoBefore" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#FAFAFA"/>
-      <stop offset="1" stop-color="#E5E7EB"/>
-    </linearGradient>
-    <linearGradient id="evoAfter" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#122845"/>
-      <stop offset="1" stop-color="#06101F"/>
-    </linearGradient>
-  </defs>
-
-  <!-- Before -->
-  <g transform="translate(40, 30)">
-    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#F87171" text-transform="uppercase">Antes</text>
-    <rect width="260" height="260" rx="14" fill="url(#evoBefore)" stroke="#D1D5DB"/>
-    <!-- raw json -->
-    <rect x="14" y="14" width="232" height="60" rx="6" fill="#FFFFFF" stroke="#D1D5DB"/>
-    <text x="20" y="32" font-family="JetBrains Mono, monospace" font-size="9" fill="#374151">&gt; getSkills output-available</text>
-    <text x="20" y="46" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280">{ "skills": [{ "skill":</text>
-    <text x="20" y="60" font-family="JetBrains Mono, monospace" font-size="9" fill="#6B7280">"TypeScript", "level":...</text>
-    <!-- broken table -->
-    <text x="14" y="96" font-family="Inter, system-ui" font-size="11" fill="#111827" font-weight="700">Lenguajes</text>
-    <text x="14" y="120" font-family="Inter, system-ui" font-size="10" fill="#374151">TypeScript</text>
-    <text x="100" y="120" font-family="Inter, system-ui" font-size="10" fill="#374151">Profic</text>
-    <text x="100" y="132" font-family="Inter, system-ui" font-size="10" fill="#374151">ient</text>
-    <text x="160" y="120" font-family="Inter, system-ui" font-size="10" fill="#374151">research-</text>
-    <text x="160" y="132" font-family="Inter, system-ui" font-size="10" fill="#374151">agent</text>
-    <text x="14" y="160" font-family="Inter, system-ui" font-size="10" fill="#374151">JavaScript</text>
-    <text x="100" y="160" font-family="Inter, system-ui" font-size="10" fill="#374151">Expe</text>
-    <text x="100" y="172" font-family="Inter, system-ui" font-size="10" fill="#374151">rt</text>
-    <text x="160" y="160" font-family="Inter, system-ui" font-size="10" fill="#374151">multi-</text>
-
-    <text x="14" y="216" font-family="Source Serif 4, Georgia, serif" font-size="11" fill="#111827" font-style="italic">[ver certificado](https://drive...</text>
-
-    <!-- pain labels -->
-    <g font-family="JetBrains Mono, monospace" font-size="9" fill="#DC2626">
-      <text x="14" y="240">× Geist + serif fallback</text>
-    </g>
-  </g>
-
-  <!-- Divider with arrow -->
-  <text x="360" y="170" text-anchor="middle" font-family="Inter, system-ui" font-size="30" font-weight="800" fill="#7DD3FC">→</text>
-
-  <!-- After -->
-  <g transform="translate(420, 30)">
-    <text x="0" y="-6" font-family="JetBrains Mono, monospace" font-size="11" letter-spacing="2" fill="#86EFAC" text-transform="uppercase">Después</text>
-    <rect width="260" height="260" rx="14" fill="url(#evoAfter)" stroke="rgba(148,163,184,0.18)"/>
-    <!-- Header -->
-    <rect x="14" y="14" width="232" height="30" rx="8" fill="rgba(46,117,182,0.08)"/>
-    <circle cx="28" cy="29" r="9" fill="#2E75B6"/>
-    <text x="42" y="33" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">Nery's portfolio</text>
-    <rect x="200" y="22" width="40" height="16" rx="8" fill="rgba(74,222,128,0.12)" stroke="rgba(74,222,128,0.35)"/>
-    <text x="220" y="32" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" fill="#86EFAC" letter-spacing="1">ONLINE</text>
-
-    <!-- User bubble -->
-    <g transform="translate(120, 56)">
-      <rect width="126" height="28" rx="10" fill="#2E75B6"/>
-      <text x="63" y="18" text-anchor="middle" font-family="Inter, system-ui" font-size="10" fill="#FFFFFF">que skills tiene?</text>
-    </g>
-
-    <!-- Assistant bubble -->
-    <g transform="translate(14, 96)">
-      <rect width="232" height="146" rx="10" fill="rgba(18,40,69,0.85)" stroke="rgba(148,163,184,0.14)"/>
-      <text x="14" y="22" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="1" fill="#94A3B8">SKILL          NIVEL    EVIDENCIA</text>
-      <line x1="14" y1="28" x2="218" y2="28" stroke="rgba(148,163,184,0.18)"/>
-      <text x="14" y="46" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">TypeScript</text>
-      <text x="100" y="46" font-family="Inter, system-ui" font-size="10" fill="#E2E8F0">Expert</text>
-      <g transform="translate(150, 36)">
-        <rect width="64" height="14" rx="3" fill="rgba(46,117,182,0.2)" stroke="rgba(46,117,182,0.4)"/>
-        <text x="32" y="11" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" fill="#7DD3FC">research-agent</text>
-      </g>
-      <text x="14" y="72" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">JavaScript</text>
-      <text x="100" y="72" font-family="Inter, system-ui" font-size="10" fill="#E2E8F0">Expert</text>
-      <text x="14" y="98" font-family="Inter, system-ui" font-size="10" font-weight="700" fill="#F1F5F9">Python</text>
-      <text x="100" y="98" font-family="Inter, system-ui" font-size="10" fill="#E2E8F0">Proficient</text>
-      <text x="14" y="128" font-family="Inter, system-ui" font-size="10" fill="#7DD3FC" text-decoration="underline">Ver diploma</text>
-    </g>
-  </g>
-</svg>
-<p class="figure-caption">Figura 4 · <strong>Antes / después.</strong> Mismos datos, mismo modelo, mismo prompt. La izquierda es el primer despliegue: JSON crudo en el chat, tabla rota al ajustarse, cortes de palabra a mitad de carácter, y Geist cayendo al serif por defecto del navegador porque <code>--font-sans: var(--font-sans)</code> era una variable CSS circular. La derecha es la versión en vivo hoy: tipografía Inter, internos de las tools ocultos, tarjeta del asistente a ancho completo, tokens de tecnología inline con brillo cian.</p>
-</div>
-
-<h3>1 · Arreglar la tipografía</h3>
-<p><code>globals.css</code> tenía <code>--font-sans: var(--font-sans);</code> — una auto-referencia. Tailwind emitía tan campante un CSS que resolvía a nada, así que el navegador caía a Times. Cambié a Inter + JetBrains Mono vía <code>next/font/google</code> con stacks de fallback de fuentes de sistema apropiados. Resuelto en dos líneas.</p>
-
-<h3>2 · Ocultar los internos de las tools</h3>
-<p>La primera versión renderizaba cada llamada a tool como una tarjeta con la salida JSON cruda debajo. Útil para depurar, UX pésima. Ahora <code>MessageList</code> filtra por completo las parts <code>dynamic-tool</code> y <code>tool-*</code>. El agente sigue llamando a las tools — quien visita simplemente no ve la fontanería.</p>
-
-<h3>3 · Tablas que no aplastan las palabras</h3>
-<p>A 360 px de ancho, <code>overflow-wrap: anywhere</code> en <code>td</code>/<code>th</code> partía palabras sueltas en los límites de carácter: «Proficient» se volvía «Profic / ient». Cambié al ajuste por límite de palabra por defecto más <code>prose-table:block prose-table:overflow-x-auto</code> para que las tablas más anchas que la columna scrolleen en horizontal en vez de quedar aplastadas.</p>
-
-<h3>4 · Igualar la paleta del portfolio padre</h3>
-<p>El widget tenía que sentirse como parte del portfolio, no como un elemento ajeno. Levanté las variables CSS del portfolio tal cual — <code>#06101F</code> azul marino profundo, <code>#2E75B6</code> azul primario, <code>#7DD3FC</code> brillo de acento — al tema oscuro del chat. El <code>&lt;code&gt;</code> inline ahora toma el mismo brillo cian + fondo tintado que en las tarjetas de proyecto del portfolio.</p>
-
-<h3>5 · Estado vacío con preguntas sugeridas</h3>
-<p>Antes, abrir el FAB te daba un textarea en blanco. Después, obtienes cuatro chips de sugerencia clicables que siembran la conversación en un toque. Quien recluta tiende a preguntar las mismas cuatro cosas con otras palabras («¿cuál es su stack?», «¿proyectos de IA?», «¿dónde trabaja?», «¿está disponible?»), así que convertirlas en botones elimina el problema del arranque en frío.</p>
-
-<h3>6 · Recortar el markdown incompleto durante el streaming</h3>
-<p>El agente emite tokens uno a uno a través de <code>ReactMarkdown</code>. Durante un frame o dos en cada ciclo, el modelo emite markdown parcial como <code>[Ver diploma]</code> antes de que aterrice <code>(https://drive.google.com/...)</code>. ReactMarkdown renderiza el texto crudo y un instante después salta a un enlace con estilo — visible como un parpadeo en cada enlace. Un pequeño helper <code>trimIncompleteMarkdown()</code> recorta cualquier enlace/código/énfasis sin terminar al final de la última text part del mensaje del asistente que aún está en streaming. El enlace aparece de una sola vez en cuanto llega el token de cierre.</p>
-
-<pre><code class="language-ts">function trimIncompleteMarkdown(text: string): string {
-  let result = text;
-  // Unclosed link: [...] or [...](unclosed
-  const lastBracket = result.lastIndexOf('[');
-  if (lastBracket !== -1) {
-    const tail = result.slice(lastBracket);
-    if (!/^\[[^\]]*\]\([^)]+\)/.test(tail)) result = result.slice(0, lastBracket);
+      <pre><code class="language-json">{
+  "mcpServers": {
+    "clima": { "command": "node", "args": ["/ruta/absoluta/dist/server.js"] }
   }
-  // Unclosed inline code: odd backtick count
-  const matches = result.match(/`/g);
-  if (matches &amp;&amp; matches.length % 2 === 1) {
-    result = result.slice(0, result.lastIndexOf('`'));
-  }
-  // Unclosed bold/italic at end
-  return result.replace(/(\*{1,2})$/, '');
 }</code></pre>
 
-<hr />
+      <p>Del otro lado, un cliente mínimo que lo arranca, lista sus herramientas y llama a una:</p>
 
-<h2>Cómo se ve la capa de datos</h2>
+      <pre><code class="language-ts">import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
-<p>164 cursos de Platzi son muchos datos estructurados para mantener a mano, así que no lo hice. <code>scripts/sync-platzi</code> es un bot de Playwright que inicia sesión en Platzi una vez (interactivo, guarda la sesión en <code>.platzi-session/</code>), y en las corridas siguientes recorre el perfil público <em>y</em> el dashboard de aprendizaje, fusiona ambas vistas (el perfil público lista los cursos completados con diplomas; el dashboard tiene las fechas de finalización exactas) y escribe el resultado fusionado en <code>packages/shared/data/courses.json</code>.</p>
+const transport = new StdioClientTransport({
+  command: "node",
+  args: ["/ruta/absoluta/dist/server.js"],
+});
 
-<pre><code class="language-bash">pnpm --filter sync-platzi exec playwright install chromium  # first run only
-pnpm --filter sync-platzi sync                              # subsequent runs are headless</code></pre>
+const client = new Client({ name: "mi-host", version: "1.0.0" });
+await client.connect(transport);          // hace el handshake completo
 
-<p>La fusión es la parte interesante. Las entradas del perfil público son la autoridad sobre <em>qué</em> cursos he hecho; las del dashboard son la autoridad sobre <em>cuándo</em>. Unirlas me da un único registro por curso con ambos campos, más la URL del diploma extraída del elemento de enlace del perfil público.</p>
+const { tools } = await client.listTools();
+console.error(tools.map((t) => t.name));  // ["getClima"]
 
-<p>Cada registro valida contra un schema de Zod en <code>packages/shared/src/schemas/course.ts</code>, así que el servidor MCP puede devolver datos con tipos seguros sin re-validar en cada llamada:</p>
+const r = await client.callTool({ name: "getClima", arguments: { ciudad: "Asunción" } });
+console.error(r.content);</code></pre>
 
-<pre><code class="language-ts">export const CourseSchema = z.object({
-  slug: z.string(),
-  title: z.string(),
-  diplomaUrl: z.url().optional(),
-  completedAt: z.iso.date().optional(),
-  skills: z.array(z.string()),
-  category: z.enum(['frontend','backend','ai','data','devops','soft-skills','other']),
-});</code></pre>
+      <p>Ese <code>client.connect()</code> es la Figura 4 entera: manda <code>initialize</code>, espera la respuesta, manda <code>notifications/initialized</code>. El SDK te lo esconde bien, y por eso conviene haber visto los tres mensajes antes.</p>
 
-<p>Si Platzi cambia su HTML, el scraper se rompe ruidosamente con un error de parseo de Zod en vez de devolver datos basura en silencio. Eso ya ha sido una baranda de seguridad útil dos veces.</p>
-
-<hr />
-
-<h2>Tests y CI</h2>
-
-<p>El proyecto trae 115 tests repartidos en cuatro paquetes. La división interesante es entre la <strong>suite completa</strong> y el <strong>subconjunto @critical</strong>:</p>
-
-<pre><code class="language-bash">pnpm test            # full: 115 tests (3 skipped)
-pnpm test:critical   # @critical only: 27 tests (sampling, elicitation, capabilities)</code></pre>
-
-<p>Los tests críticos se etiquetan envolviendo su bloque <code>describe</code> con <code>@critical</code>:</p>
-
-<pre><code class="language-ts">describe('@critical pitch-for-role with sampling', () =&gt; {
-  // ...
-});</code></pre>
-
-<p>CI ejecuta <code>pnpm test:critical</code> como un paso separado <em>antes</em> de la suite completa. Si el contrato de MCP sufre una regresión (el sampling deja de funcionar, la elicitation se rompe, la negociación de capabilities falla), el pipeline se detiene en el paso de control con un mensaje obvio — en vez de enterrar el fallo dentro de una corrida de 115 tests.</p>
-
-<p>El workflow real de CI es también donde aparecieron dos bugs de tipo producción que no se veían en local:</p>
-
-<ol>
-<li><strong>Los consumidores del workspace no pueden hacer typecheck antes del build.</strong> <code>scripts/sync-platzi</code> depende de <code>@neryc/portfolio-shared</code>, que exporta desde <code>./dist/index.js</code>. Un checkout limpio de CI no tiene directorio <code>dist/</code>, así que <code>tsc</code> falla con <code>TS2307</code>. Reordené el workflow para correr <code>pnpm build</code> antes de <code>pnpm typecheck</code>; <code>pnpm -r build</code> respeta la topología de dependencias, así que <code>shared</code> termina antes que sus consumidores.</li>
-<li><strong>Conflicto de versión de pnpm.</strong> El workflow tenía <code>version: 9</code> en <code>pnpm/action-setup@v4</code>; <code>package.json</code> tenía <code>packageManager: pnpm@9.12.0</code>. Ambos puestos → <code>ERR_PNPM_BAD_PM_VERSION</code>. Quité la versión a nivel de action para que el campo <code>packageManager</code> sea la única fuente de verdad.</li>
-</ol>
-
-<hr />
-
-<h2>Qué haría distinto</h2>
-
-<p>Tres cosas que cambiaría si empezara de cero hoy:</p>
-
-<ol>
-<li><strong>Desplegar en el día cero.</strong> Los seis bugs de producción habrían aparecido una semana antes si hubiera puesto un preview de Vercel detrás de un PR en borrador desde el primer commit. Local + tests es necesario, no suficiente.</li>
-<li><strong>No leer archivos al cargar el módulo.</strong> <code>readFileSync</code> arriba de un módulo de servidor es un disparo al pie en serverless empaquetado. Imports de JSON + <code>outputFileTracingIncludes</code> para el puñado de lecturas dinámicas (archivos Markdown por slug) es más declarativo y sobrevive al tracing del bundler.</li>
-<li><strong>Adoptar <code>InMemoryTransport</code> desde el principio.</strong> El patrón de auto-llamada HTTP se ve correcto en un diagrama pero pierde contra las realidades de las fronteras de los workers serverless. Los clientes co-ubicados deberían usar el transporte en memoria del SDK. El endpoint MCP alojado sigue expuesto para consumidores externos (Claude Desktop, etc.); mi propio agente simplemente no pasa por él.</li>
-</ol>
-
-<hr />
-
-<h2>El patrón, generalizado</h2>
-
-<p>Este proyecto es una plantilla útil para cualquier «feature de IA embebible» que quieras enchufar a un sitio estático o al host de otra persona. La forma es:</p>
-
-<ol>
-<li>El <strong>backend</strong> expone un modelo de datos estructurado vía MCP (tools / resources / prompts). Vive detrás de un único endpoint HTTP <em>y</em> un binario stdio; un camino de código, dos transportes.</li>
-<li>El <strong>agente</strong> corre en el mismo despliegue de Vercel, habla con el servidor MCP in-process vía <code>InMemoryTransport</code>, y envía las respuestas en streaming al navegador.</li>
-<li>El <strong>widget</strong> es un bundle diminuto de Preact + esbuild que carga desde tu origen, monta un FAB y abre un iframe en <code>/widget</code> para la UI pesada. Una etiqueta <code>&lt;script&gt;</code> en el host.</li>
-</ol>
-
-<p>~ 2.400 líneas de TypeScript en total. Cinco tardes de trabajo. El contrato de MCP es portable — Claude Desktop puede conectarse al mismísimo servidor mañana, sin cambios.</p>
-
-<p>🔗 <strong>github.com/NeryC/talk-to-my-portfolio</strong><br />
-🔗 <strong>En vivo:</strong> talk-to-my-portfolio.vercel.app · <strong>Endpoint MCP:</strong> /api/mcp · <strong>UI de demo:</strong> /demo<br />
-🔗 El FAB que ves en la esquina inferior derecha de esta misma página es el widget de producción — pruébalo.</p>
-
-    </div>
-    <div class="tag-pills">
-      <span class="tag-pill">MCP</span>
-      <span class="tag-pill">AI Agents</span>
-      <span class="tag-pill">Anthropic Claude</span>
-      <span class="tag-pill">Next.js</span>
-      <span class="tag-pill">Vercel AI SDK</span>
-      <span class="tag-pill">Preact</span>
-    </div>
-    <div class="footer-cta">
-      <h3>Sobre este proyecto</h3>
-      <p>El código fuente completo, el README y la demo en vivo:</p>
-      <div class="links">
-        <a href="https://github.com/NeryC/talk-to-my-portfolio">💻 github.com/NeryC/talk-to-my-portfolio ↗</a>
-        <a href="https://talk-to-my-portfolio.vercel.app">🔗 Demo en vivo ↗</a>
-        <a href="https://talk-to-my-portfolio.vercel.app/api/mcp">🔌 Endpoint MCP ↗</a>
+      <div class="callout warn">
+        <div class="callout-label">Sobre versiones</div>
+        <p>Esta guía sale el 17 de julio de 2026. La especificación vigente es la <code>2025-11-25</code>, y hay una revisión <code>2026-07-28</code> en release candidate que vuelve stateless el núcleo del protocolo y llega en once días, junto con la v2 del SDK (que parte el paquete en <code>@modelcontextprotocol/server</code> y <code>@modelcontextprotocol/client</code>). La v1 sigue siendo la recomendada para producción y tiene soporte por al menos seis meses más. Los conceptos de esta guía no se mueven; los <code>import</code> sí.</p>
       </div>
-      <h3 style="margin-top:24px;">Sobre el autor</h3>
-      <p>Soy Nery Cano, ingeniero full-stack senior radicado en Paraguay, construyo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / de ingeniería de IA.</p>
-      <div class="links">
-        <a href="../../">Portfolio ↗</a>
-        <a href="https://github.com/NeryC">GitHub ↗</a>
-        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
-        <a href="mailto:nerycano798@gmail.com">Email ↗</a>
+
+      <hr />
+
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
+
+      <p>Sacale MCP y lo que queda es esto: cuando tenés M consumidores y N proveedores hablándose de a pares, un protocolo en el medio convierte M×N en M+N, y lo importante no es el ahorro de líneas sino que ahora la pieza la puede escribir el que más sabe del dominio, sin pedirle permiso a nadie.</p>
+
+      <p>No es la primera vez que pasa. La especificación misma dice inspirarse en LSP, el protocolo que Microsoft sacó para editores: antes, cada editor implementaba autocompletado para cada lenguaje (M×N); después, cada lenguaje escribió un servidor y cada editor un cliente (M+N). Es la misma película que el driver de impresora, que el ODBC de las bases de datos, que el USB.</p>
+
+      <p>La señal de que estás frente a este patrón es fácil de reconocer: mirás tu carpeta de integraciones y ves el mismo adaptador escrito tres veces con formas apenas distintas, y cada vez que agregás un consumidor tenés que escribir todos los adaptadores de nuevo. Ahí un protocolo paga. La contraseñal es igual de importante: si tenés un consumidor y no vas a tener otro, un protocolo es una capa de indirección que solo te agrega latencia y un proceso que se puede caer.</p>
+
+      <p>La prueba de fuego de esta guía: si podés explicarle a alguien qué es MCP, qué problema resuelve y cuándo no usarlo, ya está. El resto es SDK. En la <a href="talk-to-my-portfolio-build.html">Parte 2</a> está el proyecto real: un servidor con 9 tools, 171 resources y 3 prompts, el widget que lo embebe, y los seis bugs que me rompieron producción antes de que algo de esto funcionara.</p>
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="talk-to-my-portfolio-build.html">Parte 2 · El servidor MCP que construí</a></strong> · <a href="https://github.com/NeryC/talk-to-my-portfolio">repo</a> · <a href="../">portfolio</a></p>
       </div>
+
     </div>
   </article>
-  <footer class="site-footer">
-    © 2026 Nery Cano · Pensado con Next.js en mente · Servido como HTML plano porque es 200 ms más rápido
-  </footer>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
