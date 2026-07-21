@@ -93,7 +93,9 @@
     }
     .article-list { margin-top: 32px; }
     .article-card {
-      display: block;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
       padding: 28px 0;
       border-bottom: 1px solid var(--border);
       text-decoration: none;
@@ -156,6 +158,20 @@
       .article-card__title { font-size: 22px; }
       .article-card__subtitle { font-size: 16px; }
     }
+    .article-card__thumb {
+      width: 208px;
+      aspect-ratio: 1200 / 630;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--bg-mid);
+    }
+    .article-card__body { flex: 1; min-width: 0; }
+    @media (max-width: 640px) {
+      .article-card { flex-direction: column; gap: 14px; }
+      .article-card__thumb { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -172,58 +188,85 @@
     </section>
     <div class="article-list">
       <a class="article-card" href="talk-to-my-portfolio.html">
+        <img class="article-card__thumb" src="post_4_talk_guide_banner_en.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">July 17, 2026 · Part 1 of 2 · ~18 min read</div>
         <h2 class="article-card__title">MCP from zero: what it is, what it solves, and when to use it</h2>
         <p class="article-card__subtitle">One protocol, three primitives, and a mandatory greeting. Everything you need to understand about MCP before writing a line of code.</p>
         <div class="article-card__tags"><span class="article-card__tag">MCP</span><span class="article-card__tag">Model Context Protocol</span><span class="article-card__tag">JSON-RPC</span><span class="article-card__tag">LLM</span><span class="article-card__tag">AI Agents</span></div>
+              </div>
       </a>
       <a class="article-card" href="talk-to-my-portfolio-build.html">
+        <img class="article-card__thumb" src="post_4_talk_build_banner_en.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">July 17, 2026 · Part 2 of 2 · ~16 min read</div>
-        <h2 class="article-card__title">The MCP server and widget I built</h2>
+        <h2 class="article-card__title">Talk to My Portfolio: the MCP server and widget I built</h2>
         <p class="article-card__subtitle">An MCP server over my CV and a 14 KB widget that embeds it anywhere. The real code, and the six bugs that broke production.</p>
         <div class="article-card__tags"><span class="article-card__tag">MCP</span><span class="article-card__tag">Next.js</span><span class="article-card__tag">AI SDK v6</span><span class="article-card__tag">Preact</span><span class="article-card__tag">Serverless</span></div>
+              </div>
       </a>
       <a class="article-card" href="harness-engineering-adminrent.html">
+        <img class="article-card__thumb" src="post_6_harness_adminrent_banner.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">July 9, 2026 · 18 min read · Part 2 of 2</div>
         <h2 class="article-card__title">Harness engineering on a real SaaS: I measured, wrote the rules, measured again</h2>
         <p class="article-card__subtitle">I gave an agent five real commits from my multi-tenant SaaS and told it nothing about the domain. It invented a permission policy, got it wrong, and wrote six tests that armored it in green.</p>
         <div class="article-card__tags"><span class="article-card__tag">Harness Engineering</span><span class="article-card__tag">AI Agents</span><span class="article-card__tag">AGENTS.md</span><span class="article-card__tag">Evals</span><span class="article-card__tag">RBAC</span></div>
+              </div>
       </a>
       <a class="article-card" href="harness-engineering.html">
+        <img class="article-card__thumb" src="post_5_harness_engineering_banner.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">June 26, 2026 · 20 min read · Part 1 of 2</div>
         <h2 class="article-card__title">Harness Engineering: how to design repos where AI doesn't screw up</h2>
         <p class="article-card__subtitle">Guides, sensors, context, evals and autonomy limits: the harness that turns an AI agent from a chaotic intern into a reliable colleague. Spoiler: the problem is your repo, not the model.</p>
         <div class="article-card__tags"><span class="article-card__tag">Harness Engineering</span><span class="article-card__tag">AI Agents</span><span class="article-card__tag">AGENTS.md</span><span class="article-card__tag">Developer Tooling</span><span class="article-card__tag">LLM Systems</span></div>
+              </div>
       </a>
       <a class="article-card" href="research-agent.html">
+        <img class="article-card__thumb" src="post_3_research_banner.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">May 26, 2026 · 10 min read</div>
         <h2 class="article-card__title">The Cleanest Pattern I've Found for Autonomous Agents: A Terminal Tool With No execute</h2>
         <p class="article-card__subtitle">Why ToolLoopAgent + a no-execute finalAnswer tool replaced 80 lines of brittle while-loop code in my research agent.</p>
         <div class="article-card__tags"><span class="article-card__tag">AI Agents</span><span class="article-card__tag">Anthropic Claude</span><span class="article-card__tag">Vercel AI SDK</span><span class="article-card__tag">ToolLoopAgent</span></div>
+              </div>
       </a>
       <a class="article-card" href="multi-agent-code-reviewer.html">
+        <img class="article-card__thumb" src="post_2_multiagent_banner_en.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">May 19, 2026 · Part 1 of 2 · ~18 min read</div>
         <h2 class="article-card__title">Agents and multi-agents, from zero</h2>
         <p class="article-card__subtitle">What an agent is, why you sometimes need several, and the six patterns to coordinate them. The full theory before the code.</p>
         <div class="article-card__tags"><span class="article-card__tag">AI Agents</span><span class="article-card__tag">Multi-agent</span><span class="article-card__tag">LLM</span></div>
+              </div>
       </a>
       <a class="article-card" href="multi-agent-code-reviewer-build.html">
+        <img class="article-card__thumb" src="post_2_multiagent_build_banner_en.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">May 19, 2026 · Part 2 of 2 · ~16 min read</div>
         <h2 class="article-card__title">The multi-agent code reviewer I built</h2>
         <p class="article-card__subtitle">Three specialists in parallel and a supervisor that consolidates. The architecture, the real code, and the six-way postmortem.</p>
         <div class="article-card__tags"><span class="article-card__tag">Next.js</span><span class="article-card__tag">AI SDK v6</span><span class="article-card__tag">Zod</span></div>
+              </div>
       </a>
       <a class="article-card" href="rag-agent-with-memory.html">
+        <img class="article-card__thumb" src="post_1_rag_banner.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">May 12, 2026 · Part 1 of 2 · ~20 min read</div>
         <h2 class="article-card__title">RAG from scratch: the guide I wish I'd had</h2>
         <p class="article-card__subtitle">What it is, what the alternatives are and how it actually gets built, explained from zero and with lots of diagrams. The full theory before the code.</p>
         <div class="article-card__tags"><span class="article-card__tag">RAG</span><span class="article-card__tag">Embeddings</span><span class="article-card__tag">pgvector</span><span class="article-card__tag">AI SDK</span><span class="article-card__tag">Anthropic Claude</span></div>
+              </div>
       </a>
       <a class="article-card" href="rag-agent-memory-build.html">
+        <img class="article-card__thumb" src="post_1_rag_build_banner.png" alt="" loading="lazy" />
+        <div class="article-card__body">
         <div class="article-card__meta">May 13, 2026 · Part 2 of 2 · ~16 min read</div>
         <h2 class="article-card__title">How I built a RAG agent with memory</h2>
         <p class="article-card__subtitle">The real code, step by step: the PDF parser that survives serverless, the pgvector schema, the agent's tools and the memory loop.</p>
         <div class="article-card__tags"><span class="article-card__tag">RAG</span><span class="article-card__tag">pgvector</span><span class="article-card__tag">AI SDK</span><span class="article-card__tag">Anthropic Claude</span><span class="article-card__tag">Serverless</span></div>
+              </div>
       </a>
     </div>
   </main>
