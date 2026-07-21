@@ -150,7 +150,9 @@ Every post is one of **two types**, and each new post declares which — in a ma
 
 **Part 2 — Build** (`<!-- structure: build -->`) — the optional companion, written only when there’s a real project to narrate. It assumes Part 1 already gave the concepts. Required sections, in order:
 
-> `architecture` → `build` → `postmortem` → `different` → `pattern`
+> `architecture` → `build` → `different` → `pattern`
+
+`postmortem` is optional but recommended: when the post has a real failure story, add a `postmortem` section between `build` and `different` (as the multi-agent and MCP build posts do). The sensor accepts it in that position but no longer requires it, so a build whose bugs live inside an implementation section (like the RAG build's PDF-parser bugs) stays valid.
 
 The global order the sensor knows — every type is a subsequence of it — is `glossary, definition, problem, anatomy, detail, code, architecture, build, postmortem, different, pattern`. The last marked section is always `pattern`. A post may add extra marked sections as long as they keep this relative order.
 

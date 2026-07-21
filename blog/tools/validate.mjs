@@ -129,7 +129,7 @@ function validatePost(file) {
   //     declares a type and must present the required sections in canonical
   //     order. Legacy posts (no data-sec) are grandfathered: not checked here.
   const CANON = ['glossary','definition','problem','anatomy','detail','code','architecture','build','postmortem','different','pattern'];
-  const REQ = { guide: ['glossary','definition','problem','anatomy','detail','code','pattern'], build: ['architecture','build','postmortem','different','pattern'] };
+  const REQ = { guide: ['glossary','definition','problem','anatomy','detail','code','pattern'], build: ['architecture','build','different','pattern'] };
   const secs = [...s.matchAll(/data-sec="([^"]+)"/g)].map(m => m[1]);
   if (secs.length) {
     const t = (s.match(/<!--\s*structure:\s*(guide|build)\b/) || [])[1];
