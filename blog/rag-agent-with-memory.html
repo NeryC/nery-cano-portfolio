@@ -313,7 +313,7 @@
   </style>
 </head>
 <body>
-  <!-- structure: explicit-guide -->
+  <!-- structure: guide -->
   <nav class="header-nav">
     <a href="../">← Portfolio</a>
     <a href="./">All writing</a>
@@ -340,7 +340,7 @@
 
       <p>🔗 <strong><a href="rag-agent-memory-build.html">Part 2 · How I built it (with the real code)</a></strong> · <a href="https://github.com/NeryC/rag-agent-memory">repo</a> · <a href="../">portfolio</a></p>
 
-      <h2>Five words, first</h2>
+      <h2 data-sec="glossary">Five words, first</h2>
 
       <p>If you have never touched this, five terms are enough to follow everything that comes next. You do not need to know anything else to start.</p>
 
@@ -356,7 +356,7 @@
 
       <hr />
 
-      <h2>What RAG is, in one paragraph</h2>
+      <h2 data-sec="definition">What RAG is, in one paragraph</h2>
 
       <p>RAG stands for <strong>Retrieval-Augmented Generation</strong>. It is three moves. <strong>Retrieve:</strong> given a question, you search your knowledge base for the most relevant fragments. <strong>Augment:</strong> you paste those fragments into the prompt, next to the question. <strong>Generate:</strong> the model answers using that context as evidence. The whole trick is in the first step, in retrieving well; the rest is pasting text and calling the model.</p>
 
@@ -400,7 +400,7 @@
         <p class="figure-caption">Figure 1 · <strong>The RAG pipeline.</strong> Follow the token: the question is retrieved against the vector base, augments the prompt, and the model generates the answer with citations.</p>
       </div>
 
-      <h2>The problem RAG solves, and why not the other options</h2>
+      <h2 data-sec="problem">The problem RAG solves, and why not the other options</h2>
 
       <p>When you want a model to answer about data it did not see in training, you have four paths. RAG is one. It is worth understanding why it usually wins before building it.</p>
 
@@ -419,7 +419,7 @@
 
       <hr />
 
-      <h2>The anatomy: the five steps</h2>
+      <h2 data-sec="anatomy">The anatomy: the five steps</h2>
 
       <p>Every RAG system, however sophisticated, is a variation of five steps split across two moments. Three happen <strong>only once, at indexing time</strong> (when you upload a document). Two happen <strong>on every query</strong>. Separating those two moments in your head is half of understanding RAG.</p>
 
@@ -541,7 +541,7 @@
 
       <hr />
 
-      <h2>The strategies, in detail</h2>
+      <h2 data-sec="detail">The strategies, in detail</h2>
 
       <p>The basic pipeline works, but each of its five steps has a fan of techniques behind it. Here is the full map, because "RAG does not work" is almost always one of these decisions made wrong, not the model. We go step by step, from simplest to most advanced.</p>
 
@@ -692,7 +692,7 @@
 
       <hr />
 
-      <h2>The minimal RAG, in code</h2>
+      <h2 data-sec="code">The minimal RAG, in code</h2>
 
       <p>With the theory clear, the whole pipeline fits on one screen. This is the essence, no frills: index and query.</p>
 
@@ -718,7 +718,7 @@ const answer = await model.generate(prompt)      // the LLM answers with citatio
 
       <hr />
 
-      <h2>The pattern, generalized</h2>
+      <h2 data-sec="pattern">The pattern, generalized</h2>
 
       <p>RAG is a simpler idea than its name suggests: give the model the right evidence at the right time, instead of hoping it already knows. Everything else is engineering detail around that idea.</p>
 

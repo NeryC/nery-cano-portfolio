@@ -313,7 +313,7 @@
   </style>
 </head>
 <body>
-  <!-- structure: build-report — la segunda parte de la guía RAG; recorre la implementación real del proyecto rag-agent-memory. -->
+  <!-- structure: build -->
   <nav class="header-nav">
     <a href="../../">← Portfolio</a>
     <a href="../">Todos los artículos</a>
@@ -340,7 +340,7 @@
 
       <hr />
 
-      <h2>La arquitectura, de un vistazo</h2>
+      <h2 data-sec="architecture">La arquitectura, de un vistazo</h2>
 
       <p>Dos caminos que se encuentran en la base de vectores. La <strong>ingesta</strong> lleva un PDF de crudo a fragmentos consultables. El <strong>chat</strong> toma una pregunta y la responde con evidencia. Los dos comparten pgvector y el mismo aislamiento por sesión.</p>
 
@@ -379,7 +379,7 @@
         <p class="figure-caption">Figura 1 · <strong>La arquitectura real.</strong> Ingesta síncrona arriba, chat con streaming abajo; los dos lados se encuentran en pgvector, aislados por sesión.</p>
       </div>
 
-      <h2>El esquema: cuatro tablas y dos búsquedas</h2>
+      <h2 data-sec="build">El esquema: cuatro tablas y dos búsquedas</h2>
 
       <p>Todo el sistema se apoya en cuatro tablas de Postgres y dos funciones de búsqueda. Los <code>chunks</code> guardan los fragmentos de PDF con su vector; las <code>memories</code>, los hechos aprendidos, también con vector. Fijate que las dos tienen la misma forma: es lo que permite hacer RAG sobre documentos y sobre recuerdos con el mismo mecanismo.</p>
 
@@ -566,7 +566,7 @@ for (const f of object.facts.filter(f =&gt; f.confidence &gt; 0.7)) {
 
       <hr />
 
-      <h2>Lo que haría distinto</h2>
+      <h2 data-sec="different">Lo que haría distinto</h2>
 
       <ol>
         <li><strong>Separar por página de verdad.</strong> Hoy el parser junta todo el PDF en un texto y trocea sobre eso, así que las citas dicen siempre <code>p.1</code>. Rastrear el número de página real durante la extracción haría las citas precisas, que es medio punto del valor de RAG.</li>
@@ -577,7 +577,7 @@ for (const f of object.facts.filter(f =&gt; f.confidence &gt; 0.7)) {
 
       <hr />
 
-      <h2>El patrón, generalizado</h2>
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
 
       <p>Si mirás el sistema entero, hay un solo mecanismo repetido tres veces. Los documentos son RAG. La memoria es RAG sobre lo que el agente aprendió de vos. La búsqueda web es RAG con un índice que no controlás. Embeber, buscar por cercanía, inyectar en el prompt: siempre lo mismo. Una vez que ves RAG como "traer la evidencia justa en el momento justo", deja de ser una técnica y pasa a ser una forma de pensar cualquier sistema que tenga que responder sobre datos que el modelo no vio.</p>
 

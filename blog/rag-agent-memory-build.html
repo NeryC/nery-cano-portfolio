@@ -313,7 +313,7 @@
   </style>
 </head>
 <body>
-  <!-- structure: build-report -->
+  <!-- structure: build -->
   <nav class="header-nav">
     <a href="../">← Portfolio</a>
     <a href="./">All writing</a>
@@ -340,7 +340,7 @@
 
       <hr />
 
-      <h2>The architecture, at a glance</h2>
+      <h2 data-sec="architecture">The architecture, at a glance</h2>
 
       <p>Two paths that meet at the vector base. <strong>Ingestion</strong> takes a PDF from raw to queryable fragments. <strong>Chat</strong> takes a question and answers it with evidence. Both share pgvector and the same per-session isolation.</p>
 
@@ -379,7 +379,7 @@
         <p class="figure-caption">Figure 1 · <strong>The real architecture.</strong> Synchronous ingestion on top, streaming chat below; both sides meet at pgvector, isolated by session.</p>
       </div>
 
-      <h2>The schema: four tables and two searches</h2>
+      <h2 data-sec="build">The schema: four tables and two searches</h2>
 
       <p>The whole system rests on four Postgres tables and two search functions. The <code>chunks</code> store the PDF fragments with their vector; the <code>memories</code>, the learned facts, also with a vector. Notice both have the same shape: that is what lets you do RAG over documents and over memories with the same mechanism.</p>
 
@@ -566,7 +566,7 @@ for (const f of object.facts.filter(f =&gt; f.confidence &gt; 0.7)) {
 
       <hr />
 
-      <h2>What I'd do differently</h2>
+      <h2 data-sec="different">What I'd do differently</h2>
 
       <ol>
         <li><strong>Split by page for real.</strong> Today the parser joins the whole PDF into one text and splits over that, so citations always say <code>p.1</code>. Tracking the real page number during extraction would make citations precise, which is half the value of RAG.</li>
@@ -577,7 +577,7 @@ for (const f of object.facts.filter(f =&gt; f.confidence &gt; 0.7)) {
 
       <hr />
 
-      <h2>The pattern, generalized</h2>
+      <h2 data-sec="pattern">The pattern, generalized</h2>
 
       <p>If you look at the whole system, there is a single mechanism repeated three times. Documents are RAG. Memory is RAG over what the agent learned about you. Web search is RAG with an index you do not control. Embed, search by closeness, inject into the prompt: always the same. Once you see RAG as "bring the right evidence at the right time," it stops being a technique and becomes a way to think about any system that has to answer over data the model did not see.</p>
 

@@ -313,7 +313,7 @@
   </style>
 </head>
 <body>
-  <!-- structure: explicit-guide — guía educativa (qué es / alternativas / cómo implementar) + un caso real al final; se aparta del arco estándar a propósito, según BLOG_STRUCTURE §10. -->
+  <!-- structure: guide -->
   <nav class="header-nav">
     <a href="../../">← Portfolio</a>
     <a href="../">Todos los artículos</a>
@@ -337,7 +337,7 @@
 
       <p>RAG resuelve exactamente eso. En lugar de meterle todo, le buscás <em>los pocos párrafos que importan</em> para esa pregunta puntual y se los pasás junto con la consulta. El modelo responde con esa evidencia delante, cita de dónde la sacó, y si el dato no está, lo podés hacer decir "no lo sé" en vez de inventar.</p>
 
-      <h2>Cinco palabras, primero</h2>
+      <h2 data-sec="glossary">Cinco palabras, primero</h2>
 
       <p>Si nunca tocaste esto, cinco términos alcanzan para entender todo lo que sigue. No necesitás saber nada más para arrancar.</p>
 
@@ -355,7 +355,7 @@
 
       <hr />
 
-      <h2>Qué es RAG, en un párrafo</h2>
+      <h2 data-sec="definition">Qué es RAG, en un párrafo</h2>
 
       <p>RAG son las siglas de <strong>Retrieval-Augmented Generation</strong>: generación aumentada por recuperación. Son tres movimientos. <strong>Recuperar</strong>: dada una pregunta, buscás en tu base de conocimiento los fragmentos más relevantes. <strong>Aumentar</strong>: pegás esos fragmentos en el prompt, junto a la pregunta. <strong>Generar</strong>: el modelo responde usando ese contexto como evidencia. El truco entero está en el primer paso, en recuperar bien; el resto es pegar texto y llamar al modelo.</p>
 
@@ -409,7 +409,7 @@
         <p class="figure-caption">Figura 1 · <strong>El pipeline de RAG.</strong> Seguí el punto: la pregunta se recupera contra la base de vectores, aumenta el prompt y el modelo genera la respuesta con citas.</p>
       </div>
 
-      <h2>El problema que RAG resuelve, y por qué no las otras opciones</h2>
+      <h2 data-sec="problem">El problema que RAG resuelve, y por qué no las otras opciones</h2>
 
       <p>Cuando querés que un modelo responda sobre datos que no vio en su entrenamiento, tenés cuatro caminos. RAG es uno. Vale la pena entender por qué suele ganar antes de implementarlo.</p>
 
@@ -428,7 +428,7 @@
 
       <hr />
 
-      <h2>La anatomía: los cinco pasos</h2>
+      <h2 data-sec="anatomy">La anatomía: los cinco pasos</h2>
 
       <p>Todo sistema RAG, por más sofisticado que sea, es una variación de cinco pasos repartidos en dos momentos. Tres ocurren <strong>una sola vez, al indexar</strong> (cuando subís un documento). Dos ocurren <strong>en cada consulta</strong>. Separar esos dos momentos en tu cabeza es la mitad de entender RAG.</p>
 
@@ -576,7 +576,7 @@
 
       <hr />
 
-      <h2>Las estrategias, en detalle</h2>
+      <h2 data-sec="detail">Las estrategias, en detalle</h2>
 
       <p>El pipeline básico funciona, pero cada uno de sus cinco pasos tiene un abanico de técnicas detrás. Acá está el mapa completo, porque "RAG no anda" casi siempre es una de estas decisiones mal tomada, no el modelo. Vamos paso por paso, del más simple al más avanzado.</p>
 
@@ -731,7 +731,7 @@
 
       <hr />
 
-      <h2>El RAG mínimo, en código</h2>
+      <h2 data-sec="code">El RAG mínimo, en código</h2>
 
       <p>Con la teoría clara, el pipeline entero cabe en una pantalla. Esto es lo esencial, sin adornos: indexar y consultar.</p>
 
@@ -757,7 +757,7 @@ const respuesta = await modelo.generar(prompt)   // el LLM responde con citas</c
 
       <hr />
 
-      <h2>El patrón, generalizado</h2>
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
 
       <p>RAG es una idea más simple de lo que su nombre sugiere: darle al modelo la evidencia justa en el momento justo, en vez de esperar que se la sepa. Todo lo demás son detalles de ingeniería alrededor de esa idea.</p>
 
