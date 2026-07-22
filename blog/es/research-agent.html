@@ -3,306 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>El patrón más limpio que he encontrado para agentes autónomos: una tool terminal sin execute — Nery Cano</title>
-  <meta name="description" content="Por qué ToolLoopAgent + una tool finalAnswer sin execute reemplazó 80 líneas de código frágil con while-loop en mi research agent." />
+  <title>Loops de agentes desde cero: cómo un agente de IA usa tools y sabe cuándo parar: Nery Cano</title>
+  <meta name="description" content="Cómo un agente de IA usa tools en un loop, y la forma más limpia de dejarlo decidir cuándo terminó: una tool sin executor. Explicado desde cero." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="El patrón más limpio que he encontrado para agentes autónomos: una tool terminal sin execute — Nery Cano" />
-  <meta property="og:description" content="Por qué ToolLoopAgent + una tool finalAnswer sin execute reemplazó 80 líneas de código frágil con while-loop en mi research agent." />
-  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_banner.png" />
-  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/research-agent.html" />
+  <meta property="og:title" content="Loops de agentes desde cero: cómo un agente de IA usa tools y sabe cuándo parar" />
+  <meta property="og:description" content="Cómo un agente de IA usa tools en un loop, y la forma más limpia de dejarlo decidir cuándo terminó: una tool sin executor. Explicado desde cero." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_guide_banner_es.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/research-agent.html" />
   <meta property="article:published_time" content="2026-05-26" />
   <meta property="article:tag" content="AI Agents" />
-  <meta property="article:tag" content="Anthropic Claude" />
-  <meta property="article:tag" content="Vercel AI SDK" />
   <meta property="article:tag" content="ToolLoopAgent" />
+  <meta property="article:tag" content="Vercel AI SDK" />
+  <meta property="article:tag" content="LLM" />
+
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="El patrón más limpio que he encontrado para agentes autónomos: una tool terminal sin execute" />
-  <meta name="twitter:description" content="Por qué ToolLoopAgent + una tool finalAnswer sin execute reemplazó 80 líneas de código frágil con while-loop en mi research agent." />
-  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_banner.png" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <meta name="twitter:title" content="Loops de agentes desde cero: cómo un agente de IA usa tools y sabe cuándo parar" />
+  <meta name="twitter:description" content="Cómo un agente de IA usa tools en un loop, y la forma más limpia de dejarlo decidir cuándo terminó: una tool sin executor. Explicado desde cero." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_guide_banner_es.png" />
+
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/research-agent.html" />
   <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/research-agent.html" />
   <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/research-agent.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <style>
-    :root {
-      --primary: #1F3A68;
-      --accent: #2E75B6;
-      --accent-light: #4FA9E8;
-      --accent-glow: #7DD3FC;
-      --ink: #0F172A;
-      --bg-deep: #06101F;
-      --bg-mid: #0E1F3A;
-      --muted: #94A3B8;
-      --text: #E2E8F0;
-      --text-strong: #F1F5F9;
-      --border: rgba(148, 163, 184, 0.18);
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
     }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: "Source Serif 4", Georgia, serif;
-      font-size: 19px;
-      line-height: 1.7;
-      color: var(--text);
-      background: radial-gradient(circle at 20% 0%, rgba(31,58,104,0.55), transparent 45%),
-                  radial-gradient(circle at 80% 100%, rgba(46,117,182,0.25), transparent 50%),
-                  var(--bg-deep);
-      background-attachment: fixed;
-      min-height: 100vh;
-    }
-    a { color: var(--accent-light); text-decoration: none; }
-    a:hover { text-decoration: underline; text-decoration-color: var(--accent-glow); text-underline-offset: 4px; }
-    .header-nav {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 28px 24px 0;
-      display: flex; justify-content: space-between; align-items: center;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-    .header-nav a { color: var(--muted); }
-    .header-nav a:hover { color: var(--accent-glow); }
-    .article {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 0 24px 80px;
-    }
-    .article-meta {
-      margin-top: 56px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-    }
-    h1.article-title {
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 44px;
-      font-weight: 800;
-      letter-spacing: -1.2px;
-      line-height: 1.15;
-      color: var(--text-strong);
-      margin: 14px 0 12px;
-    }
-    .article-subtitle {
-      font-family: "Source Serif 4", Georgia, serif;
-      font-style: italic;
-      font-size: 22px;
-      line-height: 1.4;
-      color: var(--muted);
-      margin: 0 0 32px;
-    }
-    .byline {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px 0;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 40px;
-    }
-    .byline-name {
-      font-family: "Inter", system-ui, sans-serif;
-      font-weight: 600;
-      color: var(--text-strong);
-      font-size: 15px;
-    }
-    .byline-meta {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .banner-img {
-      width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 8px 0 40px;
-      display: block;
-      border: 1px solid var(--border);
-    }
-    .article-body {
-      font-size: 19px;
-      line-height: 1.75;
-      color: var(--text);
-    }
-    .article-body h1, .article-body h2, .article-body h3, .article-body h4 {
-      font-family: "Inter", system-ui, sans-serif;
-      color: var(--text-strong);
-      margin: 48px 0 14px;
-      letter-spacing: -0.4px;
-      line-height: 1.25;
-    }
-    .article-body h1 { font-size: 32px; font-weight: 800; }
-    .article-body h2 { font-size: 26px; font-weight: 700; }
-    .article-body h3 { font-size: 21px; font-weight: 700; }
-    .article-body p { margin: 18px 0; }
-    .article-body strong { color: var(--text-strong); font-weight: 700; }
-    .article-body em { color: var(--text); }
-    .article-body ul, .article-body ol { padding-left: 28px; }
-    .article-body li { margin: 8px 0; }
-    .article-body blockquote {
-      border-left: 3px solid var(--accent);
-      margin: 24px 0;
-      padding: 4px 24px;
-      color: var(--muted);
-      font-style: italic;
-    }
-    .article-body code {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 0.88em;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      padding: 2px 6px;
-      border-radius: 4px;
-      border: 1px solid rgba(46,117,182,0.25);
-    }
-    .article-body pre {
-      background: #1a1f2e !important;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 18px 20px !important;
-      overflow-x: auto;
-      font-size: 14px;
-      line-height: 1.55;
-      margin: 24px 0;
-    }
-    .article-body pre code {
-      background: transparent;
-      border: none;
-      color: inherit;
-      padding: 0;
-      font-size: 14px;
-    }
-    .article-body hr {
-      border: none;
-      height: 1px;
-      background: var(--border);
-      margin: 48px 0;
-    }
-    .article-body img { max-width: 100%; border-radius: 6px; }
-    .article-body table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    .article-body th, .article-body td {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      text-align: left;
-    }
-    .article-body th { font-family: "JetBrains Mono", monospace; font-size: 12px; letter-spacing: 1px; color: var(--accent-glow); }
-    .figure {
-      margin: 40px -8px;
-      padding: 24px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(18,40,69,0.45), rgba(14,31,58,0.35));
-    }
-    .figure svg { display: block; width: 100%; height: auto; }
-    .figure-caption {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 1.4px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 18px;
-      text-align: center;
-    }
-    .figure-caption strong {
-      color: var(--accent-glow);
-      letter-spacing: 1.4px;
-    }
-    .callout {
-      margin: 32px 0;
-      padding: 18px 22px;
-      border-radius: 10px;
-      background: rgba(46,117,182,0.10);
-      border: 1px solid rgba(46,117,182,0.30);
-      border-left: 3px solid var(--accent-glow);
-    }
-    .callout-label {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      color: var(--accent-glow);
-      margin-bottom: 6px;
-    }
-    .callout p { margin: 6px 0; font-size: 17px; color: var(--text); }
-    .bug-row {
-      display: flex;
-      gap: 14px;
-      align-items: baseline;
-      padding: 16px 0;
-      border-bottom: 1px solid var(--border);
-    }
-    .bug-num {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
-      color: var(--accent-glow);
-      flex-shrink: 0;
-      width: 48px;
-    }
-    .bug-title { color: var(--text-strong); font-weight: 600; font-family: "Inter", system-ui, sans-serif; font-size: 17px; }
-    .bug-desc { color: var(--muted); font-size: 16px; line-height: 1.55; margin-top: 4px; }
-    .footer-cta {
-      margin-top: 56px;
-      padding: 32px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: linear-gradient(180deg, rgba(31,58,104,0.4), rgba(14,31,58,0.5));
-    }
-    .footer-cta h3 {
-      margin: 0 0 12px;
-      font-family: "Inter", system-ui, sans-serif;
-      font-size: 20px;
-      color: var(--text-strong);
-    }
-    .footer-cta p { margin: 8px 0; font-size: 16px; color: var(--text); }
-    .footer-cta .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 16px; }
-    .footer-cta .links a {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 13px;
-      letter-spacing: 1px;
-      color: var(--accent-glow);
-    }
-    .tag-pills { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 8px; }
-    .tag-pill {
-      font-family: "JetBrains Mono", monospace;
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 14px;
-      background: rgba(46,117,182,0.15);
-      color: var(--accent-glow);
-      border: 1px solid rgba(46,117,182,0.3);
-      letter-spacing: 1px;
-    }
-    .site-footer {
-      max-width: 760px;
-      margin: 60px auto 40px;
-      padding: 24px;
-      font-family: "JetBrains Mono", monospace;
-      font-size: 12px;
-      color: var(--muted);
-      text-align: center;
-      letter-spacing: 1px;
-      border-top: 1px solid var(--border);
-    }
-    @media (max-width: 600px) {
-      body { font-size: 17px; }
-      h1.article-title { font-size: 32px; }
-      .article-subtitle { font-size: 18px; }
-      .article-body { font-size: 17px; }
-      .article-body h1 { font-size: 26px; }
-      .article-body h2 { font-size: 22px; }
-      .figure { margin: 32px -8px; padding: 16px; }
-    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
   
     /* ── Layout ancho y tipografía fluida ─────────────────────────────────
        En pantallas grandes el problema no es la columna: es que 19px de
@@ -451,387 +297,188 @@
       .sem .h { font-size: 0.55em; }
       .sem ul { font-size: 0.64em; }
     }
-</style>
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
 </head>
 <body>
-  <nav class="header-nav">
-    <a href="../../">← Portfolio</a>
-    <a href="../">Todos los artículos</a>
-    <a href="../research-agent.html">English ↗</a>
-  </nav>
+  <nav class="header-nav"><a href="../">&larr; Portfolio</a><a href="index.html">Blog</a></nav>
   <article class="article">
-    <!-- structure: build -->
-    <div class="article-meta">26 may 2026 · 10 min de lectura</div>
-    <h1 class="article-title">El patrón más limpio que he encontrado para agentes autónomos: una tool terminal sin execute</h1>
-    <p class="article-subtitle">Por qué ToolLoopAgent + una tool finalAnswer sin execute reemplazó 80 líneas de código frágil con while-loop en mi research agent.</p>
+    <!-- structure: guide -->
+    <div class="article-meta">26 de mayo, 2026 · Parte 1 de 2 · ~10 min de lectura</div>
+    <h1 class="article-title">Loops de agentes desde cero: cómo un agente de IA usa tools y sabe cuándo parar</h1>
+    <p class="article-subtitle">Cómo un agente de IA usa tools en un loop, y la forma más limpia de dejarlo decidir cuándo terminó: una tool sin executor.</p>
     <div class="byline">
-      <div>
-        <div class="byline-name">Nery Cano</div>
-        <div class="byline-meta">Ingeniero Full-Stack Senior · Sistemas de IA/LLM · github.com/NeryC</div>
-      </div>
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
     </div>
-    <img class="banner-img" src="../post_3_research_banner.png" alt="El patrón más limpio que he encontrado para agentes autónomos: una tool terminal sin execute" />
-
+    <div class="tags"><span class="tag-pill">AI Agents</span> <span class="tag-pill">ToolLoopAgent</span> <span class="tag-pill">Vercel AI SDK</span> <span class="tag-pill">LLM</span></div>
+    <img class="banner-img" src="../post_3_research_guide_banner_es.png" alt="Cómo un agente de IA usa tools en un loop, y la forma más limpia de dejarlo decidir cuándo terminó: una tool sin executor. Explicado desde cero." />
     <div class="article-body">
 
-<p><em>Por qué <code>ToolLoopAgent</code> + una tool <code>finalAnswer</code> sin execute reemplazó 80 líneas de código frágil con while-loop en mi research agent — y por qué nunca volveré a escribir un loop de agente a mano.</em></p>
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="research-agent-build.html">Parte 2 · El agente de investigación que construí</a></strong> · <a href="https://github.com/NeryC/research-agent">repo</a> · <a href="../">portfolio</a></p>
+      </div>
 
-<p>Cada post que leí sobre «agentes LLM autónomos» en 2024 tenía más o menos la misma forma:</p>
+      <p><em>Cómo un agente de IA usa tools en un loop, y la forma más limpia de dejarlo decidir cuándo terminó: una tool sin executor. Explicado desde cero, y aplicado a un agente de investigación real en la Parte 2.</em></p>
 
-<pre><code class="language-ts">let messages = initialMessages;
+      <p>Cada post sobre "agentes LLM autónomos" en 2024 tenía más o menos la misma forma: un loop escrito a mano que llama al modelo, corre la tool que pidió, y chequea alguna condición para decidir si parar.</p>
+
+      <pre><code class="language-ts">let messages = initialMessages;
 for (let i = 0; i &lt; MAX_STEPS; i++) {
   const result = await streamText({ model, messages, tools });
   messages = [...messages, ...result.responseMessages];
+  if (result.text.includes('FINAL ANSWER')) break;   // &#8592; la parte frágil
+}</code></pre>
 
-  if (result.text.includes('FINAL ANSWER')) break;
-  if (result.finishReason === 'stop' &amp;&amp; !result.toolCalls.length) break;
-  // ...maybe other heuristics...
-}
+      <p>Funciona. La parte frágil es esa última línea: decidir cuándo el agente terminó escaneando su texto por una frase mágica. Esta guía construye hasta una respuesta más limpia, la que hoy traen casi todos los frameworks de agentes, y al final vas a saber exactamente por qué le gana al loop artesanal.</p>
 
-const finalText = parseFinalAnswer(messages);</code></pre>
+      <hr />
 
-<p>Esto <em>funciona</em>. Lancé variantes de esto durante más de un año. Pero cada vez que volvía a uno de estos loops seis meses después para arreglar algo, me encontraba re-deduciendo:</p>
+      <h2 data-sec="glossary">Seis términos, primero</h2>
+      <p>Seis palabras sostienen toda la idea. Definilas una vez y el resto se lee limpio.</p>
+      <p><strong>LLM.</strong> El modelo (Claude, GPT). Predice texto, y se le puede contar de tools que puede llamar.</p>
+      <p><strong>Tool.</strong> Una función que le exponés al modelo con un nombre, una descripción y un esquema de entrada tipado. El modelo puede pedir llamarla.</p>
+      <p><strong>Execute.</strong> La función que corre cuando se llama una tool. Casi todas tienen una; el truco de esta guía es una tool que no tiene ninguna.</p>
+      <p><strong>Loop de agente.</strong> El modelo llama una tool, ve el resultado, llama otra, y así hasta que decide que terminó. No un prompt: un loop de llamadas a tools.</p>
+      <p><strong>Paso (step).</strong> Una vuelta de ese loop (una llamada a tool). Los agentes ponen un tope de pasos como red de seguridad.</p>
+      <p><strong>Tool terminal.</strong> La tool cuya llamada significa "terminé". El corazón del patrón.</p>
 
-<ul>
-<li><em>¿Cuándo se detiene realmente este loop?</em></li>
-<li><em>¿Cómo distingue el parser «ya terminé» de «estoy pensando en voz alta»?</em></li>
-<li><em>¿Qué pasa si el modelo alucina la frase mágica a mitad de un pensamiento?</em></li>
-<li><em>¿Por qué mi extracción de la respuesta final es un regex sobre el último mensaje del asistente?</em></li>
-</ul>
+      <h2 data-sec="definition">Qué es un loop de agente, en un párrafo</h2>
+      <p>Un loop de agente es lo que convierte a un predictor de texto en algo que <em>actúa</em>. Le das al modelo un conjunto de tools y un objetivo. Elige una tool, la corrés, le devolvés el resultado, y vuelve a elegir. El loop se repite hasta que el modelo avisa que terminó. Todo lo interesante de los agentes (investigar, programar, dar soporte) es una variación de esta única forma. La única pregunta difícil es la que los loops de 2024 respondían mal: ¿cómo dice el modelo "terminé", y cómo se entera tu código?</p>
 
-<p>Luego, a principios de 2026, construí un research agent sobre el <strong><code>ToolLoopAgent</code> del Vercel AI SDK v6</strong> y un patrón diminuto encajó en su sitio e hizo desaparecer todas esas preguntas.</p>
+      <hr />
 
-<p>El patrón es: <strong>define tu señal de «ya terminé» como una tool sin función <code>execute</code>.</strong> Esa frase suena aburrida. Quédate conmigo — es el truco de loop de agente más limpio que he visto.</p>
+      <h2 data-sec="problem">El problema: ¿cómo sabe el loop cuándo parar?</h2>
+      <p>En el loop artesanal, "parar" es una adivinanza sobre el texto del modelo. Dos versiones comunes, las dos frágiles:</p>
+      <ul>
+        <li><strong>Buscar una cadena mágica.</strong> Cortar cuando la salida contiene <code>"FINAL ANSWER"</code>. Falla cuando el modelo reformula, o escribe la frase mientras todavía piensa en voz alta.</li>
+        <li><strong>Chequear que no haya tool calls.</strong> Cortar cuando el último mensaje no llamó ninguna tool. Falla cuando el modelo llama una tool <em>y</em> escribe prosa que parece final en el mismo turno.</li>
+      </ul>
+      <p>Las dos comparten una falla de raíz: la señal de parada vive en texto libre, así que estás parseando prosa para tomar una decisión de control de flujo. Y una vez que decidiste que paró, todavía tenés un segundo problema, sacar la respuesta final: escanear los mensajes, cortar el JSON, parsearlo, y manejar el caso en que el modelo escribió prosa en vez de JSON. Cada uno de esos pasos es un lugar donde romperse.</p>
 
-<p>🔗 <strong>github.com/NeryC/research-agent</strong> · <a href="https://research-agent-three-pi.vercel.app">demo en vivo</a></p>
-
-<hr />
-
-<h2 data-sec="architecture">Qué es, en un párrafo</h2>
-
-<p>Una app Next.js 16 que toma una pregunta de investigación, deja que un agente LLM decida qué buscar y qué páginas leer, y devuelve en streaming una respuesta en Markdown con citas en unos 25 segundos. El agente está definido como un <code>ToolLoopAgent</code> con tres tools — <code>searchWeb</code>, <code>readPage</code> y <code>finalAnswer</code> — y un único tope de seguridad de <code>stepCountIs(8)</code>. La terminación es estructural: cuando el modelo llama a <code>finalAnswer</code>, el loop se detiene, porque esa tool no tiene ejecutor. Todo el agente cabe en unas 700 líneas de TypeScript incluyendo UI, tests y rate limiting.</p>
-
-<div class="figure">
-<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7DD3FC"/>
-    </marker>
-    <linearGradient id="boxA" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#122845"/>
-      <stop offset="1" stop-color="#0E1F3A"/>
-    </linearGradient>
-    <linearGradient id="boxStop" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1F3A68"/>
-      <stop offset="1" stop-color="#0E1F3A"/>
-    </linearGradient>
-  </defs>
-
-  <!-- User query -->
-  <g transform="translate(20, 30)">
-    <rect width="160" height="70" rx="10" fill="url(#boxA)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="80" y="28" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">Consulta del usuario</text>
-    <text x="80" y="50" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">"Vercel AI Gateway</text>
-    <text x="80" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">vs LiteLLM"</text>
+      <h2 data-sec="anatomy">La anatomía: una tool que corta el loop</h2>
+      <p>El arreglo es hacer que "terminé" sea una llamada a tool como cualquier otra. Definís una <strong>tool terminal</strong>, digamos <code>finalAnswer</code>, con un esquema tipado y <em>sin executor</em>. El framework de agentes sabe qué hacer: cuando el modelo llama una tool que no tiene <code>execute</code>, no hay nada que correr, así que el loop corta. La llamada a la tool <em>es</em> el resultado.</p>
+      <p>Y los dos problemas desaparecen de golpe. La terminación la decide <em>qué función llamó el modelo</em>, un campo estructurado, no el parseo de un texto. Y la respuesta final es la entrada validada de la tool, ya tipada, sin paso de extracción.</p>
+      <div class="figure">
+        <svg viewBox="0 0 660 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="El loop de un agente: el modelo elige una tool cada paso hasta llamar la tool terminal">
+  <defs><marker id="al" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker>
+  <marker id="alg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94A3B8"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="11">
+    <rect x="250" y="24" width="160" height="52" rx="10" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.8"/>
+    <text x="330" y="47" text-anchor="middle" fill="#7DD3FC" font-size="12">el modelo</text>
+    <text x="330" y="65" text-anchor="middle" fill="#94A3B8" font-size="10">elige una tool</text>
+    <rect x="70" y="150" width="150" height="46" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="145" y="171" text-anchor="middle" fill="#E2E8F0">tool de trabajo</text>
+    <text x="145" y="187" text-anchor="middle" fill="#94A3B8" font-size="9.5">tiene execute()</text>
+    <rect x="255" y="150" width="150" height="46" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="330" y="171" text-anchor="middle" fill="#E2E8F0">tool de trabajo</text>
+    <text x="330" y="187" text-anchor="middle" fill="#94A3B8" font-size="9.5">tiene execute()</text>
+    <rect x="440" y="146" width="164" height="54" rx="9" fill="#0E2A44" stroke="#7DD3FC" stroke-width="2.2"/>
+    <text x="522" y="167" text-anchor="middle" fill="#7DD3FC" font-size="12">tool terminal</text>
+    <text x="522" y="185" text-anchor="middle" fill="#F87171" font-size="9.5">sin execute() &#8594; corta</text>
+    <line x1="300" y1="76" x2="170" y2="148" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#alg)"/>
+    <line x1="330" y1="76" x2="330" y2="148" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#alg)"/>
+    <line x1="360" y1="76" x2="500" y2="144" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#al)"/>
+    <path d="M330,196 C330,244 250,250 300,90" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#alg)"/>
+    <text x="205" y="250" text-anchor="middle" fill="#94A3B8" font-size="10">el resultado vuelve, el loop sigue</text>
+    <text x="522" y="224" text-anchor="middle" fill="#7DD3FC" font-size="10">llamarla ES la respuesta</text>
   </g>
-
-  <!-- ToolLoopAgent box -->
-  <g transform="translate(240, 20)">
-    <rect width="260" height="90" rx="10" fill="url(#boxA)" stroke="rgba(46,117,182,0.5)"/>
-    <text x="130" y="26" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">ToolLoopAgent</text>
-    <text x="130" y="46" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#7DD3FC">stopWhen: stepCountIs(8)</text>
-    <text x="130" y="66" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="#94A3B8">model: anthropic/claude-sonnet-4.6</text>
-    <text x="130" y="80" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">via Vercel AI Gateway</text>
-  </g>
-
-  <!-- Tools row -->
-  <g transform="translate(40, 170)">
-    <rect width="170" height="84" rx="10" fill="url(#boxA)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">searchWeb</text>
-    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">execute()</text>
-    <text x="85" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Exa /search</text>
-    <text x="85" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">5 resultados</text>
-  </g>
-
-  <g transform="translate(230, 170)">
-    <rect width="170" height="84" rx="10" fill="url(#boxA)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="85" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">readPage</text>
-    <text x="85" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">execute()</text>
-    <text x="85" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">→ Exa /contents</text>
-    <text x="85" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">≤ 8000 chars</text>
-  </g>
-
-  <g transform="translate(420, 170)">
-    <rect width="190" height="84" rx="10" fill="url(#boxStop)" stroke="rgba(125,211,252,0.6)" stroke-width="1.5"/>
-    <text x="95" y="24" text-anchor="middle" font-family="Inter, system-ui" font-size="13" font-weight="700" fill="#F1F5F9">finalAnswer</text>
-    <text x="95" y="44" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#F87171">sin execute()</text>
-    <text x="95" y="62" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">{ answer, sources }</text>
-    <text x="95" y="74" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">termina el loop</text>
-  </g>
-
-  <!-- Stream output -->
-  <g transform="translate(255, 290)">
-    <rect width="230" height="50" rx="10" fill="url(#boxA)" stroke="rgba(148,163,184,0.3)"/>
-    <text x="115" y="22" text-anchor="middle" font-family="Inter, system-ui" font-size="12" font-weight="700" fill="#F1F5F9">UI Message Stream</text>
-    <text x="115" y="40" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" fill="#7DD3FC">useChat → cited Markdown</text>
-  </g>
-
-  <!-- Arrows -->
-  <line x1="180" y1="65" x2="238" y2="65" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrA)"/>
-
-  <!-- agent to each tool -->
-  <line x1="320" y1="110" x2="180" y2="168" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrA)"/>
-  <line x1="370" y1="110" x2="315" y2="168" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrA)"/>
-  <line x1="420" y1="110" x2="495" y2="168" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrA)"/>
-
-  <!-- loop arrows back from search/read tools to agent -->
-  <path d="M 125 168 C 80 130, 200 110, 250 110" stroke="#94A3B8" stroke-width="1.5" fill="none" stroke-dasharray="3,3" marker-end="url(#arrA)"/>
-  <text x="100" y="148" font-family="JetBrains Mono, monospace" font-size="9" fill="#94A3B8">loop</text>
-
-  <!-- finalAnswer to stream -->
-  <line x1="515" y1="254" x2="430" y2="288" stroke="#7DD3FC" stroke-width="2" marker-end="url(#arrA)"/>
 </svg>
-<p class="figure-caption">Figura 1 · <strong>El loop del agente.</strong> El modelo elige una de tres tools en cada paso. <code>searchWeb</code> y <code>readPage</code> tienen ejecutores y realimentan su salida al loop. <code>finalAnswer</code> no tiene ejecutor — llamarla <em>es</em> el resultado, y el loop termina con el payload validado.</p>
-</div>
+        <p class="figure-caption">Figura 1 · <strong>El loop de un agente.</strong> Las tools de trabajo tienen executor y devuelven su resultado al loop. La tool terminal no tiene, así que llamarla corta el loop con un payload tipado.</p>
+      </div>
 
-<hr />
+      <hr />
 
-<h2>¿Qué es una «tool sin execute» y por qué usarla para esto?</h2>
+      <h2 data-sec="detail">Las piezas, en detalle</h2>
 
-<p>En el AI SDK v6, cada tool se define con <code>tool()</code> y un input schema de Zod. La mayoría de las tools también tienen una función <code>execute</code> que de verdad hace el trabajo:</p>
-
-<pre><code class="language-ts">export const searchWebTool = tool({
+      <h3>Una tool con executor, y una sin</h3>
+      <p>En el AI SDK, una tool normal junta un esquema con un <code>execute</code> que hace el trabajo:</p>
+      <pre><code class="language-ts">export const searchWebTool = tool({
   description: 'Search the web for relevant pages on a topic.',
-  inputSchema: z.object({
-    query: z.string().describe('The search query'),
-  }),
+  inputSchema: z.object({ query: z.string().describe('The search query') }),
   execute: async ({ query }) =&gt; {
     const results = await searchExa(query, 5);
     return results.map(r =&gt; ({ title: r.title, url: r.url, highlights: r.highlights }));
   },
 });</code></pre>
-
-<p>Ahora mira <code>finalAnswer</code>:</p>
-
-<pre><code class="language-ts">export const finalAnswerTool = tool({
+      <p>La tool terminal es la misma forma con el executor sacado:</p>
+      <pre><code class="language-ts">export const finalAnswerTool = tool({
   description: 'Submit the final answer to the user with structured citations.',
   inputSchema: z.object({
     answer: z.string(),
-    sources: z.array(z.object({
-      url: z.url(),
-      title: z.string(),
-      snippet: z.string().optional(),
-    })),
+    sources: z.array(z.object({ url: z.url(), title: z.string() })),
   }),
-  // ← intentionally no execute
+  // &#8592; sin execute a propósito
 });</code></pre>
+      <p>Sin <code>execute</code>. Solo un esquema. Cuando el modelo la llama, el loop corta y el <code>{ answer, sources }</code> validado es lo que recibe tu código.</p>
+      <div class="callout">
+        <div class="callout-label">Patrón · Tool terminal</div>
+        <p>Usá una tool sin execute cada vez que quieras que el modelo elija entre "seguir trabajando" y "terminé". La decisión es el mismo mecanismo que elegir cualquier otra tool, mucho más confiable que parsear texto libre, y la entrada validada se vuelve tu valor de retorno tipado gratis.</p>
+      </div>
 
-<p>Sin <code>execute</code>. Solo un schema.</p>
+      <h3>Por qué le gana al loop artesanal</h3>
+      <p><strong>La terminación es estructural, no heurística.</strong> "¿Cuándo paramos?" lo responde qué función llamó el modelo, un campo estructurado, no una cadena que buscás. Ni reformular ni pensar en voz alta lo engaña.</p>
+      <p><strong>La salida ya está tipada.</strong> Cuando el loop corta obtenés la entrada de la tool terminal, parseada y validada contra el esquema. No hay paso aparte de "extraer la respuesta" ni caso de JSON malformado que manejar.</p>
+      <p><strong>El loop es declarativo.</strong> Un agente descrito como <code>({ model, tools, stopWhen })</code> se lee como una declaración completa de lo que hace. Sin cuerpo de loop escondido, sin condiciones de salida desparramadas en helpers. Volvés en un año y lo entendés en segundos.</p>
 
-<p>Dentro de <code>ToolLoopAgent</code>, el SDK ve que esta tool no tiene ejecutor. Cuando el modelo decide llamarla, el loop <strong>se detiene de inmediato</strong>. La <em>llamada</em> a la tool es el resultado. El payload validado y completamente tipado (<code>{ answer, sources }</code>) es lo que se devuelve a tu código.</p>
+      <h3>La red de seguridad: un tope de pasos</h3>
+      <p>Queda un riesgo: que el modelo nunca llame la tool terminal (se traba buscando en círculos). Así que le ponés tope al loop. En el AI SDK es <code>stopWhen: stepCountIs(8)</code>: después de 8 iteraciones de tool call el framework frena al agente igual. Acota tanto el costo como el riesgo de loop infinito. La tool terminal es la salida normal; el tope de pasos es el freno de emergencia.</p>
 
-<div class="callout">
-<div class="callout-label">Patrón · Tool terminal</div>
-<p>Usa una tool sin execute siempre que quieras que el modelo elija entre «seguir trabajando» y «ya terminé». La decisión es el mismo mecanismo que elegir cualquier otra tool, lo cual es mucho más confiable que parsear texto libre buscando una frase mágica. El input validado se convierte automáticamente en tu valor de retorno tipado.</p>
-</div>
+      <hr />
 
-<hr />
+      <h2 data-sec="code">El agente mínimo, en código</h2>
+      <p>Juntando todo, un agente entero es una sola declaración. Dos tools de trabajo, una tool terminal, un tope de pasos:</p>
+      <pre><code class="language-ts">import { ToolLoopAgent, stepCountIs } from "ai";
 
-<h2 data-sec="build">La implementación: tres tools y un ToolLoopAgent</h2>
-
-<p>El caso de uso es intencionalmente simple: un LLM que toma una pregunta de investigación, busca en la web, lee páginas, y sintetiza una respuesta en Markdown con citas. Tres tools:</p>
-
-<ol>
-<li><code>searchWeb({ query })</code> — llama al endpoint <code>/search</code> de Exa, devuelve 5 resultados con título, URL y highlights pre-extraídos.</li>
-<li><code>readPage({ url })</code> — llama al <code>/contents</code> de Exa, devuelve hasta 8.000 caracteres de texto limpio de la página.</li>
-<li><code>finalAnswer({ answer, sources })</code> — emite la respuesta final al usuario, con citas.</li>
-</ol>
-
-<p>El agente en sí es una sola declaración:</p>
-
-<pre><code class="language-ts">export const researchAgent = new ToolLoopAgent({
-  model: 'anthropic/claude-sonnet-4.6',
+export const agent = new ToolLoopAgent({
+  model: "anthropic/claude-sonnet-4.6",
   instructions: SYSTEM_PROMPT,
   tools: {
-    searchWeb: searchWebTool,
-    readPage: readPageTool,
-    finalAnswer: finalAnswerTool,
+    searchWeb: searchWebTool,     // tiene execute &#8594; corre, devuelve
+    readPage: readPageTool,       // tiene execute &#8594; corre, devuelve
+    finalAnswer: finalAnswerTool, // sin execute &#8594; corta el loop
   },
   stopWhen: stepCountIs(8),
-});</code></pre>
+});
 
-<p>Ese es todo el agente. Sin <code>while</code>. Sin <code>for</code>. Sin parsear «¿dijo el modelo que terminó?». Sin regex sobre el texto de la respuesta. El modelo decide entre «buscar», «leer» y «terminar» usando el mismo mecanismo que usa para cualquier otra tool, y el loop termina en el momento en que elige «terminar».</p>
+const result = await agent.stream({ messages });
+// result.finalToolCall.args está tipado como { answer, sources }</code></pre>
+      <p>Sin <code>while</code>, sin <code>for</code>, sin parsear "¿dijo que terminó?", sin regex sobre la respuesta. El modelo elige entre "buscar", "leer" y "terminar" con el mismo mecanismo que usa para cualquier tool, y el loop corta en el instante en que elige "terminar".</p>
 
-<hr />
+      <hr />
 
-<h2>Por qué esto es mejor que el patrón viejo</h2>
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
+      <p>La tool terminal sin execute va mucho más allá de los agentes de investigación. Donde sea que un LLM tenga que <em>decidir cuándo terminó</em>, esta es la señal más limpia:</p>
+      <ul>
+        <li><strong>Agentes de código</strong>: <code>submitDiff({ files, summary })</code> es la tool terminal. El agente lee, edita, corre tests, y envía. El loop termina con un diff tipado, no con un regex sobre un transcript.</li>
+        <li><strong>Agentes de soporte</strong>: <code>escalateToHuman({ summary })</code> y <code>resolveTicket({ answer })</code> son las dos terminales. El trabajo del agente es elegir una. El loop termina con una acción estructurada.</li>
+        <li><strong>Agentes de extracción</strong>: <code>emitRecord({ ...fields })</code> es la tool terminal. El agente crawlea, pregunta por otras tools, y emite el registro validado cuando tiene suficiente.</li>
+      </ul>
+      <p>La señal de que querés este patrón es simple: te encontrás escribiendo código que lee la prosa del modelo para decidir qué hacer después. Convertí esa decisión en una llamada a tool y la adivinanza desaparece. La Parte 2 lo pone a trabajar en un agente de investigación real, en unas 700 líneas: los tres tools, la UI con streaming, el deploy en Vercel, y los bugs del camino.</p>
 
-<p>Tres razones por las que se me quedó:</p>
-
-<h3>1 · La terminación es estructural, no heurística</h3>
-
-<p>En el patrón viejo, «¿cuándo paramos?» lo decide <em>lo que el modelo dice</em>. Podrías matchear la cadena literal «FINAL ANSWER» o comprobar que el último mensaje del modelo no tiene llamadas a tools. Ambas son heurísticas. Fallan cuando el modelo reformula, cuando piensa en voz alta, cuando hace ambas — llama a una tool <em>y</em> emite algo de prosa que parece una respuesta final.</p>
-
-<p>En el patrón sin execute, «¿cuándo paramos?» lo decide <em>qué función llama el modelo</em>. No hay ninguna cadena que parsear. La decisión vive en la salida de tool-call del modelo, que es un campo estructurado, no texto libre.</p>
-
-<h3>2 · La salida está completamente tipada</h3>
-
-<p>Cuando el loop se detiene, obtienes el input de la tool <code>finalAnswer</code> — ya parseado, ya validado contra el schema de Zod. No hay un paso aparte de «extraer la respuesta final».</p>
-
-<pre><code class="language-ts">const result = await researchAgent.stream({ messages });
-// result.finalToolCall.args is typed as { answer: string, sources: Source[] }</code></pre>
-
-<p>Compáralo con el patrón viejo, donde tendrías que escanear los mensajes buscando la etiqueta, recortar el JSON, parsearlo, y manejar el caso en que el modelo escribió prosa en vez de JSON.</p>
-
-<h3>3 · El loop del agente es declarativo</h3>
-
-<p><code>ToolLoopAgent({ model, tools, stopWhen })</code> se lee como una descripción completa de lo que hace el agente. No hay un cuerpo de loop oculto, ni condiciones de salida dispersas, ni manejo de casos límite repartido entre funciones auxiliares. Si vuelvo a este código dentro de un año, sabré exactamente qué hace en cinco segundos.</p>
-
-<hr />
-
-<h2>Qué significa realmente <code>stepCountIs(8)</code></h2>
-
-<p><code>stopWhen: stepCountIs(8)</code> es la red de seguridad. Si el modelo nunca llama a <code>finalAnswer</code> (p. ej. se queda atascado en un loop de búsqueda), el SDK detendrá el agente tras 8 iteraciones de tool-call. Esto limita tanto el costo de cómputo como el riesgo de loops infinitos.</p>
-
-<p>Para el research agent, 8 pasos sobran. Una sesión típica:</p>
-
-<pre><code class="language-typescript">Step 1: searchWeb({ query: "Vercel AI Gateway vs LiteLLM" })   → 5 results
-Step 2: readPage({ url: "https://vercel.com/.../ai-gateway" }) → 8000 chars
-Step 3: searchWeb({ query: "LiteLLM features pricing 2024" })  → 5 results
-Step 4: readPage({ url: "https://docs.litellm.ai/..." })       → 8000 chars
-Step 5: finalAnswer({ answer: "...", sources: [...] })         → loop terminates</code></pre>
-
-<p>Si la pregunta es más difícil, el modelo usa más pasos. Si toca fondo, el tope te salva.</p>
-
-<hr />
-
-<h2>Algunos extras prácticos</h2>
-
-<h3>Transmitir el razonamiento del agente al navegador</h3>
-
-<p><code>ToolLoopAgent.stream()</code> devuelve un UI Message Stream que el hook <code>useChat</code> del AI SDK v6 consume de forma nativa:</p>
-
-<pre><code class="language-ts">// Server side — Route Handler
-export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
-
-  const result = await researchAgent.stream({
-    messages: await convertToModelMessages(messages),
-  });
-
-  return result.toUIMessageStreamResponse();
-}</code></pre>
-
-<pre><code class="language-tsx">// Client side
-const { messages, sendMessage } = useChat({
-  transport: new DefaultChatTransport({ api: '/api/research' }),
-});</code></pre>
-
-<p>Cada llamada a tool se transmite al navegador a medida que ocurre — inicio de <code>searchWeb</code> → resultado de <code>searchWeb</code> → inicio de <code>readPage</code> → … — y la UI renderiza una tarjeta para cada una en tiempo real. Sin polling, sin fontanería SSE manual en el cliente; lo maneja el hook.</p>
-
-<h3>Vercel AI Gateway por encima del SDK directo de Anthropic</h3>
-
-<p>Enruto la llamada al modelo a través de Vercel AI Gateway en vez de usar el SDK de Anthropic directamente. Tres razones:</p>
-
-<ol>
-<li><strong>Una API key para todo.</strong> Puedo cambiar de <code>claude-sonnet-4.6</code> a <code>claude-haiku-4.5</code> a <code>gpt-5</code> cambiando una cadena. Sin gestión de keys nuevas.</li>
-<li><strong>Failover automático de proveedor.</strong> Si Anthropic tiene una caída, el Gateway reenruta a Bedrock o Vertex sin que yo toque nada.</li>
-<li><strong>Dashboard de costos.</strong> Cada petición queda registrada con costo, latencia y uso de tokens. Útil cuando intentas averiguar qué agente se está comiendo tu presupuesto.</li>
-</ol>
-
-<p>La constante del modelo vive en <code>lib/agent/model.ts</code>:</p>
-
-<pre><code class="language-ts">export const RESEARCH_MODEL = 'anthropic/claude-sonnet-4.6';</code></pre>
-
-<p>Eso es todo. El Gateway lo toma de la variable de entorno <code>AI_GATEWAY_API_KEY</code>.</p>
-
-<h3>Por qué Exa en vez de Google/Bing</h3>
-
-<p>No necesito estrictamente un motor de búsqueda — podría parsear el HTML de Google o usar un proxy estilo SerpAPI. Pero Exa devuelve <strong>contenido de texto limpio directamente</strong>, sin HTML crudo, sin resistencia anti-bot, sin páginas cargadas de JavaScript. Para un LLM que necesita leer contenido, esto ahorra muchísimo tiempo. Todo el archivo <code>lib/exa.ts</code> tiene ~50 líneas.</p>
-
-<h3>Rate limiting por IP</h3>
-
-<p>El agente hace una llamada a Sonnet por paso más una llamada a Exa por cada <code>searchWeb</code> / <code>readPage</code>. Eso se vuelve caro rápido en una demo pública. Uso un rate limiter simple en memoria, un <code>Map&lt;string, Bucket&gt;</code> indexado por IP, limitado a 5 consultas por IP por hora. Para una demo de portfolio esto basta; en producción cambiarías a Upstash Redis para que el límite sea global entre instancias.</p>
-
-<pre><code class="language-ts">export function rateLimit(key: string, opts: { max: number; windowMs: number }) {
-  const now = Date.now();
-  const existing = buckets.get(key);
-  if (!existing || existing.resetAt &lt;= now) {
-    buckets.set(key, { count: 1, resetAt: now + opts.windowMs });
-    return { allowed: true, remaining: opts.max - 1 };
-  }
-  if (existing.count &gt;= opts.max) return { allowed: false };
-  existing.count += 1;
-  return { allowed: true };
-}</code></pre>
-
-<hr />
-
-<h2>Lo que aprendí</h2>
-
-<p>Tres aprendizajes que me llevaré a todo futuro agente:</p>
-
-<ol>
-<li><strong>Haz la terminación estructural.</strong> Si la condición de salida de tu loop es «el modelo dijo la frase mágica», tienes un agente frágil. Conviértelo en una llamada a tool. El modelo sigue decidiendo; tú obtienes una señal limpia y un payload tipado.</li>
-<li><strong>Apóyate en <code>ToolLoopAgent</code></strong> (o el equivalente en tu framework) <strong>en vez de armar loops a mano.</strong> Una definición de agente declarativa es más fácil de leer, más fácil de depurar, y más fácil de entregar a un compañero de equipo. El loop <code>while</code> hecho a medida casi nunca vale su costo.</li>
-<li><strong>Schemas en todas partes.</strong> La misma lección que redescubro cada vez que trabajo con LLMs: el schema es el contrato. Una vez que interiorizas que las salidas de los LLM deberían ser datos tipados validados, no texto libre, cada agente que construyes queda más limpio.</li>
-</ol>
-
-<hr />
-
-<h2 data-sec="different">Qué haría distinto</h2>
-
-<ol>
-<li><strong>Poner el rate limiter en Upstash Redis desde el día uno.</strong> El <code>Map</code> en memoria está bien para una demo de una sola instancia, pero deja escapar el presupuesto en el momento en que Vercel levanta una segunda instancia de función. Cada instancia tiene su propio bucket y el límite global se vuelve <code>5 × instanceCount</code>. Más barato empezar con Upstash que migrar después bajo carga.</li>
-<li><strong>Añadir evals para la calidad de las tool-calls, no solo para el texto final.</strong> Los fallos interesantes para este agente son <em>«el modelo buscó la cosa equivocada»</em> o <em>«el modelo llamó a <code>finalAnswer</code> antes de leer suficientes páginas»</em>, no <em>«el Markdown final está malformado».</em> Construiría una pequeña suite de evals que puntúe trayectorias — número de búsquedas, relevancia de la query de búsqueda, fuentes citadas — en vez de solo juzgar la salida.</li>
-<li><strong>Exponer un modo stdio para el agente.</strong> Ahora que he construido tres de estos agentes, estructuraría cada uno con un route handler HTTP <em>y</em> un binario de CLI delgado que corra el agente en una sesión de terminal. Habría cazado dos bugs más rápido de lo que lo hizo la UI desplegada, y es el mismo patrón que el servidor MCP de mi siguiente proyecto.</li>
-</ol>
-
-<hr />
-
-<h2 data-sec="pattern">El patrón, generalizado</h2>
-
-<p>La tool terminal sin execute generaliza bien mucho más allá de los research agents. En cualquier lugar donde tengas un LLM que necesite <em>decidir cuándo terminó</em>, esta es la señal más limpia.</p>
-
-<p>Algunas formas donde echaría mano de ella:</p>
-
-<ul>
-<li><strong>Agentes de programación</strong> — <code>submitDiff({ files, summary })</code> es la tool terminal. El agente lee archivos, los edita, corre tests, y cuando está listo los envía. El loop termina con un payload de diff tipado, no con un regex sobre una transcripción de chat.</li>
-<li><strong>Agentes de atención al cliente</strong> — <code>escalateToHuman({ summary, severity })</code> y <code>resolveTicket({ answer })</code> son ambas tools terminales. El trabajo del agente es elegir una. El loop termina con una acción estructurada.</li>
-<li><strong>Agentes de extracción de datos</strong> — <code>emitRecord({ ...fields })</code> es la tool terminal. El agente rastrea una página, hace preguntas de seguimiento a través de otras tools, y cuando tiene suficiente emite el registro validado.</li>
-</ul>
-
-<p>Todo el research agent — UI, ruta de servidor, definición del agente, tres tools, rate limiter, 14 tests — cabe en unas 700 líneas de TypeScript. El README recorre cada archivo. Róbalo para tu propio proyecto.</p>
-
-<p>🔗 <strong>github.com/NeryC/research-agent</strong> · <a href="https://research-agent-three-pi.vercel.app">demo en vivo</a></p>
-
-    </div>
-    <div class="tag-pills">
-      <span class="tag-pill">AI Agents</span>
-      <span class="tag-pill">Anthropic Claude</span>
-      <span class="tag-pill">Vercel AI SDK</span>
-      <span class="tag-pill">ToolLoopAgent</span>
-    </div>
-    <div class="footer-cta">
-      <h3>Sobre este proyecto</h3>
-      <p>El código fuente completo, el README y la demo en vivo:</p>
-      <div class="links">
-        <a href="https://github.com/NeryC/research-agent">💻 github.com/NeryC/research-agent ↗</a>
-        <a href="https://research-agent-three-pi.vercel.app">🔗 Demo en vivo ↗</a>
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="research-agent-build.html">Parte 2 · El agente de investigación que construí</a></strong> · <a href="https://github.com/NeryC/research-agent">repo</a> · <a href="https://research-agent-three-pi.vercel.app">demo</a></p>
       </div>
-      <h3 style="margin-top:24px;">Sobre el autor</h3>
-      <p>Soy Nery Cano, ingeniero full-stack senior radicado en Paraguay, construyo sistemas de IA en producción sobre Anthropic Claude + Next.js + Vercel AI SDK v6. Abierto a roles remotos senior / staff / de ingeniería de IA.</p>
-      <div class="links">
-        <a href="../../">Portfolio ↗</a>
-        <a href="https://github.com/NeryC">GitHub ↗</a>
-        <a href="https://www.linkedin.com/in/nery-cano-dev/">LinkedIn ↗</a>
-        <a href="mailto:nerycano798@gmail.com">Email ↗</a>
-      </div>
+
     </div>
   </article>
-  <footer class="site-footer">
-    © 2026 Nery Cano · Pensado con Next.js en mente · Servido como HTML plano porque es 200 ms más rápido
-  </footer>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>

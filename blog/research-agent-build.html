@@ -3,29 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agent loops from zero: how an AI agent uses tools and knows when to stop: Nery Cano</title>
-  <meta name="description" content="How an AI agent uses tools in a loop, and the cleanest way to let it decide when it is done: a tool with no executor. Explained from zero." />
+  <title>The AI research agent I built: from a question to a cited answer: Nery Cano</title>
+  <meta name="description" content="A research agent that searches the web, reads pages, and streams a cited answer in 25 seconds. The real code, built on the no-execute terminal-tool pattern." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
 
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Agent loops from zero: how an AI agent uses tools and knows when to stop" />
-  <meta property="og:description" content="How an AI agent uses tools in a loop, and the cleanest way to let it decide when it is done: a tool with no executor. Explained from zero." />
-  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_guide_banner_en.png" />
-  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/research-agent.html" />
+  <meta property="og:title" content="The AI research agent I built: from a question to a cited answer" />
+  <meta property="og:description" content="A research agent that searches the web, reads pages, and streams a cited answer in 25 seconds. The real code, built on the no-execute terminal-tool pattern." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_build_banner_en.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/research-agent-build.html" />
   <meta property="article:published_time" content="2026-05-26" />
   <meta property="article:tag" content="AI Agents" />
-  <meta property="article:tag" content="ToolLoopAgent" />
+  <meta property="article:tag" content="Next.js" />
   <meta property="article:tag" content="Vercel AI SDK" />
-  <meta property="article:tag" content="LLM" />
+  <meta property="article:tag" content="ToolLoopAgent" />
+  <meta property="article:tag" content="Serverless" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Agent loops from zero: how an AI agent uses tools and knows when to stop" />
-  <meta name="twitter:description" content="How an AI agent uses tools in a loop, and the cleanest way to let it decide when it is done: a tool with no executor. Explained from zero." />
-  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_guide_banner_en.png" />
+  <meta name="twitter:title" content="The AI research agent I built: from a question to a cited answer" />
+  <meta name="twitter:description" content="A research agent that searches the web, reads pages, and streams a cited answer in 25 seconds. The real code, built on the no-execute terminal-tool pattern." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_3_research_build_banner_en.png" />
 
-  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/research-agent.html" />
-  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/research-agent.html" />
-  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/research-agent.html" />
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/research-agent-build.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/research-agent-build.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/research-agent-build.html" />
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -314,163 +315,138 @@
 <body>
   <nav class="header-nav"><a href="../">&larr; Portfolio</a><a href="index.html">Blog</a></nav>
   <article class="article">
-    <!-- structure: guide -->
-    <div class="article-meta">May 26, 2026 · Part 1 of 2 · ~10 min read</div>
-    <h1 class="article-title">Agent loops from zero: how an AI agent uses tools and knows when to stop</h1>
-    <p class="article-subtitle">How an AI agent uses tools in a loop, and the cleanest way to let it decide when it is done: a tool with no executor.</p>
+    <!-- structure: build -->
+    <div class="article-meta">May 26, 2026 · Part 2 of 2 · ~10 min read</div>
+    <h1 class="article-title">The AI research agent I built: from a question to a cited answer</h1>
+    <p class="article-subtitle">A research agent that searches the web, reads pages, and streams a cited answer in about 25 seconds. The real code, on the pattern from Part 1.</p>
     <div class="byline">
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
     </div>
-    <div class="tags"><span class="tag-pill">AI Agents</span> <span class="tag-pill">ToolLoopAgent</span> <span class="tag-pill">Vercel AI SDK</span> <span class="tag-pill">LLM</span></div>
-    <img class="banner-img" src="post_3_research_guide_banner_en.png" alt="How an AI agent uses tools in a loop, and the cleanest way to let it decide when it is done: a tool with no executor. Explained from zero." />
+    <div class="tags"><span class="tag-pill">AI Agents</span> <span class="tag-pill">Next.js</span> <span class="tag-pill">Vercel AI SDK</span> <span class="tag-pill">ToolLoopAgent</span> <span class="tag-pill">Serverless</span></div>
+    <img class="banner-img" src="post_3_research_build_banner_en.png" alt="A research agent that searches the web, reads pages, and streams a cited answer in 25 seconds. The real code, built on the no-execute terminal-tool pattern." />
     <div class="article-body">
 
       <div class="callout">
         <div class="callout-label">Quick links</div>
-        <p>🔗 <strong><a href="research-agent-build.html">Part 2 · The research agent I built</a></strong> · <a href="https://github.com/NeryC/research-agent">repo</a> · <a href="../">portfolio</a></p>
+        <p>🔗 <strong><a href="research-agent.html">Part 1 · Agent loops from zero</a></strong> · <a href="https://github.com/NeryC/research-agent">repo</a> · <a href="https://research-agent-three-pi.vercel.app">live demo</a></p>
       </div>
 
-      <p><em>How an AI agent uses tools in a loop, and the cleanest way to let it decide when it's done: a tool with no executor. Explained from zero, then applied to a real research agent in Part 2.</em></p>
+      <p><em>A research agent that takes a question, searches the web, reads pages, and streams back a cited answer in about 25 seconds. Built on the no-execute terminal-tool pattern from Part 1, in roughly 700 lines of TypeScript.</em></p>
 
-      <p>Every post about "autonomous LLM agents" in 2024 had roughly the same shape: a hand-written loop that calls the model, runs whatever tool it asked for, and checks some condition to decide whether to stop.</p>
+      <p><a href="research-agent.html">Part 1</a> explains the pattern: an agentic loop that ends when the model calls a tool with no executor. This is the real thing built on it, deployed on Vercel, with the code that matters.</p>
 
-      <pre><code class="language-ts">let messages = initialMessages;
-for (let i = 0; i &lt; MAX_STEPS; i++) {
-  const result = await streamText({ model, messages, tools });
-  messages = [...messages, ...result.responseMessages];
-  if (result.text.includes('FINAL ANSWER')) break;   // &#8592; the fragile part
-}</code></pre>
-
-      <p>It works. The fragile part is that last line: deciding when the agent is done by scanning its text for a magic phrase. This guide builds up to a cleaner answer, one that most agent frameworks now bake in, and by the end you'll know exactly why it beats the hand-rolled loop.</p>
+      <p>🔗 <strong>github.com/NeryC/research-agent</strong> · <a href="https://research-agent-three-pi.vercel.app">live demo</a></p>
 
       <hr />
 
-      <h2 data-sec="glossary">Six terms, first</h2>
-      <p>Six words carry the whole idea. Define them once and the rest reads clean.</p>
-      <p><strong>LLM.</strong> The model (Claude, GPT). It predicts text, and it can be told about tools it may call.</p>
-      <p><strong>Tool.</strong> A function you expose to the model with a name, a description, and a typed input schema. The model can ask to call it.</p>
-      <p><strong>Execute.</strong> The function that runs when a tool is called. Most tools have one; the trick in this guide is a tool that has none.</p>
-      <p><strong>Agentic loop.</strong> The model calls a tool, sees the result, calls another, and so on, until it decides it's finished. Not one prompt: a loop of tool calls.</p>
-      <p><strong>Step.</strong> One turn of that loop (one tool call). Agents cap the number of steps as a safety net.</p>
-      <p><strong>Terminal tool.</strong> The tool whose call means "I'm done." The heart of the pattern.</p>
-
-      <h2 data-sec="definition">What an agentic loop is, in one paragraph</h2>
-      <p>An agentic loop is what turns a text predictor into something that <em>acts</em>. You give the model a set of tools and a goal. It picks a tool, you run it, you hand the result back, and it picks again. The loop repeats until the model signals it's done. Everything interesting about agents (research, coding, support) is a variation on this one shape. The only hard question in it is the one the 2024 loops answered badly: how does the model say "I'm done", and how does your code know?</p>
-
-      <hr />
-
-      <h2 data-sec="problem">The problem: how does the loop know when to stop?</h2>
-      <p>In the hand-rolled loop, "stop" is a guess about the model's text. Two common versions, both brittle:</p>
-      <ul>
-        <li><strong>Match a magic string.</strong> Break when the output contains <code>"FINAL ANSWER"</code>. Fails when the model rephrases, or writes the phrase while still thinking out loud.</li>
-        <li><strong>Check for no tool calls.</strong> Break when the model's last message called no tools. Fails when the model calls a tool <em>and</em> writes prose that looks final in the same turn.</li>
-      </ul>
-      <p>Both share a root flaw: the stop signal lives in free text, so you're parsing prose to make a control-flow decision. And once you decide it stopped, you still have a second problem, pulling the final answer back out: scan the messages, slice the JSON, parse it, and handle the case where the model wrote prose instead. Every one of those steps is a place to break.</p>
-
-      <h2 data-sec="anatomy">The anatomy: a tool that ends the loop</h2>
-      <p>The fix is to make "I'm done" a tool call like any other. You define a <strong>terminal tool</strong>, say <code>finalAnswer</code>, with a typed schema and <em>no executor</em>. The agent framework knows what to do: when the model calls a tool that has no <code>execute</code>, there's nothing to run, so the loop stops. The tool's call <em>is</em> the result.</p>
-      <p>Now both problems disappear at once. Termination is decided by <em>which function the model called</em>, a structured field, not by parsing text. And the final answer is the tool's validated input, already typed, with no extraction step.</p>
+      <h2 data-sec="architecture">What it is, in one paragraph</h2>
+      <p>A Next.js 16 app that takes a research question, lets an LLM agent decide what to search for and which pages to read, and streams back a cited Markdown answer in roughly 25 seconds. The agent is a <code>ToolLoopAgent</code> with three tools (<code>searchWeb</code>, <code>readPage</code>, <code>finalAnswer</code>) and a single safety cap of <code>stepCountIs(8)</code>. Termination is structural: when the model calls <code>finalAnswer</code>, the loop stops, because that tool has no executor. The whole thing, UI included, is about 700 lines.</p>
       <div class="figure">
-        <svg viewBox="0 0 660 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An agentic loop: the model picks a tool each step until it calls the terminal tool">
-  <defs><marker id="al" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker>
-  <marker id="alg" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94A3B8"/></marker></defs>
-  <g font-family="JetBrains Mono, monospace" font-size="11">
-    <rect x="250" y="24" width="160" height="52" rx="10" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.8"/>
-    <text x="330" y="47" text-anchor="middle" fill="#7DD3FC" font-size="12">the model</text>
-    <text x="330" y="65" text-anchor="middle" fill="#94A3B8" font-size="10">picks one tool</text>
-    <rect x="70" y="150" width="150" height="46" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
-    <text x="145" y="171" text-anchor="middle" fill="#E2E8F0">work tool</text>
-    <text x="145" y="187" text-anchor="middle" fill="#94A3B8" font-size="9.5">has execute()</text>
-    <rect x="255" y="150" width="150" height="46" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
-    <text x="330" y="171" text-anchor="middle" fill="#E2E8F0">work tool</text>
-    <text x="330" y="187" text-anchor="middle" fill="#94A3B8" font-size="9.5">has execute()</text>
-    <rect x="440" y="146" width="164" height="54" rx="9" fill="#0E2A44" stroke="#7DD3FC" stroke-width="2.2"/>
-    <text x="522" y="167" text-anchor="middle" fill="#7DD3FC" font-size="12">terminal tool</text>
-    <text x="522" y="185" text-anchor="middle" fill="#F87171" font-size="9.5">no execute() &#8594; stop</text>
-    <line x1="300" y1="76" x2="170" y2="148" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#alg)"/>
-    <line x1="330" y1="76" x2="330" y2="148" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#alg)"/>
-    <line x1="360" y1="76" x2="500" y2="144" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#al)"/>
-    <path d="M330,196 C330,244 250,250 300,90" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#alg)"/>
-    <text x="205" y="250" text-anchor="middle" fill="#94A3B8" font-size="10">result feeds back, loop continues</text>
-    <text x="522" y="224" text-anchor="middle" fill="#7DD3FC" font-size="10">calling it IS the answer</text>
+        <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The research agent: a query enters a ToolLoopAgent with three tools and streams a cited answer back">
+  <defs><marker id="ra" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker>
+  <marker id="rag" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#94A3B8"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <rect x="20" y="128" width="120" height="60" rx="10" fill="#122845" stroke="#94A3B8" stroke-width="1.6"/>
+    <text x="80" y="153" text-anchor="middle" fill="#F1F5F9" font-size="11">user query</text>
+    <text x="80" y="171" text-anchor="middle" fill="#94A3B8" font-size="9.5">a question</text>
+    <rect x="200" y="118" width="180" height="80" rx="11" fill="#1F3A68" stroke="#7DD3FC" stroke-width="2"/>
+    <text x="290" y="146" text-anchor="middle" fill="#7DD3FC" font-size="12">ToolLoopAgent</text>
+    <text x="290" y="166" text-anchor="middle" fill="#94A3B8" font-size="9.5">claude-sonnet-4.6</text>
+    <text x="290" y="182" text-anchor="middle" fill="#94A3B8" font-size="9.5">stopWhen: stepCountIs(8)</text>
+    <rect x="440" y="36" width="150" height="44" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="515" y="55" text-anchor="middle" fill="#E2E8F0">searchWeb</text><text x="515" y="70" text-anchor="middle" fill="#94A3B8" font-size="9">Exa /search</text>
+    <rect x="440" y="94" width="150" height="44" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="515" y="113" text-anchor="middle" fill="#E2E8F0">readPage</text><text x="515" y="128" text-anchor="middle" fill="#94A3B8" font-size="9">Exa /contents</text>
+    <rect x="440" y="152" width="150" height="48" rx="9" fill="#0E2A44" stroke="#7DD3FC" stroke-width="2.2"/>
+    <text x="515" y="171" text-anchor="middle" fill="#7DD3FC">finalAnswer</text><text x="515" y="186" text-anchor="middle" fill="#F87171" font-size="9">no execute &#8594; stop</text>
+    <rect x="212" y="248" width="256" height="48" rx="10" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.6"/>
+    <text x="340" y="268" text-anchor="middle" fill="#E2E8F0">UI Message Stream</text><text x="340" y="285" text-anchor="middle" fill="#7DD3FC" font-size="9.5">useChat &#8594; cited Markdown</text>
+    <line x1="140" y1="158" x2="196" y2="158" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#ra)"/>
+    <line x1="380" y1="150" x2="436" y2="60" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#rag)"/>
+    <line x1="380" y1="155" x2="436" y2="116" stroke="#94A3B8" stroke-width="1.5" marker-end="url(#rag)"/>
+    <line x1="380" y1="168" x2="436" y2="176" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#ra)"/>
+    <path d="M470,74 C420,110 360,120 320,116" fill="none" stroke="#94A3B8" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#rag)"/>
+    <text x="404" y="106" fill="#94A3B8" font-size="9">loop</text>
+    <path d="M515,200 C515,248 470,262 470,262" fill="none" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#ra)"/>
+    <line x1="212" y1="272" x2="150" y2="272" stroke="#7DD3FC" stroke-width="1.6" marker-end="url(#ra)"/>
+    <text x="80" y="268" text-anchor="middle" fill="#94A3B8" font-size="9">back to</text><text x="80" y="281" text-anchor="middle" fill="#94A3B8" font-size="9">the browser</text>
   </g>
 </svg>
-        <p class="figure-caption">Figure 1 · <strong>The agentic loop.</strong> Work tools have executors and feed their result back into the loop. The terminal tool has none, so calling it ends the loop with a typed payload.</p>
+        <p class="figure-caption">Figure 1 · <strong>The research agent, end to end.</strong> The query enters the loop; <code>searchWeb</code> and <code>readPage</code> feed results back; <code>finalAnswer</code> ends it, and the answer streams to the browser.</p>
       </div>
 
       <hr />
 
-      <h2 data-sec="detail">The pieces, in detail</h2>
+      <h2 data-sec="build">How I built it, step by step</h2>
 
-      <h3>A tool with an executor, and one without</h3>
-      <p>In the AI SDK, a normal tool pairs a schema with an <code>execute</code> that does the work:</p>
-      <pre><code class="language-ts">export const searchWebTool = tool({
-  description: 'Search the web for relevant pages on a topic.',
-  inputSchema: z.object({ query: z.string().describe('The search query') }),
-  execute: async ({ query }) =&gt; {
-    const results = await searchExa(query, 5);
-    return results.map(r =&gt; ({ title: r.title, url: r.url, highlights: r.highlights }));
-  },
-});</code></pre>
-      <p>The terminal tool is the same shape with the executor removed:</p>
-      <pre><code class="language-ts">export const finalAnswerTool = tool({
-  description: 'Submit the final answer to the user with structured citations.',
-  inputSchema: z.object({
-    answer: z.string(),
-    sources: z.array(z.object({ url: z.url(), title: z.string() })),
-  }),
-  // &#8592; intentionally no execute
-});</code></pre>
-      <p>No <code>execute</code>. Just a schema. When the model calls it, the loop stops and the validated <code>{ answer, sources }</code> is what your code receives.</p>
-      <div class="callout">
-        <div class="callout-label">Pattern · Terminal tool</div>
-        <p>Use a no-execute tool any time you want the model to choose between "keep working" and "I'm done". The decision is the same mechanism as picking any other tool, far more reliable than parsing free text, and the validated input becomes your typed return value for free.</p>
-      </div>
-
-      <h3>Why this beats the hand-rolled loop</h3>
-      <p><strong>Termination is structural, not heuristic.</strong> "When do we stop?" is answered by which function the model called, a structured field, not a string you match against. No rephrasing or think-out-loud can fool it.</p>
-      <p><strong>The output is already typed.</strong> When the loop stops you get the terminal tool's input, parsed and validated against the schema. There is no separate "extract the answer" step and no malformed-JSON case to handle.</p>
-      <p><strong>The loop is declarative.</strong> An agent described as <code>({ model, tools, stopWhen })</code> reads as a complete statement of what it does. No hidden loop body, no exit conditions scattered across helpers. Come back in a year and you understand it in seconds.</p>
-
-      <h3>The safety net: a step cap</h3>
-      <p>One risk remains: the model might never call the terminal tool (it gets stuck searching in circles). So you cap the loop. In the AI SDK that's <code>stopWhen: stepCountIs(8)</code>: after 8 tool-call iterations the framework halts the agent regardless. It bounds both cost and the risk of an infinite loop. The terminal tool is the normal exit; the step cap is the emergency brake.</p>
-
-      <hr />
-
-      <h2 data-sec="code">The minimal agent, in code</h2>
-      <p>Put it together and a whole agent is one declaration. Two work tools, one terminal tool, one step cap:</p>
-      <pre><code class="language-ts">import { ToolLoopAgent, stepCountIs } from "ai";
-
-export const agent = new ToolLoopAgent({
-  model: "anthropic/claude-sonnet-4.6",
+      <h3>The three tools</h3>
+      <p>The use case is intentionally simple, so the pattern stays visible. Three tools:</p>
+      <ol>
+        <li><code>searchWeb({ query })</code>: calls Exa's <code>/search</code>, returns 5 results with title, URL, and pre-extracted highlights.</li>
+        <li><code>readPage({ url })</code>: calls Exa's <code>/contents</code>, returns up to 8,000 characters of clean page text.</li>
+        <li><code>finalAnswer({ answer, sources })</code>: the terminal tool, no executor, emits the cited response.</li>
+      </ol>
+      <p>The agent itself is one declaration:</p>
+      <pre><code class="language-ts">export const researchAgent = new ToolLoopAgent({
+  model: 'anthropic/claude-sonnet-4.6',
   instructions: SYSTEM_PROMPT,
-  tools: {
-    searchWeb: searchWebTool,     // has execute &#8594; runs, feeds back
-    readPage: readPageTool,       // has execute &#8594; runs, feeds back
-    finalAnswer: finalAnswerTool, // no execute &#8594; ends the loop
-  },
+  tools: { searchWeb: searchWebTool, readPage: readPageTool, finalAnswer: finalAnswerTool },
   stopWhen: stepCountIs(8),
-});
+});</code></pre>
+      <p>That's the whole agent. No <code>while</code>, no "did it say it's done?" parsing. A typical run: <code>searchWeb</code> &#8594; <code>readPage</code> &#8594; <code>searchWeb</code> &#8594; <code>readPage</code> &#8594; <code>finalAnswer</code>, and the loop terminates on that last call.</p>
 
-const result = await agent.stream({ messages });
-// result.finalToolCall.args is typed as { answer, sources }</code></pre>
-      <p>No <code>while</code>, no <code>for</code>, no "did it say it's done?" parsing, no regex over the response. The model chooses between "search", "read", and "finish" with the same mechanism it uses for any tool, and the loop ends the instant it picks "finish".</p>
+      <h3>Streaming the agent's reasoning to the browser</h3>
+      <p><code>ToolLoopAgent.stream()</code> returns a UI Message Stream that AI SDK v6's <code>useChat</code> consumes natively:</p>
+      <pre><code class="language-ts">// Server: Route Handler
+export async function POST(req: Request) {
+  const { messages }: { messages: UIMessage[] } = await req.json();
+  const result = await researchAgent.stream({
+    messages: await convertToModelMessages(messages),
+  });
+  return result.toUIMessageStreamResponse();
+}</code></pre>
+      <p>Each tool call streams as it happens (<code>searchWeb</code> start &#8594; result &#8594; <code>readPage</code> start &#8594; …) and the UI renders a card for each in real time. No polling, no manual SSE on the client.</p>
+
+      <h3>Vercel AI Gateway over the direct Anthropic SDK</h3>
+      <p>I route the model through Vercel AI Gateway instead of the Anthropic SDK directly. One API key for every provider, automatic failover if Anthropic has an outage, and a cost dashboard per request. Swapping <code>claude-sonnet-4.6</code> for <code>claude-haiku-4.5</code> is a one-string change:</p>
+      <pre><code class="language-ts">export const RESEARCH_MODEL = 'anthropic/claude-sonnet-4.6';</code></pre>
+
+      <h3>Exa instead of scraping Google</h3>
+      <p>Exa returns clean text content directly, no raw HTML, no anti-bot walls, no JavaScript-heavy pages. For an LLM that needs to read content, that's a big time-saver; the whole <code>lib/exa.ts</code> is about 50 lines.</p>
+
+      <h3>Rate limiting per IP</h3>
+      <p>The agent makes a Sonnet call per step plus an Exa call per search or read, which gets expensive fast on a public demo. A small in-memory <code>Map&lt;string, Bucket&gt;</code> keyed by IP caps it at 5 queries per IP per hour:</p>
+      <pre><code class="language-ts">export function rateLimit(key: string, opts: { max: number; windowMs: number }) {
+  const now = Date.now();
+  const existing = buckets.get(key);
+  if (!existing || existing.resetAt &lt;= now) {
+    buckets.set(key, { count: 1, resetAt: now + opts.windowMs });
+    return { allowed: true, remaining: opts.max - 1 };
+  }
+  if (existing.count &gt;= opts.max) return { allowed: false };
+  existing.count += 1;
+  return { allowed: true };
+}</code></pre>
+
+      <hr />
+
+      <h2 data-sec="different">What I'd do differently</h2>
+      <ol>
+        <li><strong>Put the rate limiter in Upstash Redis from day one.</strong> The in-memory <code>Map</code> is fine for one instance, but it leaks the budget the moment Vercel spins up a second function: each instance has its own bucket, so the global limit becomes <code>5 × instanceCount</code>. Cheaper to start with Upstash than to migrate under load.</li>
+        <li><strong>Eval the trajectory, not just the final text.</strong> The interesting failures are "it searched for the wrong thing" or "it called <code>finalAnswer</code> before reading enough", not "the Markdown is malformed". I'd score trajectories (number of searches, query relevance, sources cited) instead of only judging the output.</li>
+        <li><strong>Ship a stdio mode.</strong> Now that I've built three of these, I'd give each one an HTTP route <em>and</em> a thin CLI that runs the agent in a terminal. It would have caught two bugs faster than the deployed UI did, and it is the same shape as the MCP server in the next project.</li>
+      </ol>
 
       <hr />
 
       <h2 data-sec="pattern">The pattern, generalized</h2>
-      <p>The no-execute terminal tool goes well beyond research agents. Anywhere an LLM has to <em>decide when it's done</em>, this is the cleanest signal:</p>
-      <ul>
-        <li><strong>Coding agents</strong>: <code>submitDiff({ files, summary })</code> is the terminal tool. The agent reads, edits, runs tests, and submits. The loop ends with a typed diff, not a regex over a transcript.</li>
-        <li><strong>Support agents</strong>: <code>escalateToHuman({ summary })</code> and <code>resolveTicket({ answer })</code> are both terminal. The agent's job is to pick one. The loop ends with a structured action.</li>
-        <li><strong>Extraction agents</strong>: <code>emitRecord({ ...fields })</code> is the terminal tool. The agent crawls, asks follow-ups through other tools, and emits the validated record when it has enough.</li>
-      </ul>
-      <p>The signal that you want this pattern is simple: you catch yourself writing code that reads the model's prose to decide what to do next. Turn that decision into a tool call and the guesswork disappears. Part 2 puts it to work in a real research agent, in roughly 700 lines: the three tools, the streaming UI, the Vercel deploy, and the bugs along the way.</p>
+      <p>Strip the web search away and what's left is the reusable core: <strong>a declarative agent with a typed terminal tool</strong>. Swap the two work tools and the terminal tool, and the same 700-line skeleton becomes a coding agent, a support agent, or a data-extraction agent. The loop, the step cap, the streaming, and the deploy don't change.</p>
+      <p>What I keep from this build: make termination a tool call, validate everything with a schema, and prefer a declarative agent over a hand-rolled loop. Part 1 has the full case for why. The repo walks through every file, so steal it for your own project.</p>
 
       <div class="callout">
         <div class="callout-label">Quick links</div>
-        <p>🔗 <strong><a href="research-agent-build.html">Part 2 · The research agent I built</a></strong> · <a href="https://github.com/NeryC/research-agent">repo</a> · <a href="https://research-agent-three-pi.vercel.app">live demo</a></p>
+        <p>🔗 <strong><a href="research-agent.html">Part 1 · Agent loops from zero</a></strong> · <a href="https://github.com/NeryC/research-agent">repo</a> · <a href="https://research-agent-three-pi.vercel.app">live demo</a></p>
       </div>
 
     </div>
