@@ -518,7 +518,7 @@
       </div>
 
       <h3>What a multi-agent costs</h3>
-      <p>Splitting the work isn't free, and it's worth knowing the price before paying it. <strong>Money:</strong> each agent is at least one model call, so three specialists plus a supervisor are four calls per run, not one. <strong>Latency:</strong> fan-out helps because it runs in parallel, but a pipeline or a debate add up the times. <strong>Coordination:</strong> a new problem appears that one agent didn't have: merging outputs that don't match, resolving contradictions, deciding who wins. <strong>Failure modes:</strong> with more pieces there are more things that can break, and some fail silently (a supervisor that deletes too much, as you'll see in Part 2). The rule of thumb: start with one agent, and move to several only when the problem genuinely splits.</p>
+      <p>Splitting the work isn't free, and it's worth knowing the price before paying it. <strong>Money:</strong> each agent is at least one model call, so three specialists plus a supervisor are four calls per run, not one. <strong>Latency:</strong> fan-out helps because it runs in parallel, but a pipeline or a debate add up the times. <strong>Coordination:</strong> a new problem appears that one agent didn't have: merging outputs that don't match, resolving contradictions, deciding who wins. <strong>Failure modes:</strong> with more pieces there are more things that can break, and some fail silently (a supervisor that deletes too much, as you'll see in Part 2). The rule of thumb: start with one agent, and move to several only when the problem clearly splits.</p>
 
       <div class="callout">
         <div class="callout-label">The takeaway</div>

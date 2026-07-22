@@ -511,7 +511,7 @@ streamText({
 
       <h2>Memory: two ways to remember</h2>
 
-      <p>Here is the part that gives the project its name. The agent remembers things about the user across conversations, and it does so with <strong>the same RAG mechanism</strong>: memories are text embedded in the same vector base, in their own table. Remembering is, literally, doing RAG over your memories.</p>
+      <p>Here is the part that gives the project its name. The agent remembers things about the user across conversations, and it does so with <strong>the same RAG mechanism</strong>: memories are text embedded in the same vector base, in their own table. Remembering is doing RAG over your memories.</p>
 
       <p>There are two ways to write a memory and one to read it. The <strong>automatic</strong> one is the interesting one: after each answer, a small, cheap model (Claude Haiku 4.5) reads the conversation and extracts durable facts with a confidence score, using structured output. Only those above <code>0.7</code> are stored:</p>
 

@@ -412,7 +412,7 @@ export const ReviewReportSchema = z.object({
   recommendation: z.string(),
   findings: z.array(FindingSchema),
 });</code></pre>
-      <p><strong>La orquestación: el fan-out de verdad.</strong> Acá está el corazón. Los tres agentes se disparan con <code>Promise.all</code>, así que corren a la vez y el tiempo total es el del más lento, no la suma. Un detalle que parece menor y no lo es: anuncio los tres como «corriendo» <em>antes</em> del <code>await</code>, para que el timeline en vivo muestre paralelismo real y no una fila.</p>
+      <p><strong>La orquestación: el fan-out.</strong> Acá está el corazón. Los tres agentes se disparan con <code>Promise.all</code>, así que corren a la vez y el tiempo total es el del más lento, no la suma. Un detalle que parece menor y no lo es: anuncio los tres como «corriendo» <em>antes</em> del <code>await</code>, para que el timeline en vivo muestre paralelismo real y no una fila.</p>
       <pre><code class="language-typescript">// Los 3 se anuncian ANTES de esperar — si no, el timeline miente
 send({ type: 'agent', name: 'security', status: 'running' });
 send({ type: 'agent', name: 'performance', status: 'running' });
@@ -471,7 +471,7 @@ ${JSON.stringify(findings, null, 2)}`,
 
       <div class="callout warn">
         <div class="callout-label">Bug · El rate limit se resetea en cold start</div>
-        <p>El límite de 3 por hora vive en un <code>Map</code> en memoria. En serverless, cada arranque en frío lo borra, así que un usuario decidido puede pasarlo. Para una demo de portafolio alcanza: es un freno de costos, no una cuota de verdad. Una versión seria usaría Upstash o KV, y lo dejé anotado en vez de fingir que estaba resuelto.</p>
+        <p>El límite de 3 por hora vive en un <code>Map</code> en memoria. En serverless, cada arranque en frío lo borra, así que un usuario decidido puede pasarlo. Para una demo de portafolio alcanza: es un freno de costos, no una cuota real. Una versión seria usaría Upstash o KV, y lo dejé anotado en vez de fingir que estaba resuelto.</p>
       </div>
 
       <h2 data-sec="different">Qué haría distinto</h2>
@@ -481,7 +481,7 @@ ${JSON.stringify(findings, null, 2)}`,
 
       <h2 data-sec="pattern">El patrón, generalizado</h2>
       <p>Sacando el tema «código», lo que queda es el patrón de la Parte 1: <strong>especialistas en paralelo + un supervisor que consolida</strong>. Tres cosas lo hicieron funcionar acá y se repiten en cualquier caso: cada agente tiene <strong>un rol único</strong> (y así rinde mejor que un prompt que hace de todo), Zod convierte las salidas en un <strong>contrato</strong> (el supervisor recibe datos, no prosa que adivinar), y el <code>Promise.all</code> compra <strong>paralelismo casi gratis</strong>. El costo es real (cuatro llamadas por corrida, y coordinación que un solo agente no tenía), pero cuando el problema se parte en puntos de vista, se paga solo.</p>
-      <p>Si tenés un due diligence, un triage de soporte o una moderación donde varios expertos miran lo mismo y alguien tiene que sacar una conclusión, esta es la forma. El revisor de código es solo la excusa para mostrarla con código de verdad.</p>
+      <p>Si tenés un due diligence, un triage de soporte o una moderación donde varios expertos miran lo mismo y alguien tiene que sacar una conclusión, esta es la forma. El revisor de código es solo la excusa para mostrarla con código real.</p>
 
       <div class="callout">
         <div class="callout-label">Enlaces rápidos</div>

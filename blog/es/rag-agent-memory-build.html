@@ -511,7 +511,7 @@ streamText({
 
       <h2>La memoria: dos formas de recordar</h2>
 
-      <p>Acá está la parte que le da el nombre al proyecto. El agente recuerda cosas del usuario entre conversaciones, y lo hace con <strong>el mismo mecanismo de RAG</strong>: las memorias son texto embebido en la misma base de vectores, en su propia tabla. Recordar es, literalmente, hacer RAG sobre tus recuerdos.</p>
+      <p>Acá está la parte que le da el nombre al proyecto. El agente recuerda cosas del usuario entre conversaciones, y lo hace con <strong>el mismo mecanismo de RAG</strong>: las memorias son texto embebido en la misma base de vectores, en su propia tabla. Recordar es hacer RAG sobre tus recuerdos.</p>
 
       <p>Hay dos formas de escribir una memoria y una de leerla. La <strong>automática</strong> es la interesante: después de cada respuesta, un modelo chico y barato (Claude Haiku 4.5) lee la conversación y extrae hechos durables con un puntaje de confianza, usando salida estructurada. Solo se guardan los que superan <code>0.7</code>:</p>
 
@@ -569,7 +569,7 @@ for (const f of object.facts.filter(f =&gt; f.confidence &gt; 0.7)) {
       <h2 data-sec="different">Lo que haría distinto</h2>
 
       <ol>
-        <li><strong>Separar por página de verdad.</strong> Hoy el parser junta todo el PDF en un texto y trocea sobre eso, así que las citas dicen siempre <code>p.1</code>. Rastrear el número de página real durante la extracción haría las citas precisas, que es medio punto del valor de RAG.</li>
+        <li><strong>Separar por página como corresponde.</strong> Hoy el parser junta todo el PDF en un texto y trocea sobre eso, así que las citas dicen siempre <code>p.1</code>. Rastrear el número de página real durante la extracción haría las citas precisas, que es medio punto del valor de RAG.</li>
         <li><strong>Trocear mejor.</strong> Uso longitud sobre 4 como proxy de tokens y corto por párrafos. Funciona, pero un contador de tokens real y un troceo consciente de la estructura reducirían los fragmentos partidos.</li>
         <li><strong>Sumar reranking.</strong> Recupero por similitud pura. Traer 20 candidatos y reordenarlos con un modelo dedicado, como conté en la parte 1, es la mejora de mayor retorno que tengo pendiente.</li>
         <li><strong>Ingesta asíncrona para PDFs grandes.</strong> La ingesta síncrona entra en la ventana serverless para documentos chicos. Para archivos grandes, lo correcto es una cola: responder rápido y procesar en segundo plano.</li>

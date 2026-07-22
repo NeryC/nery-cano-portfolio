@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RAG from scratch: the complete guide (Part 1) — Nery Cano</title>
-  <meta name="description" content="What RAG is, what the alternatives are, and how to actually build it. Explained from zero, with lots of diagrams. Part 1 of 2." />
+  <meta name="description" content="What RAG is, what the alternatives are, and how to build it. Explained from zero, with lots of diagrams. Part 1 of 2." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
 
   <meta property="og:type" content="article" />
   <meta property="og:title" content="RAG from scratch: the complete guide (Part 1 of 2)" />
-  <meta property="og:description" content="What RAG is, the alternatives, and how to actually build it. The full theory before the code." />
+  <meta property="og:description" content="What RAG is, the alternatives, and how to build it. The full theory before the code." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
   <meta property="article:published_time" content="2026-05-12" />
@@ -21,7 +21,7 @@
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="RAG from scratch: the complete guide (Part 1 of 2)" />
-  <meta name="twitter:description" content="What RAG is, the alternatives, and how to actually build it. The full theory before the code." />
+  <meta name="twitter:description" content="What RAG is, the alternatives, and how to build it. The full theory before the code." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_1_rag_banner.png" />
 
   <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/rag-agent-with-memory.html" />
@@ -323,7 +323,7 @@
   <article class="article">
     <div class="article-meta">May 12, 2026 · Part 1 of 2 · ~20 min read</div>
     <h1 class="article-title">RAG from scratch: the guide I wish I'd had</h1>
-    <p class="article-subtitle">What it is, what the alternatives are, and how it actually gets built. Then, in <strong>part 2</strong>, the agent with memory I built on Next.js, Voyage and pgvector, with the real code.</p>
+    <p class="article-subtitle">What it is, what the alternatives are, and how it gets built. Then, in <strong>part 2</strong>, the agent with memory I built on Next.js, Voyage and pgvector, with the real code.</p>
     <div class="byline">
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
@@ -514,7 +514,7 @@
 
       <h3>4 · Retrieval: cosine and top-k</h3>
 
-      <p>A question arrives. You embed it with the same function, and now you have to measure which fragments are "close." The standard measure is <strong>cosine similarity</strong>: it looks at the angle between two vectors, not their size. Cosine 1 means same direction (same meaning); 0 means unrelated. You keep the <strong>top k</strong> (typically 3 to 8) and, optionally, discard those below a minimum <strong>threshold</strong>, so you do not drag in noise when nothing is truly relevant.</p>
+      <p>A question arrives. You embed it with the same function, and now you have to measure which fragments are "close." The standard measure is <strong>cosine similarity</strong>: it looks at the angle between two vectors, not their size. Cosine 1 means same direction (same meaning); 0 means unrelated. You keep the <strong>top k</strong> (typically 3 to 8) and, optionally, discard those below a minimum <strong>threshold</strong>, so you do not drag in noise when nothing is relevant.</p>
 
       <div class="figure reveal">
         <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">

@@ -323,7 +323,7 @@
   <article class="article">
     <div class="article-meta">12 may 2026 · Parte 1 de 2 · ~20 min</div>
     <h1 class="article-title">RAG desde cero: la guía que me hubiera gustado tener</h1>
-    <p class="article-subtitle">Qué es, qué alternativas hay y cómo se implementa de verdad. Después, y en la <strong>parte 2</strong>, el agente con memoria que construí sobre Next.js, Voyage y pgvector, con el código real.</p>
+    <p class="article-subtitle">Qué es, qué alternativas hay y cómo se implementa. Después, y en la <strong>parte 2</strong>, el agente con memoria que construí sobre Next.js, Voyage y pgvector, con el código real.</p>
     <div class="byline">
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
@@ -547,7 +547,7 @@
 
       <h3>4 · Recuperación: coseno y top-k</h3>
 
-      <p>Llega una pregunta. La embebés con la misma función, y ahora tenés que medir qué fragmentos están "cerca". La medida estándar es la <strong>similitud coseno</strong>: mira el ángulo entre dos vectores, no su tamaño. Coseno 1 significa misma dirección (mismo significado); 0 significa sin relación. Te quedás con los <strong>k más altos</strong> (top-k, típicamente 3 a 8) y, opcionalmente, descartás los que no superan un <strong>umbral</strong> mínimo de similitud, para no arrastrar ruido cuando nada es realmente relevante.</p>
+      <p>Llega una pregunta. La embebés con la misma función, y ahora tenés que medir qué fragmentos están "cerca". La medida estándar es la <strong>similitud coseno</strong>: mira el ángulo entre dos vectores, no su tamaño. Coseno 1 significa misma dirección (mismo significado); 0 significa sin relación. Te quedás con los <strong>k más altos</strong> (top-k, típicamente 3 a 8) y, opcionalmente, descartás los que no superan un <strong>umbral</strong> mínimo de similitud, para no arrastrar ruido cuando nada es relevante.</p>
 
       <div class="figure reveal">
         <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Inter, system-ui, sans-serif">
@@ -777,7 +777,7 @@ const respuesta = await modelo.generar(prompt)   // el LLM responde con citas</c
 
     <div class="footer-cta reveal">
       <h3>En la parte 2: de la teoría al código</h3>
-      <p>Tomé todo esto y construí un agente real: subís PDFs, chatea con citas, busca en la web cuando hace falta, y recuerda cosas tuyas entre sesiones. En la parte 2 muestro el código de verdad, paso a paso: el parser de PDF, el esquema de pgvector, las herramientas del agente y el bucle de memoria.</p>
+      <p>Tomé todo esto y construí un agente real: subís PDFs, chatea con citas, busca en la web cuando hace falta, y recuerda cosas tuyas entre sesiones. En la parte 2 muestro el código real, paso a paso: el parser de PDF, el esquema de pgvector, las herramientas del agente y el bucle de memoria.</p>
       <div class="links">
         <a href="rag-agent-memory-build.html">📄 Parte 2 · Cómo lo construí ↗</a>
         <a href="https://github.com/NeryC/rag-agent-memory">💻 github.com/NeryC/rag-agent-memory ↗</a>
