@@ -466,7 +466,7 @@ const result = await agent.stream({ messages });
         <li><strong>Agentes de soporte</strong>: <code>escalateToHuman({ summary })</code> y <code>resolveTicket({ answer })</code> son las dos terminales. El trabajo del agente es elegir una. El loop termina con una acción estructurada.</li>
         <li><strong>Agentes de extracción</strong>: <code>emitRecord({ ...fields })</code> es la tool terminal. El agente crawlea, pregunta por otras tools, y emite el registro validado cuando tiene suficiente.</li>
       </ul>
-      <p>La señal de que querés este patrón es simple: te encontrás escribiendo código que lee la prosa del modelo para decidir qué hacer después. Convertí esa decisión en una llamada a tool y la adivinanza desaparece. La Parte 2 lo pone a trabajar en un agente de investigación real, en unas 700 líneas: los tres tools, la UI con streaming, el deploy en Vercel, y los bugs del camino.</p>
+      <p>La señal de que querés este patrón es simple: te encontrás escribiendo código que lee la prosa del modelo para decidir qué hacer después. Convertí esa decisión en una llamada a tool y la adivinanza desaparece. Eso sigue siendo un agente solo; coordinar varios es otro problema, y <a href="multi-agent-code-reviewer.html">Sistemas multiagente desde cero</a> lo cubre. La Parte 2 lo pone a trabajar en un agente de investigación real, en unas 700 líneas: los tres tools, la UI con streaming, el deploy en Vercel, y los bugs del camino.</p>
 
       <div class="callout">
         <div class="callout-label">Quick links</div>

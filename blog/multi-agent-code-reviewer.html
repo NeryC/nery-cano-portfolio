@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agents and multi-agents, from zero (Part 1) — Nery Cano</title>
+  <title>Multi-agent systems from zero: how to make several AI agents work together (Part 1) — Nery Cano</title>
   <meta name="description" content="What an agent is, what a multi-agent system is, and the patterns to coordinate them. Explained from zero, with lots of diagrams. Part 1 of 2." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
 
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Agents and multi-agents, from zero (Part 1)" />
+  <meta property="og:title" content="Multi-agent systems from zero: how to make several AI agents work together (Part 1)" />
   <meta property="og:description" content="What an agent is, what a multi-agent system is, and the patterns to coordinate them. Explained from zero, with lots of diagrams. Part 1 of 2." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner_en.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/multi-agent-code-reviewer.html" />
@@ -18,7 +18,7 @@
   <meta property="article:tag" content="LLM" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Agents and multi-agents, from zero (Part 1)" />
+  <meta name="twitter:title" content="Multi-agent systems from zero: how to make several AI agents work together (Part 1)" />
   <meta name="twitter:description" content="What an agent is, what a multi-agent system is, and the patterns to coordinate them. Explained from zero, with lots of diagrams. Part 1 of 2." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner_en.png" />
 
@@ -316,8 +316,8 @@
   <article class="article">
     <!-- structure: guide — Part 1. Agents and multi-agents from zero. Part 2 is the build. -->
     <div class="article-meta">May 19, 2026 · Part 1 of 2 · ~18 min read</div>
-    <h1 class="article-title">Agents and multi-agents, from zero</h1>
-    <p class="article-subtitle">What an agent is, why you sometimes need several, and the six patterns to coordinate them. The full theory before the code.</p>
+    <h1 class="article-title">Multi-agent systems from zero: how to make several AI agents work together</h1>
+    <p class="article-subtitle">Why one agent hits a ceiling, and the six patterns to make several work as a team. The full theory before the code.</p>
     <div class="byline">
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">May 19, 2026 · guide</div>
@@ -416,13 +416,7 @@
       </div>
 
       <h2 data-sec="detail">The pieces, in detail</h2>
-      <p>With the map in view, now the slow walk. First an agent from the inside; then what changes when there are several.</p>
-
-      <h3>An agent from the inside</h3>
-      <p><strong>The loop, step by step.</strong> The model gets the goal and the current state, and produces one of two things: a <em>tool call</em> ("search X", "read file Y") or a <em>final answer</em>. If it's a tool call, the system runs it, takes the result, and hands it back to the model as new input. The model decides again. Each turn adds information to the context, so the agent "learns" about the problem as it goes.</p>
-      <p><strong>Tools are the limit of what's possible.</strong> An agent can never do more than its tools. If it has no network tool, it can't touch the internet, no matter how much the model "wants" to. That's why designing an agent is mostly deciding which tools to give it and with what permissions. Fewer tools, more predictable; more tools, more capable and more risky.</p>
-      <p><strong>Memory: context versus persistent memory.</strong> There are two different memories, and they get confused often. <em>Working memory</em> is this run's context: the step history that fits in the model's window and is lost when it ends. <em>Persistent memory</em> is what the agent stores between runs (in a database, say) to remember conversations or facts beyond one session. Every agent has the first; the second is optional and costlier to build.</p>
-      <p><strong>When to stop.</strong> It's the most underrated part. Three brakes coexist: the model declares it's done, a step cap ("max 6 iterations"), and a budget (of tokens or time). The step cap exists precisely because a model can convince itself it's almost done and never close. A good agent always has a hard limit, not just the model's goodwill.</p>
+      <p>With the map in view, now the slow walk. This guide assumes you already know how a single agent works: its loop, its tools, its memory, and its stop condition. If that is new, <a href="research-agent.html">Agent loops from zero</a> (Part 1 of the research-agent series) covers it from scratch. Here we go straight to what changes when there are several.</p>
       <h3>From one to many: multi-agent systems</h3>
       <p>A multi-agent system is, without mystery, several agents collaborating on a problem too big for one. The gain isn't "more models means better." The gain shows up when the problem <em>splits</em> into parts that are solved better separately: parts that run at the same time, or that need a different expert, or that are worth reviewing against each other. If your problem doesn't split like that, one well-built agent wins almost always.</p>
       <p>There are six ways to coordinate them. They aren't exclusive (real systems mix several), but it's worth knowing them one at a time.</p>

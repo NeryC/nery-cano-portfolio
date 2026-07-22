@@ -466,7 +466,7 @@ const result = await agent.stream({ messages });
         <li><strong>Support agents</strong>: <code>escalateToHuman({ summary })</code> and <code>resolveTicket({ answer })</code> are both terminal. The agent's job is to pick one. The loop ends with a structured action.</li>
         <li><strong>Extraction agents</strong>: <code>emitRecord({ ...fields })</code> is the terminal tool. The agent crawls, asks follow-ups through other tools, and emits the validated record when it has enough.</li>
       </ul>
-      <p>The signal that you want this pattern is simple: you catch yourself writing code that reads the model's prose to decide what to do next. Turn that decision into a tool call and the guesswork disappears. Part 2 puts it to work in a real research agent, in roughly 700 lines: the three tools, the streaming UI, the Vercel deploy, and the bugs along the way.</p>
+      <p>The signal that you want this pattern is simple: you catch yourself writing code that reads the model's prose to decide what to do next. Turn that decision into a tool call and the guesswork disappears. That is still one agent, though; coordinating several is a different problem, and <a href="multi-agent-code-reviewer.html">Multi-agent systems from zero</a> covers it. Part 2 puts it to work in a real research agent, in roughly 700 lines: the three tools, the streaming UI, the Vercel deploy, and the bugs along the way.</p>
 
       <div class="callout">
         <div class="callout-label">Quick links</div>

@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agentes y multi-agentes, desde cero (Parte 1) — Nery Cano</title>
+  <title>Sistemas multiagente desde cero: cómo hacer que varios agentes trabajen juntos (Parte 1) — Nery Cano</title>
   <meta name="description" content="Qué es un agente, qué es un sistema multi-agente y qué patrones existen para coordinarlos. Explicado desde cero, con muchos diagramas. Parte 1 de 2." />
   <meta name="author" content="Nery Alberto Cano Ortigoza" />
 
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="Agentes y multi-agentes, desde cero (Parte 1)" />
+  <meta property="og:title" content="Sistemas multiagente desde cero: cómo hacer que varios agentes trabajen juntos (Parte 1)" />
   <meta property="og:description" content="Qué es un agente, qué es un sistema multi-agente y qué patrones existen para coordinarlos. Explicado desde cero, con muchos diagramas. Parte 1 de 2." />
   <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner_es.png" />
   <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/es/multi-agent-code-reviewer.html" />
@@ -18,7 +18,7 @@
   <meta property="article:tag" content="LLM" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Agentes y multi-agentes, desde cero (Parte 1)" />
+  <meta name="twitter:title" content="Sistemas multiagente desde cero: cómo hacer que varios agentes trabajen juntos (Parte 1)" />
   <meta name="twitter:description" content="Qué es un agente, qué es un sistema multi-agente y qué patrones existen para coordinarlos. Explicado desde cero, con muchos diagramas. Parte 1 de 2." />
   <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_2_multiagent_banner_es.png" />
 
@@ -316,8 +316,8 @@
   <article class="article">
     <!-- structure: guide &mdash; Parte 1. Concepto de agentes y multi-agentes desde cero. La Parte 2 es el build. -->
     <div class="article-meta">19 de mayo, 2026 &middot; Parte 1 de 2 &middot; ~18 min de lectura</div>
-    <h1 class="article-title">Agentes y multi-agentes, desde cero</h1>
-    <p class="article-subtitle">Qu&eacute; es un agente, por qu&eacute; a veces necesit&aacute;s varios, y los seis patrones para coordinarlos. La teor&iacute;a completa antes del c&oacute;digo.</p>
+    <h1 class="article-title">Sistemas multiagente desde cero: cómo hacer que varios agentes trabajen juntos</h1>
+    <p class="article-subtitle">Por qu&eacute; un agente solo tiene techo, y los seis patrones para hacer trabajar a varios como equipo. La teor&iacute;a completa antes del c&oacute;digo.</p>
     <div class="byline">
       <div class="byline-name">Nery Cano</div>
       <div class="byline-meta">19 may 2026 &middot; gu&iacute;a</div>
@@ -416,13 +416,7 @@
       </div>
 
       <h2 data-sec="detail">Las piezas, en detalle</h2>
-      <p>Con el mapa a la vista, ahora el recorrido lento. Primero un agente por dentro; despu&eacute;s, qu&eacute; cambia cuando son varios.</p>
-
-      <h3>Un agente por dentro</h3>
-      <p><strong>El bucle, paso a paso.</strong> El modelo recibe el objetivo y el estado actual, y produce una de dos cosas: una <em>llamada a herramienta</em> (&laquo;busc&aacute; X&raquo;, &laquo;le&eacute; el archivo Y&raquo;) o una <em>respuesta final</em>. Si es una llamada a herramienta, el sistema la ejecuta, toma el resultado y se lo devuelve al modelo como nueva entrada. El modelo vuelve a decidir. Cada vuelta agrega informaci&oacute;n al contexto, as&iacute; que el agente &laquo;aprende&raquo; sobre el problema a medida que avanza.</p>
-      <p><strong>Las herramientas son el l&iacute;mite de lo posible.</strong> Un agente nunca puede hacer m&aacute;s que sus herramientas. Si no tiene una herramienta de red, no puede tocar internet, por m&aacute;s que el modelo &laquo;quiera&raquo;. Por eso dise&ntilde;ar un agente es, sobre todo, decidir qu&eacute; herramientas darle y con qu&eacute; permisos. Menos herramientas, m&aacute;s predecible; m&aacute;s herramientas, m&aacute;s capaz y m&aacute;s riesgoso.</p>
-      <p><strong>Memoria: contexto contra memoria persistente.</strong> Hay dos memorias distintas y se confunden seguido. La <em>memoria de trabajo</em> es el contexto de esta corrida: el historial de pasos que cabe en la ventana del modelo y se pierde al terminar. La <em>memoria persistente</em> es lo que el agente guarda entre corridas (en una base de datos, por ejemplo) para recordar conversaciones o hechos m&aacute;s all&aacute; de una sesi&oacute;n. La primera la tiene todo agente; la segunda es opcional y m&aacute;s cara de construir.</p>
-      <p><strong>Cu&aacute;ndo parar.</strong> Es la parte que m&aacute;s se subestima. Tres frenos conviven: el modelo declara que termin&oacute;, un tope de pasos (&laquo;m&aacute;ximo 6 iteraciones&raquo;) y un presupuesto (de tokens o de tiempo). El tope de pasos existe justamente porque un modelo puede convencerse de que casi termina y no cerrar nunca. Un buen agente siempre tiene un l&iacute;mite duro, no solo la buena voluntad del modelo.</p>
+      <p>Con el mapa a la vista, ahora el recorrido lento. Esta gu&iacute;a asume que ya sab&eacute;s c&oacute;mo funciona un agente solo: su bucle, sus tools, su memoria y su condici&oacute;n de parada. Si eso es nuevo, <a href="research-agent.html">Loops de agentes desde cero</a> (Parte 1 de la serie del agente de investigaci&oacute;n) lo cubre desde cero. Ac&aacute; vamos directo a qu&eacute; cambia cuando son varios.</p>
       <h3>De uno a varios: sistemas multi-agente</h3>
       <p>Un sistema multi-agente es, sin misterio, varios agentes que colaboran en un problema que a uno solo le queda grande. La ganancia no es &laquo;m&aacute;s modelos igual mejor&raquo;. La ganancia aparece cuando el problema se <em>divide</em> en partes que se resuelven mejor por separado: partes que corren a la vez, o que necesitan un experto distinto, o que conviene revisar entre s&iacute;. Si tu problema no se divide as&iacute;, un solo agente bien hecho gana casi siempre.</p>
       <p>Hay seis formas de coordinarlos. No son excluyentes (los sistemas reales mezclan varias), pero conviene conocerlas de a una.</p>
