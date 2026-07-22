@@ -142,7 +142,7 @@ Always include `<nav class="header-nav">` at the top and `<footer class="site-fo
 
 ## 5 · Canonical article-body section order
 
-Every post is one of **two types**, and each new post declares which — in a machine-readable comment plus a `data-sec` marker on every `<h2>`. This is the part the sensor enforces (presence + canonical order); the prose table below fills in the rest. **Don’t rebuild the skeleton by hand — copy `blog/_templates/part-1-guide.html` or `part-2-build.html` and fill it in.** The 14 existing posts predate these markers and are grandfathered: the sensor skips the section check when a post carries no `data-sec`.
+Every post is one of **two types**, and each new post declares which — in a machine-readable comment plus a `data-sec` marker on every `<h2>`. This is the part the sensor enforces (presence + canonical order); the prose table below fills in the rest. **Don’t rebuild the skeleton by hand — copy `blog/_templates/part-1-guide.html` or `part-2-build.html` and fill it in.** Every post declares its type and carries these markers; the sensor requires them on all posts (no grandfathering).
 
 **Part 1 — Guide** (`<!-- structure: guide -->`) — the default. Teaches a topic from zero. Required sections, in order:
 
@@ -400,15 +400,15 @@ Before committing a new post or a rewrite:
 
 ---
 
-## 10 · When the structure should bend
+## 10 · Lean guides and builds
 
-The structure is a default, not a contract. Bend it when:
+Every post is a `guide` or a `build`. There are no other types. But the two shapes stretch well past "tutorial" and "project write-up":
 
-- The post is a **short pattern note** (≤ 5 min read). Skip Background, Postmortem, and "What I'd do differently." Keep TL;DR + Implementation + Generalized pattern.
-- The post is a **postmortem-only** piece (the bugs ARE the story). Skip Background, condense Implementation. Lead with the postmortem after the hook.
-- The post is an **opinion / pattern essay** (no specific project). Skip Architecture figure and Postmortem. Use the structure: Hook → Pattern → Why it's better → Caveats → Generalized.
+- A **short pattern note** is a lean `build`: architecture (a figure plus the core idea), the implementation, "what I'd do differently", and the generalized pattern. `research-agent` is one.
+- A **concept essay** with no single project is a `guide`: it still opens with a glossary and a definition, then teaches the anatomy, the detail, and the code. `harness-engineering` is one.
+- An **experiment write-up** is a `build`: the setup is the architecture, the intervention is the build, the surprising results are the postmortem. `harness-engineering-adminrent` is one.
 
-Document the deviation in a one-line `<!-- structure: pattern-essay -->` comment after `<article class="article">` so future-you knows why this post breaks the mold.
+Whatever the shape, the post declares `guide` or `build`, carries `data-sec` markers in canonical order, and ends with `pattern`. If a post genuinely fits neither, that's a signal to reconsider the post, not to invent a third type.
 
 ---
 

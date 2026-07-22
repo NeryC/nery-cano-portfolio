@@ -125,24 +125,23 @@ function validatePost(file) {
   else if (figs.join(',') !== figs.map((_, i) => i + 1).join(',')) E(`figures not consecutive: ${figs.join(',')}`);
   if (!/callout-label/.test(s)) W('no callout');
 
-  // 9b. section spine — opt-in via data-sec markers. A post that carries them
-  //     declares a type and must present the required sections in canonical
-  //     order. Legacy posts (no data-sec) are grandfathered: not checked here.
+  // 9b. section spine — every post declares guide|build and marks its sections
+  //     with data-sec, in canonical order, ending in pattern. No grandfathering:
+  //     a post with no type or no markers is an error.
   const CANON = ['glossary','definition','problem','anatomy','detail','code','architecture','build','postmortem','different','pattern'];
   const REQ = { guide: ['glossary','definition','problem','anatomy','detail','code','pattern'], build: ['architecture','build','different','pattern'] };
   const secs = [...s.matchAll(/data-sec="([^"]+)"/g)].map(m => m[1]);
-  if (secs.length) {
-    const t = (s.match(/<!--\s*structure:\s*(guide|build)\b/) || [])[1];
-    if (!t) E('has data-sec markers but no "<!-- structure: guide|build -->" type declared');
-    else {
-      const unknown = [...new Set(secs.filter(x => !CANON.includes(x)))];
-      if (unknown.length) E(`unknown data-sec value(s): ${unknown.join(', ')}`);
-      const known = secs.filter(x => CANON.includes(x));
-      for (let i = 1; i < known.length; i++) if (CANON.indexOf(known[i]) < CANON.indexOf(known[i - 1])) { E(`sections out of canonical order: "${known[i]}" appears after "${known[i - 1]}" (see BLOG_STRUCTURE.md §5)`); break; }
-      const missing = REQ[t].filter(r => !secs.includes(r));
-      if (missing.length) E(`${t} post missing required section(s): ${missing.join(', ')}`);
-      if (secs[secs.length - 1] !== 'pattern') E('the last data-sec must be "pattern" (the generalized-pattern closer)');
-    }
+  const t = (s.match(/<!--\s*structure:\s*(guide|build)\b/) || [])[1];
+  if (!t) E('missing "<!-- structure: guide|build -->" declaration — every post is a guide or a build');
+  if (!secs.length) E('no data-sec section markers — every post must mark its sections (see BLOG_STRUCTURE.md §5)');
+  if (t && secs.length) {
+    const unknown = [...new Set(secs.filter(x => !CANON.includes(x)))];
+    if (unknown.length) E(`unknown data-sec value(s): ${unknown.join(', ')}`);
+    const known = secs.filter(x => CANON.includes(x));
+    for (let i = 1; i < known.length; i++) if (CANON.indexOf(known[i]) < CANON.indexOf(known[i - 1])) { E(`sections out of canonical order: "${known[i]}" appears after "${known[i - 1]}" (see BLOG_STRUCTURE.md §5)`); break; }
+    const missing = REQ[t].filter(r => !secs.includes(r));
+    if (missing.length) E(`${t} post missing required section(s): ${missing.join(', ')}`);
+    if (secs[secs.length - 1] !== 'pattern') E('the last data-sec must be "pattern" (the generalized-pattern closer)');
   }
 
   // 10-11. quick-links present + Prism scripts
