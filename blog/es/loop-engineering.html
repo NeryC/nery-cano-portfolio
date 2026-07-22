@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Loop engineering: las cinco palancas de un loop de agente confiable — Nery Cano</title>
+  <meta name="description" content="La habilidad que reemplazó al prompt engineering: diseñar el loop dentro del que corre un agente. Las cinco palancas (tools, parada, contexto, verificación, guardrails), desde cero." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Loop engineering: las cinco palancas de un loop de agente confiable" />
+  <meta property="og:description" content="La habilidad que reemplazó al prompt engineering: diseñar el loop dentro del que corre un agente. Las cinco palancas (tools, parada, contexto, verificación, guardrails), desde cero." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_7_loop_guide_banner_es.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering.html" />
+  <meta property="article:published_time" content="2026-07-22" />
+  <meta property="article:tag" content="Loop Engineering" />
+  <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="Context Engineering" />
+  <meta property="article:tag" content="LLM" />
+  <meta property="article:tag" content="Agent Harness" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Loop engineering: las cinco palancas de un loop de agente confiable" />
+  <meta name="twitter:description" content="La habilidad que reemplazó al prompt engineering: diseñar el loop dentro del que corre un agente. Las cinco palancas (tools, parada, contexto, verificación, guardrails), desde cero." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_7_loop_guide_banner_es.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/loop-engineering.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  
+    /* ── Layout ancho y tipografía fluida ─────────────────────────────────
+       En pantallas grandes el problema no es la columna: es que 19px de
+       cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
+       de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
+       columna crece en proporción y la medida se mantiene entre 91 y 96
+       caracteres. Todo lo que vive dentro de .article se expresa en em para
+       que siga la escala: metadata, captions, callouts, bug-rows, código,
+       tablas y el interior de las figuras.
+       NADA sangra fuera de la columna. Un bloque más ancho que el texto al
+       que pertenece se lee como un error de maquetado, no como jerarquía.
+       Debajo de 1240px, comportamiento original. */
+    @media (min-width: 1240px) {
+      .header-nav, .site-footer, .article { max-width: 920px; }
+      .article { font-size: 20px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 1600px) {
+      .header-nav, .site-footer, .article { max-width: 1000px; }
+      .article { font-size: 21.5px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2000px) {
+      .header-nav, .site-footer, .article { max-width: 1090px; }
+      .article { font-size: 23px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2400px) {
+      .header-nav, .site-footer, .article { max-width: 1200px; }
+      .article { font-size: 25px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="header-nav"><a href="../">&larr; Portfolio</a><a href="index.html">Blog</a></nav>
+  <article class="article">
+    <!-- structure: guide -->
+    <div class="article-meta">22 de julio, 2026 · Parte 1 de 2 · ~16 min de lectura</div>
+    <h1 class="article-title">Loop engineering: las cinco palancas de un loop de agente confiable</h1>
+    <p class="article-subtitle">La habilidad que reemplazó calladamente al prompt engineering: diseñar el loop dentro del que corre un agente, y los cinco diales a los que se reduce.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+    </div>
+    <div class="tags"><span class="tag-pill">Loop Engineering</span> <span class="tag-pill">AI Agents</span> <span class="tag-pill">Context Engineering</span> <span class="tag-pill">LLM</span> <span class="tag-pill">Agent Harness</span></div>
+    <img class="banner-img" src="../post_7_loop_guide_banner_es.png" alt="La habilidad que reemplazó al prompt engineering: diseñar el loop dentro del que corre un agente. Las cinco palancas (tools, parada, contexto, verificación, guardrails), desde cero." />
+    <div class="article-body">
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="loop-engineering-adminrent.html">Parte 2 · Las cinco palancas en un SaaS de producción</a></strong> · <a href="harness-engineering.html">Harness engineering</a> · <a href="../">portfolio</a></p>
+      </div>
+
+      <p><em>En algún momento de principios de 2026 la palanca que le saca más a un modelo dejó de ser el prompt. Pasó a ser el loop dentro del que corre el modelo. Esto es qué es loop engineering, los cinco diales a los que se reduce, y cómo saber cuál le falta a tu agente que falla.</em></p>
+
+      <p>Durante casi todo 2023 y 2024, lo más inteligente que podías hacer con un LLM era aprender a hablarle. Funcionaba porque los modelos respondían de una sola vez. Después empezaron a correr en loops, a llamar tools, a actuar en muchos pasos, y el prompt dejó de ser el cuello de botella.</p>
+
+      <p>Solomon Hykes, que fundó Docker, resumió el peligro nuevo en una frase que todo el campo cita: <em>"un agente de IA es un LLM destrozando su entorno en un loop"</em>. El reencuadre que se esconde en el chiste es lo importante. Un modelo más potente en un loop mal diseñado es <strong>más</strong> peligroso, no menos, porque ejecuta sus malas ideas con más competencia. Cuando el modelo es fuerte, el loop es donde vive la ingeniería.</p>
+
+      <hr />
+
+      <h2 data-sec="glossary">Seis términos, primero</h2>
+      <p>Seis palabras sostienen toda la idea. Definilas una vez y el resto se lee limpio.</p>
+      <p><strong>Loop de agente.</strong> Un LLM corriendo tools en un ciclo (percibir, razonar, actuar, observar) hasta llegar a un objetivo o topar un límite. Lo único que separa un agente de una llamada suelta al modelo.</p>
+      <p><strong>Tool / ACI.</strong> Una función que el agente puede llamar para hacer algo que el modelo solo no puede. Anthropic llama a toda la superficie de tools la <em>agent-computer interface</em>, el equivalente de una UI para el agente.</p>
+      <p><strong>Condición de parada.</strong> La regla que decide cuándo corta el loop: éxito, un tope de iteraciones, un presupuesto, o detección de no-progreso.</p>
+      <p><strong>Contexto.</strong> El conjunto de tokens que ve el modelo en un turno dado. Finito, y se degrada a medida que se llena (context rot).</p>
+      <p><strong>Verificación.</strong> Cómo el loop prueba que hizo la cosa, en vez de declararse victorioso. Casi siempre un test suite o un grader.</p>
+      <p><strong>Guardrail.</strong> Lo que evita que el loop haga daño: un sandbox, credenciales acotadas, un tope de presupuesto, un humano en el camino de revisión.</p>
+
+      <h2 data-sec="definition">Qué es loop engineering, en un párrafo</h2>
+      <p>Loop engineering es la disciplina de diseñar el loop dentro del que corre un agente, en vez de pulir una sola instrucción. Simon Willison lo nombró en septiembre de 2025: <em>"mi definición preferida de un agente LLM es algo que corre tools en un loop para lograr un objetivo. El arte de usarlos bien está en diseñar con cuidado las tools y el loop que van a usar."</em> La unidad de trabajo se movió de "escribir un buen prompt" a "diseñar un buen loop", y el loop se descompone en un puñado de diales que girás: las tools que el agente puede llamar, cuándo se le permite parar, qué guarda en contexto, cómo chequea su propio trabajo, y los guardrails que evitan que un loop descontrolado haga daño.</p>
+
+      <hr />
+
+      <h2 data-sec="problem">Por qué el loop pasó a ser la palanca, no el prompt</h2>
+      <p>La forma más clara de ubicar loop engineering es como el piso más alto de un edificio de tres. Anthropic encuadra el piso del medio, context engineering, como <em>"la progresión natural del prompt engineering"</em>, y la misma lógica sube un escalón más.</p>
+      <div class="figure">
+        <svg viewBox="0 0 660 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Tres capas anidadas: prompt engineering dentro de context engineering dentro de loop engineering">
+  <g font-family="Inter, system-ui, sans-serif">
+    <rect x="30" y="24" width="600" height="252" rx="14" fill="rgba(46,117,182,0.06)" stroke="#7DD3FC" stroke-width="1.8"/>
+    <text x="50" y="50" fill="#7DD3FC" font-family="JetBrains Mono, monospace" font-size="13" font-weight="700">LOOP ENGINEERING</text>
+    <text x="50" y="68" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="10.5">el sistema de runtime alrededor del modelo</text>
+    <rect x="86" y="86" width="488" height="168" rx="12" fill="rgba(46,117,182,0.09)" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="106" y="112" fill="#4FA9E8" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">CONTEXT ENGINEERING</text>
+    <text x="106" y="130" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="10.5">lo que ve el modelo cada turno</text>
+    <rect x="150" y="150" width="360" height="86" rx="10" fill="rgba(31,58,104,0.6)" stroke="#94A3B8" stroke-width="1.5"/>
+    <text x="330" y="184" text-anchor="middle" fill="#F1F5F9" font-family="JetBrains Mono, monospace" font-size="12" font-weight="700">PROMPT ENGINEERING</text>
+    <text x="330" y="206" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="10.5">una buena instrucción</text>
+    <text x="330" y="224" text-anchor="middle" fill="#94A3B8" font-family="JetBrains Mono, monospace" font-size="10.5">al modelo</text>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 1 · <strong>Tres capas anidadas.</strong> El prompt optimiza una llamada; el context optimiza lo que ve el modelo cada turno; el loop optimiza la maquinaria que decide si el agente llega a un buen estado.</p>
+      </div>
+
+      <p>La relación no es competitiva, es anidada. Lo que más probablemente rompe un agente hoy no es una instrucción mal escrita, es un loop sin interruptor de apagado, sin estrategia de memoria, o sin forma de chequear su propio trabajo. Cuando un agente falla en producción, el fix casi siempre es cambiar uno de estos diales, no reformular el prompt.</p>
+
+      <h2 data-sec="anatomy">La anatomía: un ciclo, cinco diales</h2>
+      <p>En el centro está el ciclo que corre todo agente: percibe el estado, razona qué hacer, actúa con una tool, y observa el resultado, una y otra vez. Loop engineering es todo lo que construís <em>alrededor</em> de ese ciclo. Leé a la gente que define el campo (Willison, Anthropic, LangChain, Thoughtworks) y aparecen las mismas cinco palancas siempre.</p>
+      <div class="figure">
+        <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Un loop percibir-razonar-actuar-observar con cinco palancas alrededor: tools, parada, contexto, verificación, guardrails">
+  <defs><path id="loopP" d="M340,120 m-84,0 a84,84 0 1,1 168,0 a84,84 0 1,1 -168,0" fill="none"/></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <circle cx="340" cy="120" r="84" fill="none" stroke="#2E75B6" stroke-width="2" stroke-dasharray="6 8"/>
+    <rect x="300" y="46" width="80" height="30" rx="7" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.5"/><text x="340" y="66" text-anchor="middle" fill="#7DD3FC">razonar</text>
+    <rect x="404" y="104" width="80" height="30" rx="7" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/><text x="444" y="124" text-anchor="middle" fill="#E2E8F0">actuar</text>
+    <rect x="300" y="162" width="80" height="30" rx="7" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/><text x="340" y="182" text-anchor="middle" fill="#E2E8F0">observar</text>
+    <rect x="196" y="104" width="80" height="30" rx="7" fill="#122845" stroke="#4FA9E8" stroke-width="1.5"/><text x="236" y="124" text-anchor="middle" fill="#E2E8F0">percibir</text>
+    <circle class="loop-token" r="5" fill="#7DD3FC"><animateMotion dur="5s" repeatCount="indefinite" calcMode="linear"><mpath href="#loopP"/></animateMotion></circle>
+    <text x="80" y="40" fill="#7DD3FC" font-size="10" letter-spacing="1.5">LAS 5 PALANCAS</text>
+    <g font-size="10">
+      <rect x="30" y="52" width="120" height="30" rx="7" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.3"/><text x="90" y="71" text-anchor="middle" fill="#E2E8F0">1 · tools (ACI)</text>
+      <rect x="30" y="92" width="120" height="30" rx="7" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.3"/><text x="90" y="111" text-anchor="middle" fill="#E2E8F0">2 · parada</text>
+      <rect x="30" y="132" width="120" height="30" rx="7" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.3"/><text x="90" y="151" text-anchor="middle" fill="#E2E8F0">3 · contexto</text>
+      <rect x="530" y="72" width="120" height="30" rx="7" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.3"/><text x="590" y="91" text-anchor="middle" fill="#E2E8F0">4 · verificación</text>
+      <rect x="530" y="112" width="120" height="30" rx="7" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.3"/><text x="590" y="131" text-anchor="middle" fill="#E2E8F0">5 · guardrails</text>
+    </g>
+    <line x1="150" y1="67" x2="252" y2="112" stroke="#94A3B8" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <line x1="150" y1="107" x2="256" y2="120" stroke="#94A3B8" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <line x1="150" y1="147" x2="300" y2="177" stroke="#94A3B8" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <line x1="530" y1="87" x2="484" y2="116" stroke="#94A3B8" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <line x1="530" y1="127" x2="420" y2="177" stroke="#94A3B8" stroke-width="1.1" stroke-dasharray="3 3"/>
+    <text x="340" y="250" text-anchor="middle" fill="#94A3B8" font-size="10.5">el modelo corre el ciclo; vos diseñás los cinco diales</text>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 2 · <strong>Las cinco palancas.</strong> El modelo corre el ciclo del medio. Vos diseñás los cinco diales alrededor: tools, parada, contexto, verificación, guardrails. Mirá el token recorrer el loop.</p>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="detail">Las cinco palancas, en detalle</h2>
+
+      <h3>1 · Tools (la agent-computer interface)</h3>
+      <p>Lo que el agente <em>puede</em> hacer. Anthropic dedicó más tiempo a optimizar las tools que el prompt en su trabajo de SWE-bench y acuñó <strong>ACI</strong> (agent-computer interface) como el equivalente de una UI para el agente. La falla común es un set de tools inflado: <em>"si un ingeniero humano no puede decir con certeza qué tool usar en una situación dada, no podés esperar que el agente lo haga mejor"</em>. Para agentes de código, Willison prefiere comandos de shell antes que MCP porque <em>"los agentes de código son muy buenos corriendo comandos de shell"</em>, con un <code>AGENTS.md</code> que documenta las pocas tools extra que van a necesitar.</p>
+
+      <h3>2 · Condiciones de parada</h3>
+      <p>Cuándo se le permite al loop cortar: por éxito, por un tope de iteraciones, por límite de presupuesto, o cuando detecta que no avanza. Un loop sin lógica de terminación o se declara victorioso temprano o no para nunca. Esta es la palanca de la que trata entera la guía de research-agent: una <a href="research-agent.html">tool terminal sin execute</a> convierte "terminé" en una llamada a tool estructurada en vez de un string que parseás.</p>
+
+      <h3>3 · Gestión de contexto</h3>
+      <p>Qué sobrevive entre turnos. El hallazgo clave de Anthropic es el <strong>context rot</strong>: a medida que crece la cantidad de tokens, la memoria se degrada, así que el contexto es un recurso finito con un "presupuesto de atención" que hay que gastar con cuidado. Las técnicas: <strong>compaction</strong> (resumir cerca del límite de la ventana y reiniciar), <strong>notas estructuradas</strong> (un <code>NOTES.md</code> que el agente mantiene fuera del contexto), y <strong>sub-agentes</strong> que queman decenas de miles de tokens cada uno pero devuelven un resumen ajustado de 1.000 a 2.000 tokens. La regla guía: encontrar el menor conjunto de tokens de alta señal que consiga el resultado.</p>
+
+      <h3>4 · Verificación</h3>
+      <p>Cómo el loop prueba que hizo la cosa. Es la palanca más repetida. Willison: el valor de un agente de código <em>"se amplifica muchísimo con un buen test suite que pasa limpio"</em>. El harness de Anthropic para agentes de larga duración usa una lista JSON de 200+ features end-to-end, cada una marcada <code>passes: false</code>, así el agente no puede marcar una feature como hecha sin probarlo. Un loop que actúa sin verificar es un loop que shipea sus propias alucinaciones.</p>
+
+      <h3>5 · Guardrails</h3>
+      <p>Lo que evita que el loop haga daño. Sandboxes, credenciales acotadas, presupuestos, y un humano en el camino para lo irreversible. Willison corrió un agente de código contra una org de Fly.io dedicada con un <strong>presupuesto de $5</strong> para que un loop descontrolado no pudiera gastar plata real, y bloquea el acceso de red a una lista de hosts confiables para frenar la exfiltración. Cuanto más fuerte el modelo y más abierto el "modo YOLO", más carga esta palanca.</p>
+
+      <div class="callout">
+        <div class="callout-label">Diagnóstico · ¿qué palanca falta?</div>
+        <p>El agente da respuestas seguras pero incorrectas → verificación. Loopea para siempre y quema tokens → condiciones de parada. Se olvida de lo que hacía en tareas largas → contexto. Habla de la tarea pero no la hace → tools. Hizo algo destructivo → guardrails. Cuando un agente falla, el fix es una de estas cinco, casi nunca el prompt.</p>
+      </div>
+
+      <h3>Una segunda lente: el stack de cuatro loops</h3>
+      <p>LangChain (sobre el "loopcraft" de swyx) encuadra el mismo oficio como loops que se apilan. El <strong>loop 1</strong> es el agente (modelo + tools). El <strong>loop 2</strong> lo envuelve en verificación (un grader devuelve las fallas). El <strong>loop 3</strong> es event-driven: webhooks y cron disparan el agente sin un humano. El <strong>loop 4</strong> es hill-climbing: leés las traces y reescribís el harness mismo. El valor compone en los loops 3 y 4, y un humano queda en el camino en cada nivel. Las cinco palancas son los diales; los cuatro loops son las alturas.</p>
+
+      <hr />
+
+      <h2 data-sec="code">El loop mínimo, con las palancas visibles</h2>
+      <p>Reducilo a lo más chico que muestre las cinco. Esta es la forma debajo de todo framework:</p>
+      <pre><code class="language-ts">let context = [systemPrompt, task];           // palanca 3: contexto
+for (let step = 0; step &lt; MAX_STEPS; step++) {  // palanca 2: parada (tope)
+  const action = await model.decide(context, TOOLS); // palanca 1: tools (la ACI)
+  if (action.type === "finish") break;          // palanca 2: parada (tool terminal)
+
+  const result = await sandbox.run(action);     // palanca 5: guardrails (sandbox)
+  const ok = await verify(result);              // palanca 4: verificación
+  context = compact([...context, action, result, ok]); // palanca 3 otra vez: mantenelo ajustado
+}</code></pre>
+      <p>Todo framework (ToolLoopAgent, LangGraph, Claude Code) es este loop con los diales en distintos valores. Loop engineering es elegir esos valores a propósito.</p>
+
+      <hr />
+
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
+      <p>Loop engineering es la hermana de runtime de <a href="harness-engineering.html">harness engineering</a>. La vista de harness diseña el <em>repo</em> en el que trabaja un agente (guías que lo orientan antes de actuar, sensores que lo atrapan después). La vista de loop diseña el <em>ciclo de runtime</em> que ejecuta un solo agente (las cinco palancas). Misma ecuación abajo, <strong>Agente = Modelo + Harness</strong>, a dos alturas, y se cruzan limpio: un test suite es un sensor a nivel repo y la palanca de verificación a nivel runtime.</p>
+      <p>La señal de que estás haciendo loop engineering, lo llames así o no: te encontrás preguntando no "qué le digo al modelo" sino "qué puede llamar, cuándo para, qué recuerda, cómo se chequea, y qué evita que haga daño". Esas cinco preguntas son el trabajo. La <a href="loop-engineering-adminrent.html">Parte 2</a> convierte cada una en una decisión real sobre un SaaS multi-tenant en producción, donde un guardrail que falta filtra los datos de un vecino y una verificación que falta cuenta una multa dos veces.</p>
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="loop-engineering-adminrent.html">Parte 2 · Las cinco palancas en un SaaS de producción</a></strong> · <a href="harness-engineering.html">Harness engineering</a> · <a href="research-agent.html">Loops de agentes desde cero</a></p>
+      </div>
+
+    </div>
+  </article>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

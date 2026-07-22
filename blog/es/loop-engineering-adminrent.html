@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Las cinco palancas en producción: loop engineering en AdminRent — Nery Cano</title>
+  <meta name="description" content="Las cinco palancas de loop engineering giradas sobre un SaaS multi-tenant real, donde un guardrail que falta filtra los datos de un tenant. Código real de AdminRent." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Las cinco palancas en producción: loop engineering en AdminRent" />
+  <meta property="og:description" content="Las cinco palancas de loop engineering giradas sobre un SaaS multi-tenant real, donde un guardrail que falta filtra los datos de un tenant. Código real de AdminRent." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_7_loop_build_banner_es.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering-adminrent.html" />
+  <meta property="article:published_time" content="2026-07-22" />
+  <meta property="article:tag" content="Loop Engineering" />
+  <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="Multi-tenant" />
+  <meta property="article:tag" content="RBAC" />
+  <meta property="article:tag" content="Flask" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Las cinco palancas en producción: loop engineering en AdminRent" />
+  <meta name="twitter:description" content="Las cinco palancas de loop engineering giradas sobre un SaaS multi-tenant real, donde un guardrail que falta filtra los datos de un tenant. Código real de AdminRent." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_7_loop_build_banner_es.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering-adminrent.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/loop-engineering-adminrent.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering-adminrent.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  
+    /* ── Layout ancho y tipografía fluida ─────────────────────────────────
+       En pantallas grandes el problema no es la columna: es que 19px de
+       cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
+       de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
+       columna crece en proporción y la medida se mantiene entre 91 y 96
+       caracteres. Todo lo que vive dentro de .article se expresa en em para
+       que siga la escala: metadata, captions, callouts, bug-rows, código,
+       tablas y el interior de las figuras.
+       NADA sangra fuera de la columna. Un bloque más ancho que el texto al
+       que pertenece se lee como un error de maquetado, no como jerarquía.
+       Debajo de 1240px, comportamiento original. */
+    @media (min-width: 1240px) {
+      .header-nav, .site-footer, .article { max-width: 920px; }
+      .article { font-size: 20px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 1600px) {
+      .header-nav, .site-footer, .article { max-width: 1000px; }
+      .article { font-size: 21.5px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2000px) {
+      .header-nav, .site-footer, .article { max-width: 1090px; }
+      .article { font-size: 23px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2400px) {
+      .header-nav, .site-footer, .article { max-width: 1200px; }
+      .article { font-size: 25px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="header-nav"><a href="../">&larr; Portfolio</a><a href="index.html">Blog</a></nav>
+  <article class="article">
+    <!-- structure: build -->
+    <div class="article-meta">22 de julio, 2026 · Parte 2 de 2 · ~14 min de lectura</div>
+    <h1 class="article-title">Las cinco palancas en producción: loop engineering en AdminRent</h1>
+    <p class="article-subtitle">Las cinco palancas giradas sobre un SaaS multi-tenant en vivo, donde un guardrail que falta filtra los datos de un vecino. Código real de AdminRent.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+    </div>
+    <div class="tags"><span class="tag-pill">Loop Engineering</span> <span class="tag-pill">AI Agents</span> <span class="tag-pill">Multi-tenant</span> <span class="tag-pill">RBAC</span> <span class="tag-pill">Flask</span></div>
+    <img class="banner-img" src="../post_7_loop_build_banner_es.png" alt="Las cinco palancas de loop engineering giradas sobre un SaaS multi-tenant real, donde un guardrail que falta filtra los datos de un tenant. Código real de AdminRent." />
+    <div class="article-body">
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="loop-engineering.html">Parte 1 · Las cinco palancas</a></strong> · <a href="harness-engineering-adminrent.html">Harness engineering sobre este mismo SaaS</a> · <a href="../">portfolio</a></p>
+      </div>
+
+      <p><em>Las cinco palancas de la Parte 1, giradas sobre un sistema en producción real: AdminRent, un SaaS multi-tenant para gestionar residenciales en Paraguay. Acá un guardrail que falta filtra los datos de un vecino y una verificación que falta cuenta una multa dos veces, así que cada palanca es una decisión con dientes.</em></p>
+
+      <p>La <a href="loop-engineering.html">Parte 1</a> planteó loop engineering como cinco diales: tools, parada, contexto, verificación, guardrails. Esto es cómo se ve cada uno cuando el agente trabaja sobre un backend Flask en vivo que es la fuente de verdad del alquiler, las multas y el control de acceso de gente real.</p>
+
+      <p>Una nota de alcance. Mi <a href="harness-engineering-adminrent.html">post de harness engineering</a> corrió un <em>experimento</em> sobre este mismo SaaS: darle a un agente cinco commits reales, escribir un <code>AGENTS.md</code>, medir el delta. Este post es la otra lente: el <strong>loop de runtime</strong> que ese <code>AGENTS.md</code> codifica, leído a través de las cinco palancas. Mismo sistema, otra altura.</p>
+
+      <hr />
+
+      <h2 data-sec="architecture">El sistema, y dónde corre el loop</h2>
+      <p>AdminRent es un sistema multi-repo: un backend Flask + SQLAlchemy + Postgres (la fuente de verdad de datos, RBAC y reglas de negocio), un frontend Next/React, una app Flutter, y un microservicio de facturación SIFEN en Node. Un agente de código trabaja una tarea en un repo, salvo que la tarea toque el contrato de la API, en cuyo caso backend, tipos generados y frontend se mueven como una sola unidad bajo revisión humana.</p>
+      <div class="figure">
+        <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Un agente trabajando en el SaaS multi-repo AdminRent, con las cinco palancas del loop como compuerta">
+  <defs><marker id="am" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <rect x="24" y="126" width="120" height="66" rx="10" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.8"/>
+    <text x="84" y="152" text-anchor="middle" fill="#7DD3FC" font-size="11">agente de código</text>
+    <text x="84" y="170" text-anchor="middle" fill="#94A3B8" font-size="9">1 tarea = 1 repo</text>
+    <text x="84" y="183" text-anchor="middle" fill="#94A3B8" font-size="9">(salvo contrato)</text>
+    <rect x="214" y="60" width="200" height="200" rx="12" fill="rgba(46,117,182,0.06)" stroke="#4FA9E8" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <text x="314" y="82" text-anchor="middle" fill="#4FA9E8" font-size="10">LAS 5 PALANCAS (la compuerta)</text>
+    <g font-size="9.5" text-anchor="middle">
+      <rect x="230" y="94" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="111" fill="#E2E8F0">1 tools · pytest, shell</text>
+      <rect x="230" y="126" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="143" fill="#E2E8F0">2 parada · se detiene</text>
+      <rect x="230" y="158" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="175" fill="#E2E8F0">3 contexto · AGENTS.md/repo</text>
+      <rect x="230" y="190" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="207" fill="#E2E8F0">4 verif · pytest+tsc+e2e</text>
+      <rect x="230" y="222" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="239" fill="#F1F5F9">5 guardrails · RBAC, tenant</text>
+    </g>
+    <rect x="480" y="96" width="176" height="52" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="568" y="118" text-anchor="middle" fill="#E2E8F0" font-size="10">backend (Flask)</text>
+    <text x="568" y="134" text-anchor="middle" fill="#7DD3FC" font-size="9">fuente de verdad · RBAC</text>
+    <rect x="480" y="164" width="176" height="40" rx="9" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.4"/>
+    <text x="568" y="188" text-anchor="middle" fill="#94A3B8" font-size="10">frontend · mobile · SIFEN</text>
+    <rect x="480" y="216" width="176" height="36" rx="9" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.3"/>
+    <text x="568" y="238" text-anchor="middle" fill="#f0b873" font-size="9.5">revisión humana · merge del PR</text>
+    <line x1="144" y1="159" x2="212" y2="159" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#am)"/>
+    <line x1="414" y1="120" x2="478" y2="120" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#am)"/>
+    <line x1="414" y1="200" x2="478" y2="184" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#am)"/>
+    <path d="M568,204 L568,214" stroke="#f0b873" stroke-width="1.4" marker-end="url(#am)"/>
+  </g>
+</svg>
+        <p class="figure-caption">Figura 1 · <strong>Las cinco palancas como compuerta.</strong> El agente actúa sobre los repos, pero cada acción pasa primero por las cinco palancas, y todo lo irreversible termina en un humano.</p>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="build">Las cinco palancas, sobre código real</h2>
+
+      <h3>1 · Tools: un loop interno rápido y honesto</h3>
+      <p>La tool más importante que tiene un agente acá es el comando de tests, y la decisión de diseño que importa es la velocidad. La suite corre sobre SQLite in-memory, sin Postgres, así que el agente puede loopear sobre ella decenas de veces por minuto:</p>
+      <pre><code class="language-bash">pytest -q                 # corre con sqlite in-memory; no hace falta Postgres
+python -m compileall -q app  # gate de sintaxis, más rápido que una corrida completa</code></pre>
+      <p>El <code>AGENTS.md</code> además documenta las trampas del entorno que el agente redescubriría a mano, como los dos pins de dependencias que hay que sobreescribir solo en el venv local de Python 3.14 mientras producción corre en <code>python:3.12-slim</code>. Eso es la palanca de tools: una interfaz limpia más las pocas notas que evitan que el agente manotee.</p>
+
+      <h3>2 · Condiciones de parada: detenerse y preguntar</h3>
+      <p>La regla de parada más filosa de este codebase no es un tope de iteraciones, es una semántica. Los permisos son decisiones de producto, así que al loop se le dice que se detenga en vez de adivinar:</p>
+      <pre><code class="language-text">Si una decisión de permisos NO está en la tabla de roles: DETENTE y preguntá al humano.
+No inventes la política aunque parezca coherente con los principios.</code></pre>
+      <p>Es una condición de parada fusionada con un guardrail. Encima hay una escalera de autonomía que acota cuándo el agente puede actuar: <strong>siempre sin preguntar</strong> (agregar o arreglar tests, actualizar docs, refactor dentro de una capa), <strong>preguntar primero</strong> (un endpoint nuevo, una decisión de permisos no cubierta, un cambio de esquema), y <strong>nunca sin un humano</strong> (migraciones en prod, PII, facturación). El default del loop es parar temprano, no empujar.</p>
+
+      <h3>3 · Contexto: un mapa, el detalle a demanda</h3>
+      <p>Cada repo lleva su propio <code>AGENTS.md</code>; uno raíz es el mapa del sistema. Eso es el "right altitude" de Anthropic en la práctica: <em>"este archivo es el mapa; el detalle vive en docs/ y en el código"</em>. El agente recibe un brief ajustado y de alta señal por adelantado y busca los específicos just-in-time, en vez de ahogarse en un volcado de todo el codebase. La palanca de contexto acá es una disciplina de qué poner en el mapa y qué dejar que el agente vaya a buscar.</p>
+
+      <h3>4 · Verificación: la compuerta de sensores</h3>
+      <p>Verificación es la palanca con más superficie, porque el sistema es la fuente de verdad de la plata. La regla está escrita en las convenciones: <strong>un endpoint nuevo exige un test de permisos, al menos un rol que da 200 y uno que da 403.</strong> Para un recurso a nivel de unidad, eso incluye probar que un owner de otra unidad recibe 403. Acá va uno real, aislamiento cross-tenant en los endpoints de amenities:</p>
+      <pre><code class="language-python">def test_admin_a_cannot_read_other_residential_amenities(app, db, ...):
+    rid_b, _ = _second_residential_with_amenity(app, db)   # un segundo tenant
+    resp = client.get(f"/api/residentials/{rid_b}/amenities", headers=headers)
+    assert resp.status_code == 403      # el admin de A no tiene rol en B
+    assert resp.get_json()["error"] == "Forbidden"</code></pre>
+      <p>Sobre los tests unitarios hay una compuerta multi-sensor: <code>pytest</code> y <code>tsc</code> atrapan formas rotas, <code>contracts-fresh</code> (en pre-commit y CI de ambos repos) atrapa un schema cambiado sin regenerar los tipos, y un job <strong>e2e cross-repo</strong> levanta el backend real y corre Playwright como el gate de "el sistema funciona junto". Verificado de punta a punta: renombrar un campo en el backend rompe <code>tsc</code> en el frontend. Eso es verificación como loop cerrado, no como sensación.</p>
+
+      <h3>5 · Guardrails: el invariante que no se dobla</h3>
+      <p>En un SaaS multi-tenant la palanca de guardrails es donde un loop malo hace daño real, así que es la más explícita. Invariante #1, sin excepción: <strong>toda query filtra por <code>residential_id</code>.</strong> Encima hay una tabla RBAC (quién ve qué entre <code>admin</code>, <code>owner</code>, <code>tenant</code>, <code>portero</code>) que el backend hace cumplir con <code>require_role(...)</code>:</p>
+      <pre><code class="language-python">require_role("admin")                              # solo admin
+require_role("admin", "owner", "tenant")           # residentes, sin portero
+require_role("admin", "owner", "tenant", "portero")  # lectura compartida con portero
+require_role("admin", "portero")                   # funciones de portería</code></pre>
+      <p>El rol <code>portero</code> es la trampa que el <code>AGENTS.md</code> nombra explícito: es <strong>lateral</strong>, no hereda nada, y hay que incluirlo a propósito cuando su función necesita la data. Olvidarlo, o excluirlo como "rol menor", es el error más fácil de cometer y casi siempre está mal. Una lista de fronteras duras nombra lo que el agente nunca debe tocar sin un humano: <code>migrations/</code>, el <code>PII_DENYLIST</code>, RBAC y auth, las claves de firma SIFEN, y nunca un push directo a <code>main</code>.</p>
+
+      <div class="callout">
+        <div class="callout-label">Takeaway</div>
+        <p>En un agente de juguete las cinco palancas son buena práctica. En un SaaS multi-tenant en producción son la diferencia entre un agente que ayuda y uno que filtra los datos financieros de un residente entre tenants. Los stakes no cambian las palancas, cambian cuánto se le permite doblarse a cada una: acá, la palanca de guardrails se dobla a cero.</p>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="postmortem">Dónde una palanca se ganó su lugar</h2>
+
+      <div class="bug-row">
+        <div class="bug-num">1</div>
+        <div>
+          <div class="bug-title">El <code>portero</code> excluido en silencio: una atrapada de guardrail</div>
+          <div class="bug-desc">Librado a su criterio en un endpoint de registro de accesos, el agente escribió <code>require_role("admin", "owner", "tenant")</code>, razonando que el portero es un rol "menor". Mal: el portero necesita esa data para identificar residentes. El fix no fue un modelo más listo, fue la palanca de guardrails escribiendo la regla (<em>el portero es lateral, decidilo explícito</em>) más la condición de parada (<em>¿no está en la tabla? detenete y preguntá</em>).</div>
+        </div>
+      </div>
+      <div class="bug-row">
+        <div class="bug-num">2</div>
+        <div>
+          <div class="bug-title">Una multa contada dos veces: una atrapada de verificación</div>
+          <div class="bug-desc">Una multa ya impacta <code>net_balance</code> vía su transacción espejo (<code>type="fine"</code>, <code>balance_impact=-monto</code>). Un cambio intuitivo de "también restar las multas pendientes del balance" las cuenta dos veces. Ninguna forma de prompt evita esto; un test de caracterización sobre el estado de cuenta sí. El invariante financiero vive en el <code>AGENTS.md</code> justamente porque es el tipo de cosa que se lee como correcta y no lo es.</div>
+        </div>
+      </div>
+      <div class="bug-row">
+        <div class="bug-num">3</div>
+        <div>
+          <div class="bug-title">Fail-closed en campos sensibles: un default que tuvo que ser guardrail</div>
+          <div class="bug-desc">Los campos privados (identidades en vistas generales, <code>target_unit_ids</code>, montos por persona) se ocultan por defecto y aparecen solo detrás de un flag explícito para admin. Un endpoint nuevo que se olvida del flag debe dejar el campo oculto, no expuesto. Por eso el default de un parámetro como <code>include_targets</code> es <code>False</code>, nunca <code>True</code>. El guardrail es la dirección en la que falla el default.</div>
+        </div>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="different">Qué haría distinto</h2>
+      <ol>
+        <li><strong>El cuarto loop sigue siendo manual.</strong> Cuando un sensor atrapa el mismo problema dos veces, agrego una línea al <code>AGENTS.md</code> del repo a mano. Eso es hill-climbing (loop 4) corrido por un humano. Es la decisión correcta para un dev solo, pero es lo primero que automatizaría cuando haya datos de traces que valga la pena minar.</li>
+        <li><strong>La autonomía está clavada en nivel 1 a propósito.</strong> El agente abre un PR, un humano mergea. Promover a nivel 2 (auto-merge de cambios de bajo riesgo) necesita que los sensores dejen de sorprenderme al revisar, y el contador se reinicia cada vez que lo hacen. Lento, pero la alternativa en un sistema de facturación es peor.</li>
+        <li><strong>Sin observabilidad del harness todavía.</strong> A propósito no construí un dashboard para mirar el loop. Con un dev, un gate e2e y revisión humana, sería instrumentación que nadie lee. Se gana su lugar cuando los datos justifiquen mirarlos.</li>
+      </ol>
+
+      <hr />
+
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
+      <p>Leé AdminRent a través del stack de cuatro loops de LangChain y encaja. El loop 1 es el agente en un repo. El loop 2 es la compuerta de sensores (pytest, tsc, contracts-fresh, e2e) devolviendo las fallas. El loop 3 es event-driven: los hooks de pre-commit y el CI disparan sin un humano. El loop 4 es el hill-climbing a mano, agregando un test guardián o una línea de <code>AGENTS.md</code> cuando un sensor se dispara dos veces. El valor compone en el 3 y el 4, y un humano queda en el camino en cada nivel, a propósito, porque el sistema le factura a gente real.</p>
+      <p>La regla transferible no es "copiá este <code>AGENTS.md</code>". Es que en cualquier sistema con stakes reales, las cinco palancas dejan de ser estilo y pasan a ser seguridad: cuanto más cuesta una acción equivocada, menos se les permite doblarse a las palancas de guardrails y verificación. Empezá por ahí, y que cada pieza se gane su lugar.</p>
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="loop-engineering.html">Parte 1 · Las cinco palancas</a></strong> · <a href="harness-engineering-adminrent.html">El experimento de harness sobre este SaaS</a> · <a href="../">portfolio</a></p>
+      </div>
+
+    </div>
+  </article>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

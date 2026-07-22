@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The five levers in production: loop engineering on AdminRent — Nery Cano</title>
+  <meta name="description" content="Loop engineering’s five levers turned on a real multi-tenant SaaS, where a missing guardrail leaks a tenant’s data. Real code from AdminRent." />
+  <meta name="author" content="Nery Alberto Cano Ortigoza" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="The five levers in production: loop engineering on AdminRent" />
+  <meta property="og:description" content="Loop engineering’s five levers turned on a real multi-tenant SaaS, where a missing guardrail leaks a tenant’s data. Real code from AdminRent." />
+  <meta property="og:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_7_loop_build_banner_en.png" />
+  <meta property="og:url" content="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering-adminrent.html" />
+  <meta property="article:published_time" content="2026-07-22" />
+  <meta property="article:tag" content="Loop Engineering" />
+  <meta property="article:tag" content="AI Agents" />
+  <meta property="article:tag" content="Multi-tenant" />
+  <meta property="article:tag" content="RBAC" />
+  <meta property="article:tag" content="Flask" />
+
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="The five levers in production: loop engineering on AdminRent" />
+  <meta name="twitter:description" content="Loop engineering’s five levers turned on a real multi-tenant SaaS, where a missing guardrail leaks a tenant’s data. Real code from AdminRent." />
+  <meta name="twitter:image" content="https://neryc.github.io/nery-cano-portfolio/blog/post_7_loop_build_banner_en.png" />
+
+  <link rel="alternate" hreflang="en" href="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering-adminrent.html" />
+  <link rel="alternate" hreflang="es" href="https://neryc.github.io/nery-cano-portfolio/blog/es/loop-engineering-adminrent.html" />
+  <link rel="alternate" hreflang="x-default" href="https://neryc.github.io/nery-cano-portfolio/blog/loop-engineering-adminrent.html" />
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Source+Serif+4:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    :root{
+      --primary:#1F3A68; --accent:#2E75B6; --accent-light:#4FA9E8; --accent-glow:#7DD3FC;
+      --ink:#0F172A; --bg-deep:#06101F; --bg-mid:#0E1F3A;
+      --muted:#94A3B8; --text:#E2E8F0; --text-strong:#F1F5F9;
+      --border:rgba(148,163,184,0.18);
+      --guia:#7DD3FC; --sensor:#4FA9E8;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:19px;line-height:1.7;color:var(--text);
+      background:radial-gradient(circle at 20% 0%,rgba(31,58,104,.55),transparent 45%),
+                 radial-gradient(circle at 80% 100%,rgba(46,117,182,.25),transparent 50%),var(--bg-deep);
+      background-attachment:fixed;min-height:100vh}
+    a{color:var(--accent-light);text-decoration:none}
+    a:hover{text-decoration:underline;text-underline-offset:4px}
+    .header-nav{max-width:760px;margin:0 auto;padding:28px 24px 0;display:flex;justify-content:space-between;
+      font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+    .header-nav a{color:var(--muted)}
+    .article{max-width:760px;margin:0 auto;padding:0 24px 80px}
+    .article-meta{margin-top:56px;font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2.5px;
+      text-transform:uppercase;color:var(--accent-glow)}
+    h1.article-title{font-family:"Inter",system-ui,sans-serif;font-size:44px;font-weight:800;letter-spacing:-1.2px;
+      line-height:1.15;color:var(--text-strong);margin:14px 0 12px}
+    .article-subtitle{font-style:italic;font-size:22px;line-height:1.4;color:var(--muted);margin:0 0 32px}
+    .byline{padding:16px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:40px}
+    .banner-img{width:100%;height:auto;border-radius:8px;margin:8px 0 40px;display:block;border:1px solid var(--border)}
+    .byline-name{font-family:"Inter",sans-serif;font-weight:600;color:var(--text-strong);font-size:15px}
+    .byline-meta{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+    .article-body{font-size:19px;line-height:1.75;color:var(--text)}
+    .article-body h2{font-family:"Inter",sans-serif;color:var(--text-strong);margin:52px 0 14px;letter-spacing:-.4px;
+      line-height:1.25;font-size:26px;font-weight:700}
+    .article-body h3{font-family:"Inter",sans-serif;color:var(--text-strong);margin:32px 0 10px;font-size:20px;font-weight:700}
+    .article-body p{margin:18px 0}
+    .article-body strong{color:var(--text-strong);font-weight:700}
+    .article-body em{color:var(--text)}
+    .article-body ul,.article-body ol{padding-left:26px}
+    .article-body li{margin:8px 0}
+    .article-body hr{border:none;height:1px;background:var(--border);margin:52px 0}
+    code{font-family:"JetBrains Mono",monospace;font-size:.86em;background:rgba(46,117,182,.15);color:var(--accent-glow);
+      padding:2px 6px;border-radius:4px;border:1px solid rgba(46,117,182,.25)}
+    .article-body table{width:100%;border-collapse:collapse;margin:24px 0;font-family:"Inter",sans-serif;font-size:15px}
+    .article-body th,.article-body td{padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+    .article-body th{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:1px;color:var(--accent-glow)}
+    .figure{margin:40px -8px;padding:26px 24px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(18,40,69,.45),rgba(14,31,58,.35))}
+    .figure svg{display:block;width:100%;height:auto}
+    .figure-caption{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;
+      color:var(--muted);margin-top:18px;text-align:center}
+    .figure-caption strong{color:var(--accent-glow)}
+    .callout{margin:32px 0;padding:18px 22px;border-radius:10px;background:rgba(46,117,182,.10);
+      border:1px solid rgba(46,117,182,.30);border-left:3px solid var(--accent-glow)}
+    .callout-label{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;
+      color:var(--accent-glow);margin-bottom:6px}
+    .callout p{margin:6px 0;font-size:17px;color:var(--text)}
+    .callout.warn{background:rgba(244,162,89,.08);border-color:rgba(244,162,89,.3);border-left-color:#F4A259}
+    .callout.warn .callout-label{color:#F4A259}
+
+    /* ---------- animaciones (lo agregado) ---------- */
+    .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+    .reveal.in{opacity:1;transform:none}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes spinr{to{transform:rotate(-360deg)}}
+    @keyframes corePulse{0%,100%{opacity:1}50%{opacity:.7}}
+    @keyframes flow{to{stroke-dashoffset:-200}}
+    .ring1{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+    .ring2{transform-box:fill-box;transform-origin:center;animation:spinr 30s linear infinite}
+    .core{animation:corePulse 2.8s ease-in-out infinite}
+    .flow{stroke-dasharray:8 10;animation:flow 6s linear infinite}
+    /* matriz 2x2 */
+    .mtx{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .mcell{background:rgba(8,16,31,.5);border:1px solid var(--border);border-radius:10px;padding:16px;
+      opacity:0;transform:scale(.95);transition:all .55s ease}
+    .figure.in .mcell{opacity:1;transform:none}
+    .figure.in .mcell:nth-child(1){transition-delay:.05s}.figure.in .mcell:nth-child(2){transition-delay:.18s}
+    .figure.in .mcell:nth-child(3){transition-delay:.31s}.figure.in .mcell:nth-child(4){transition-delay:.44s}
+    .mlbl{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+    .mcell h4{font-family:"Inter",sans-serif;font-size:15px;margin:0 0 6px;color:var(--text-strong)}
+    .mcell ul{margin:0;padding-left:16px;font-size:13.5px;color:var(--muted)}
+    .mcell li{margin:4px 0}
+    .g{border-top:3px solid var(--guia)} .g .mlbl{color:var(--guia)}
+    .s{border-top:3px solid var(--sensor)} .s .mlbl{color:var(--sensor)}
+    .axis{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);text-align:center;margin:0 0 14px}
+    /* grid de componentes */
+    .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;margin:10px 0}
+    .comp{background:rgba(8,16,31,.45);border:1px solid var(--border);border-radius:10px;padding:15px 17px;
+      opacity:0;transform:translateY(14px);transition:all .5s ease}
+    .figure.in .comp{opacity:1;transform:none}
+    .figure.in .comp:nth-child(2){transition-delay:.1s}.figure.in .comp:nth-child(3){transition-delay:.2s}
+    .figure.in .comp:nth-child(4){transition-delay:.3s}.figure.in .comp:nth-child(5){transition-delay:.4s}
+    .comp .n{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--accent-glow);letter-spacing:1px}
+    .comp h4{font-family:"Inter",sans-serif;font-size:15.5px;margin:5px 0;color:var(--text-strong)}
+    .comp p{font-size:14px;color:var(--muted);margin:0;line-height:1.5}
+    .comp.full{grid-column:1/-1}
+    /* semáforo de autonomía */
+    .sem{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+    .sem>div{border:1px solid var(--border);border-radius:10px;padding:14px 16px;background:rgba(8,16,31,.45)}
+    .sem .h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:1.5px;margin-bottom:8px}
+    .sem ul{margin:0;padding-left:16px;font-size:13px;color:var(--muted)}
+    .sem li{margin:4px 0}
+    .always{border-top:3px solid #57b37e}.always .h{color:#7fd3a3}
+    .ask{border-top:3px solid #e0a458}.ask .h{color:#f0b873}
+    .never{border-top:3px solid #d06464}.never .h{color:#e88a8a}
+    /* pie */
+    .footer-cta{margin-top:56px;padding:30px;border:1px solid var(--border);border-radius:12px;
+      background:linear-gradient(180deg,rgba(31,58,104,.4),rgba(14,31,58,.5))}
+    .footer-cta h3{margin:0 0 12px;font-family:"Inter",sans-serif;font-size:20px;color:var(--text-strong)}
+    .footer-cta p{margin:8px 0;font-size:16px;color:var(--text)}
+    .footer-cta .links{margin-top:16px;display:flex;flex-wrap:wrap;gap:16px}
+    .footer-cta .links a{font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:1px;color:var(--accent-glow)}
+    .tag-pills{margin-top:32px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag-pill{font-family:"JetBrains Mono",monospace;font-size:11px;padding:4px 12px;border-radius:14px;
+      background:rgba(46,117,182,.15);color:var(--accent-glow);border:1px solid rgba(46,117,182,.3);letter-spacing:1px}
+    .site-footer{max-width:760px;margin:60px auto 40px;padding:24px;font-family:"JetBrains Mono",monospace;
+      font-size:12px;color:var(--muted);text-align:center;letter-spacing:1px;border-top:1px solid var(--border)}
+    @media (max-width:600px){h1.article-title{font-size:31px}.article-subtitle{font-size:18px}.article-body{font-size:17px}
+      .figure{margin:30px -8px;padding:18px 14px}.mtx,.comp-grid,.sem{grid-template-columns:1fr}}
+  
+    /* ── Layout ancho y tipografía fluida ─────────────────────────────────
+       En pantallas grandes el problema no es la columna: es que 19px de
+       cuerpo se ven diminutos y la línea ya está en ~91 caracteres, el techo
+       de legibilidad. Así que se escala la TIPOGRAFÍA con el viewport. La
+       columna crece en proporción y la medida se mantiene entre 91 y 96
+       caracteres. Todo lo que vive dentro de .article se expresa en em para
+       que siga la escala: metadata, captions, callouts, bug-rows, código,
+       tablas y el interior de las figuras.
+       NADA sangra fuera de la columna. Un bloque más ancho que el texto al
+       que pertenece se lee como un error de maquetado, no como jerarquía.
+       Debajo de 1240px, comportamiento original. */
+    @media (min-width: 1240px) {
+      .header-nav, .site-footer, .article { max-width: 920px; }
+      .article { font-size: 20px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 1600px) {
+      .header-nav, .site-footer, .article { max-width: 1000px; }
+      .article { font-size: 21.5px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2000px) {
+      .header-nav, .site-footer, .article { max-width: 1090px; }
+      .article { font-size: 23px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    @media (min-width: 2400px) {
+      .header-nav, .site-footer, .article { max-width: 1200px; }
+      .article { font-size: 25px; }
+      .article-body { font-size: 1em; }
+      h1.article-title { font-size: 2.35em; }
+      .article-subtitle { font-size: 1.16em; }
+      .article-body h2 { font-size: 1.36em; }
+      .article-body h3 { font-size: 1.09em; }
+      .article-meta { font-size: 0.55em; }
+      .byline-name { font-size: 0.76em; }
+      .byline-meta { font-size: 0.6em; }
+      .figure-caption { font-size: 0.55em; }
+      .callout-label { font-size: 0.55em; }
+      .callout p { font-size: 0.9em; }
+      .bug-num { font-size: 0.55em; width: 3.4em; }
+      .bug-title { font-size: 0.9em; }
+      .bug-desc { font-size: 0.85em; }
+      .tag-pill { font-size: 0.6em; }
+      .footer-cta p { font-size: 0.88em; }
+      .article-body pre { font-size: 0.78em; }
+      .article-body pre code[class*="language-"] { font-size: 1em; }
+      .article-body table { font-size: 0.72em; }
+      .article-body th { font-size: 0.5em; }
+      .figure { padding: 1em 0.8em; margin-left: 0; margin-right: 0; }
+      .axis { font-size: 0.55em; }
+      .mlbl { font-size: 0.5em; }
+      .mcell h4 { font-size: 0.72em; }
+      .mcell ul { font-size: 0.66em; }
+      .comp .n { font-size: 0.55em; }
+      .comp h4 { font-size: 0.74em; }
+      .comp p { font-size: 0.68em; }
+      .sem .h { font-size: 0.55em; }
+      .sem ul { font-size: 0.64em; }
+    }
+    /* ── Movimiento reducido ───────────────────────────────────────────────
+       Las figuras animadas deben leerse igual de bien congeladas. Si el
+       sistema pide menos movimiento, se apagan los tokens y las animaciones
+       SMIL; los diagramas siguen explicando lo mismo. */
+    @media (prefers-reduced-motion: reduce) {
+      .figure svg * { animation: none !important; transition: none !important; }
+      .figure svg animate,
+      .figure svg animateMotion,
+      .figure svg animateTransform { display: none; }
+      .figure svg .loop-token { display: none; }
+      .reveal { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="header-nav"><a href="../">&larr; Portfolio</a><a href="index.html">Blog</a></nav>
+  <article class="article">
+    <!-- structure: build -->
+    <div class="article-meta">July 22, 2026 · Part 2 of 2 · ~14 min read</div>
+    <h1 class="article-title">The five levers in production: loop engineering on AdminRent</h1>
+    <p class="article-subtitle">The five levers turned on a live multi-tenant SaaS, where a missing guardrail leaks a neighbor’s data. Real code from AdminRent.</p>
+    <div class="byline">
+      <div class="byline-name">Nery Cano</div>
+      <div class="byline-meta">Senior Full-Stack Engineer · AI/LLM Systems · github.com/NeryC</div>
+    </div>
+    <div class="tags"><span class="tag-pill">Loop Engineering</span> <span class="tag-pill">AI Agents</span> <span class="tag-pill">Multi-tenant</span> <span class="tag-pill">RBAC</span> <span class="tag-pill">Flask</span></div>
+    <img class="banner-img" src="post_7_loop_build_banner_en.png" alt="Loop engineering’s five levers turned on a real multi-tenant SaaS, where a missing guardrail leaks a tenant’s data. Real code from AdminRent." />
+    <div class="article-body">
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="loop-engineering.html">Part 1 · The five levers</a></strong> · <a href="harness-engineering-adminrent.html">Harness engineering on this same SaaS</a> · <a href="../">portfolio</a></p>
+      </div>
+
+      <p><em>The five levers of Part 1, turned on a real production system: AdminRent, a multi-tenant SaaS for managing residential communities in Paraguay. Here a missing guardrail leaks a neighbor's data and a missing verification double-counts a fine, so every lever is a decision with teeth.</em></p>
+
+      <p><a href="loop-engineering.html">Part 1</a> laid out loop engineering as five dials: tools, stopping, context, verification, guardrails. This is what each one looks like when the agent is working on a live Flask backend that is the source of truth for people's rent, fines, and access control.</p>
+
+      <p>A note on scope. My <a href="harness-engineering-adminrent.html">harness-engineering post</a> ran an <em>experiment</em> on this same SaaS: give an agent five real commits, write an <code>AGENTS.md</code>, measure the delta. This post is the other lens: the <strong>runtime loop</strong> that <code>AGENTS.md</code> encodes, read through the five levers. Same system, different altitude.</p>
+
+      <hr />
+
+      <h2 data-sec="architecture">The system, and where the loop runs</h2>
+      <p>AdminRent is a multi-repo system: a Flask + SQLAlchemy + Postgres backend (the source of truth for data, RBAC, and business rules), a Next/React frontend, a Flutter app, and a Node SIFEN billing microservice. A coding agent works one task in one repo, unless the task touches the API contract, in which case backend, generated types, and frontend move as a single unit under human review.</p>
+      <div class="figure">
+        <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="An agent working on the AdminRent multi-repo SaaS, gated by the five loop levers">
+  <defs><marker id="am" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker></defs>
+  <g font-family="JetBrains Mono, monospace" font-size="10.5">
+    <rect x="24" y="126" width="120" height="66" rx="10" fill="#1F3A68" stroke="#7DD3FC" stroke-width="1.8"/>
+    <text x="84" y="152" text-anchor="middle" fill="#7DD3FC" font-size="11">coding agent</text>
+    <text x="84" y="170" text-anchor="middle" fill="#94A3B8" font-size="9">a task = 1 repo</text>
+    <text x="84" y="183" text-anchor="middle" fill="#94A3B8" font-size="9">(unless contract)</text>
+    <rect x="214" y="60" width="200" height="200" rx="12" fill="rgba(46,117,182,0.06)" stroke="#4FA9E8" stroke-width="1.4" stroke-dasharray="5 4"/>
+    <text x="314" y="82" text-anchor="middle" fill="#4FA9E8" font-size="10">THE 5 LEVERS (the gate)</text>
+    <g font-size="9.5" text-anchor="middle">
+      <rect x="230" y="94" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="111" fill="#E2E8F0">1 tools · pytest, shell</text>
+      <rect x="230" y="126" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="143" fill="#E2E8F0">2 stop · stops &amp; asks</text>
+      <rect x="230" y="158" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="175" fill="#E2E8F0">3 context · AGENTS.md/repo</text>
+      <rect x="230" y="190" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="207" fill="#E2E8F0">4 verify · pytest+tsc+e2e</text>
+      <rect x="230" y="222" width="168" height="26" rx="6" fill="#0E2A44" stroke="#7DD3FC" stroke-width="1.1"/><text x="314" y="239" fill="#F1F5F9">5 guardrails · RBAC, tenant</text>
+    </g>
+    <rect x="480" y="96" width="176" height="52" rx="9" fill="#122845" stroke="#4FA9E8" stroke-width="1.6"/>
+    <text x="568" y="118" text-anchor="middle" fill="#E2E8F0" font-size="10">backend (Flask)</text>
+    <text x="568" y="134" text-anchor="middle" fill="#7DD3FC" font-size="9">source of truth · RBAC</text>
+    <rect x="480" y="164" width="176" height="40" rx="9" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.4"/>
+    <text x="568" y="188" text-anchor="middle" fill="#94A3B8" font-size="10">frontend · mobile · SIFEN</text>
+    <rect x="480" y="216" width="176" height="36" rx="9" fill="#0E1F3A" stroke="#94A3B8" stroke-width="1.3"/>
+    <text x="568" y="238" text-anchor="middle" fill="#f0b873" font-size="9.5">human review · PR merge</text>
+    <line x1="144" y1="159" x2="212" y2="159" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#am)"/>
+    <line x1="414" y1="120" x2="478" y2="120" stroke="#7DD3FC" stroke-width="1.8" marker-end="url(#am)"/>
+    <line x1="414" y1="200" x2="478" y2="184" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#am)"/>
+    <path d="M568,204 L568,214" stroke="#f0b873" stroke-width="1.4" marker-end="url(#am)"/>
+  </g>
+</svg>
+        <p class="figure-caption">Figure 1 · <strong>The five levers as a gate.</strong> The agent acts on the repos, but every action passes the five levers first, and anything irreversible ends at a human.</p>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="build">The five levers, on real code</h2>
+
+      <h3>1 · Tools: a fast, honest inner loop</h3>
+      <p>The most important tool an agent has here is the test command, and the design choice that matters is speed. The suite runs on in-memory SQLite, no Postgres required, so the agent can loop on it dozens of times a minute:</p>
+      <pre><code class="language-bash">pytest -q                 # runs on sqlite in-memory; no Postgres needed
+python -m compileall -q app  # syntax gate, faster than a full run</code></pre>
+      <p>The <code>AGENTS.md</code> also documents the environment traps the agent would otherwise rediscover by hand, like the two dependency pins that need overriding only in the local Python 3.14 venv while production runs on <code>python:3.12-slim</code>. That is the tools lever: a clean interface plus the few notes that stop the agent flailing.</p>
+
+      <h3>2 · Stopping conditions: stop and ask</h3>
+      <p>The sharpest stopping rule in this codebase isn't a max-iteration cap, it's a semantic one. Permissions are product decisions, so the loop is told to halt rather than guess:</p>
+      <pre><code class="language-text">If a permission decision is NOT in the roles table: STOP and ask the human.
+Don't invent the policy even if it seems consistent with the principles.</code></pre>
+      <p>This is a stopping condition fused with a guardrail. Layered on top is an autonomy ladder that scopes when the agent may act at all: <strong>always without asking</strong> (add or fix tests, update docs, refactor within a layer), <strong>ask first</strong> (a new endpoint, an uncovered permission decision, a schema change), and <strong>never without a human</strong> (production migrations, PII, billing). The loop's default is to stop early, not to push through.</p>
+
+      <h3>3 · Context: one map, detail on demand</h3>
+      <p>Each repo carries its own <code>AGENTS.md</code>; a root one is the system map. That is Anthropic's "right altitude" in practice: <em>"this file is the map; the detail lives in docs/ and in the code."</em> The agent gets a tight, high-signal brief up front and pulls specifics just-in-time, instead of drowning in a dump of the whole codebase. The context lever here is a discipline of what to put in the map versus what to let the agent fetch.</p>
+
+      <h3>4 · Verification: the sensor gate</h3>
+      <p>Verification is the lever with the most surface area, because the system is the source of truth for money. The rule is written into the conventions: <strong>a new endpoint requires a permission test, at least one role that gets 200 and one that gets 403.</strong> For a unit-scoped resource, that includes proving an owner of another unit gets 403. Here is a real one, cross-tenant isolation on amenity endpoints:</p>
+      <pre><code class="language-python">def test_admin_a_cannot_read_other_residential_amenities(app, db, ...):
+    rid_b, _ = _second_residential_with_amenity(app, db)   # a second tenant
+    resp = client.get(f"/api/residentials/{rid_b}/amenities", headers=headers)
+    assert resp.status_code == 403      # admin of A has no role in B
+    assert resp.get_json()["error"] == "Forbidden"</code></pre>
+      <p>Above the unit tests sits a multi-sensor gate: <code>pytest</code> and <code>tsc</code> catch broken shapes, <code>contracts-fresh</code> (in pre-commit and CI on both repos) catches a schema changed without regenerating types, and an <strong>e2e cross-repo</strong> job boots the real backend and runs Playwright as the "does the system work together" gate. Verified end to end: rename a field in the backend and <code>tsc</code> breaks in the frontend. That is verification as a closed loop, not a vibe.</p>
+
+      <h3>5 · Guardrails: the invariant that can't bend</h3>
+      <p>On a multi-tenant SaaS the guardrail lever is where a bad loop does real damage, so it's the most explicit. Invariant #1, no exceptions: <strong>every query filters by <code>residential_id</code>.</strong> On top of it sits an RBAC table (who sees what across <code>admin</code>, <code>owner</code>, <code>tenant</code>, <code>portero</code>) that the backend enforces with <code>require_role(...)</code>:</p>
+      <pre><code class="language-python">require_role("admin")                              # admin-only
+require_role("admin", "owner", "tenant")           # residents, no portero
+require_role("admin", "owner", "tenant", "portero")  # shared read incl. portero
+require_role("admin", "portero")                   # gatehouse functions</code></pre>
+      <p>The <code>portero</code> (gatekeeper) role is the trap the <code>AGENTS.md</code> calls out by name: it's <strong>lateral</strong>, it inherits nothing, and it must be included explicitly when its job needs the data. Forgetting it, or excluding it as a "lesser role", is the easiest mistake to make and almost always wrong. A hard boundary list names what the agent must never touch without a human: <code>migrations/</code>, the <code>PII_DENYLIST</code>, RBAC and auth, SIFEN signing keys, and never a direct push to <code>main</code>.</p>
+
+      <div class="callout">
+        <div class="callout-label">Takeaway</div>
+        <p>On a toy agent the five levers are good practice. On a production multi-tenant SaaS they are the difference between an agent that helps and one that leaks a resident's financial data across tenants. The stakes don't change the levers, they change how much each one is allowed to bend: here, the guardrail lever bends to zero.</p>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="postmortem">Where a lever earned its place</h2>
+
+      <div class="bug-row">
+        <div class="bug-num">1</div>
+        <div>
+          <div class="bug-title"><code>portero</code> silently excluded: a guardrail catch</div>
+          <div class="bug-desc">Left to its own judgment on an access-log endpoint, the agent wrote <code>require_role("admin", "owner", "tenant")</code>, reasoning that the gatekeeper is a "minor" role. Wrong: the portero needs that data to identify residents. The fix wasn't a smarter model, it was the guardrail lever writing the rule down (<em>portero is lateral, decide explicitly</em>) plus the stopping condition (<em>not in the table? stop and ask</em>).</div>
+        </div>
+      </div>
+      <div class="bug-row">
+        <div class="bug-num">2</div>
+        <div>
+          <div class="bug-title">A fine counted twice: a verification catch</div>
+          <div class="bug-desc">A fine already hits <code>net_balance</code> through its mirror transaction (<code>type="fine"</code>, <code>balance_impact=-amount</code>). An intuitive "also subtract pending fines from the balance" change double-counts them. No prompt phrasing prevents this; a characterization test on the account statement does. The financial invariant lives in <code>AGENTS.md</code> precisely because it's the kind of thing that reads as correct and is not.</div>
+        </div>
+      </div>
+      <div class="bug-row">
+        <div class="bug-num">3</div>
+        <div>
+          <div class="bug-title">Fail-closed on sensitive fields: a default that had to be a guardrail</div>
+          <div class="bug-desc">Private fields (identities in general views, <code>target_unit_ids</code>, per-person amounts) hide by default and appear only behind an explicit admin flag. A new endpoint that forgets the flag must leave the field hidden, not exposed. So the default of a parameter like <code>include_targets</code> is <code>False</code>, never <code>True</code>. The guardrail is the direction the default fails.</div>
+        </div>
+      </div>
+
+      <hr />
+
+      <h2 data-sec="different">What I'd do differently</h2>
+      <ol>
+        <li><strong>The fourth loop is still manual.</strong> When a sensor catches the same problem twice, I add a line to the repo's <code>AGENTS.md</code> by hand. That's hill-climbing (loop 4) run by a human. It's the right call for a solo dev, but it's the first thing I'd automate once there's trace data worth mining.</li>
+        <li><strong>Autonomy is stuck at level 1 on purpose.</strong> The agent opens a PR, a human merges. Promotion to level 2 (auto-merge low-risk changes) needs the sensors to stop surprising me on review, and the counter resets every time they do. Slow, but the alternative on a billing system is worse.</li>
+        <li><strong>No harness observability yet.</strong> I deliberately didn't build a dashboard to watch the loop. With one dev and an e2e gate plus human review, it would be instrumentation nobody reads. It earns its place when the data justifies looking.</li>
+      </ol>
+
+      <hr />
+
+      <h2 data-sec="pattern">The pattern, generalized</h2>
+      <p>Read AdminRent through LangChain's four-loop stack and it lines up. Loop 1 is the agent in a repo. Loop 2 is the sensor gate (pytest, tsc, contracts-fresh, e2e) feeding failures back. Loop 3 is event-driven: pre-commit hooks and CI fire without a human. Loop 4 is the hand-run hill-climbing, adding a guardian test or an <code>AGENTS.md</code> line when a sensor trips twice. The value compounds at 3 and 4, and a human stays in the path at every level, by design, because the system bills real people.</p>
+      <p>The transferable rule isn't "copy this <code>AGENTS.md</code>". It's that on any system with real stakes, the five levers stop being style and become safety: the more a wrong action costs, the less the guardrail and verification levers are allowed to bend. Start there, and let each piece earn its place.</p>
+
+      <div class="callout">
+        <div class="callout-label">Quick links</div>
+        <p>🔗 <strong><a href="loop-engineering.html">Part 1 · The five levers</a></strong> · <a href="harness-engineering-adminrent.html">The harness experiment on this SaaS</a> · <a href="../">portfolio</a></p>
+      </div>
+
+    </div>
+  </article>
+  <script>
+    const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.14});
+    document.querySelectorAll('.reveal,.figure,.callout,.footer-cta').forEach(el=>{el.classList.add('reveal');io.observe(el)});
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" font-family="Inter, DejaVu Sans, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0E1F3A"/><stop offset="55%" stop-color="#08152A"/><stop offset="100%" stop-color="#06101F"/></linearGradient>
+    <radialGradient id="glow" cx="0.18" cy="0.05" r="0.75"><stop offset="0%" stop-color="#1F3A68" stop-opacity="0.85"/><stop offset="100%" stop-color="#06101F" stop-opacity="0"/></radialGradient>
+    <radialGradient id="glow2" cx="0.9" cy="1" r="0.6"><stop offset="0%" stop-color="#2E75B6" stop-opacity="0.35"/><stop offset="100%" stop-color="#06101F" stop-opacity="0"/></radialGradient>
+    <marker id="mk" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#7DD3FC"/></marker>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/><rect width="1200" height="630" fill="url(#glow)"/><rect width="1200" height="630" fill="url(#glow2)"/>
+  <text x="70" y="140" fill="#7DD3FC" font-size="19" font-weight="700" letter-spacing="4.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">PARTE 2 · EL BUILD</text>
+<text x="70" y="236" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">Las 5 palancas</text><text x="70" y="302" fill="#F1F5F9" font-size="58" font-weight="800" letter-spacing="-1.4">en producción</text>
+  <rect x="70" y="328" width="86" height="4" rx="2" fill="#7DD3FC"/>
+<text x="70" y="386" fill="#94A3B8" font-size="24">Loop engineering en</text><text x="70" y="420" fill="#94A3B8" font-size="24">AdminRent, un SaaS real</text>
+  <text x="70" y="580" fill="#4FA9E8" font-size="18" font-weight="600" letter-spacing="1.5" font-family="JetBrains Mono, DejaVu Sans Mono, monospace">NERY CANO · neryc.github.io</text>
+  <g font-family="JetBrains Mono, DejaVu Sans Mono, monospace">
+    <path d="M960,180 L1060,214 L1060,320 C1060,392 1012,432 960,452 C908,432 860,392 860,320 L860,214 Z" fill="#122845" stroke="#7DD3FC" stroke-width="2.4"/>
+    <text x="960" y="278" text-anchor="middle" fill="#7DD3FC" font-size="15">multi</text>
+    <text x="960" y="300" text-anchor="middle" fill="#7DD3FC" font-size="15">tenant</text>
+    <line x1="892" y1="336" x2="1028" y2="336" stroke="#4FA9E8" stroke-width="1.4"/>
+    <text x="960" y="360" text-anchor="middle" fill="#94A3B8" font-size="12">RBAC · residential_id</text>
+    <text x="960" y="510" text-anchor="middle" fill="#94A3B8" font-size="15">AdminRent · SaaS en vivo</text>
+  </g>
+</svg>
