@@ -483,7 +483,7 @@
   </nav>
 
   <article class="article">
-    <!-- structure: experiment-report — the "project" is an experiment on a private SaaS; no public repo or live demo, so the quick-links point to Part 1 and the portfolio. -->
+    <!-- structure: build -->
     <div class="article-meta">July 9, 2026 · 18 min read · Part 2 of 2</div>
     <h1 class="article-title">Harness engineering on a real SaaS: I measured, wrote the rules, measured again</h1>
     <p class="article-subtitle">I gave an agent five real commits from my multi-tenant SaaS and told it nothing about the domain. It invented a permission policy, got it wrong, and wrote six tests that armored it in green.</p>
@@ -519,7 +519,7 @@ def get_unit_members(unit_id):
 
       <hr />
 
-      <h2>What this is, in one paragraph</h2>
+      <h2 data-sec="architecture">What this is, in one paragraph</h2>
 
       <p>I took <strong>AdminRent-backend</strong>, a multi-tenant Flask API for managing residential communities, in production, with 458 tests, and ran an experiment in three acts. <strong>Act 1:</strong> measure how an agent handles five real tasks <em>with no help at all</em>. <strong>Act 2:</strong> write an <code>AGENTS.md</code> that attacks exactly the failures act 1 surfaced. <strong>Act 3:</strong> re-run the same tasks and look at the delta. The conclusion, up front: the agent <em>already is</em> a good programmer. What it lacks is context. And twice, with the context in place, it wrote better security policy than what's in my <code>main</code> today.</p>
 
@@ -646,7 +646,7 @@ def get_unit_members(unit_id):
 
       <hr />
 
-      <h2>The experiment that controls the variable</h2>
+      <h2 data-sec="build">The experiment that controls the variable</h2>
 
       <p>With both modes identified, I wrote a hundred-line <code>AGENTS.md</code>. Not answers to the tasks: <strong>principles</strong>. The who-sees-what table. The note that <code>portero</code> is a lateral role that inherits nothing and must be included on purpose. The fail-closed posture. The rule about never changing the response shape to hide a field.</p>
 
@@ -762,7 +762,7 @@ test_comunicado_target_unit_ids_hidden_by_default  # the T07 fail-closed</code><
 
       <hr />
 
-      <h2>The meta-finding: my instrument lied to me three times</h2>
+      <h2 data-sec="postmortem">The meta-finding: my instrument lied to me three times</h2>
 
       <p>I wasn't planning to write this part.</p>
 
@@ -876,7 +876,7 @@ test_comunicado_target_unit_ids_hidden_by_default  # the T07 fail-closed</code><
 
       <p>None of this invalidates the qualitative finding. The T02 and T07 delta is sharp and directional, but it bounds how much you can lean on it. An experiment that only confirms what you wanted to find is a well-dressed anecdote.</p>
 
-      <h2>What I'd do differently</h2>
+      <h2 data-sec="different">What I'd do differently</h2>
 
       <ol>
         <li><strong>Define the number before starting, and then compute it.</strong> I wrote in the plan that the success rate was "the number the harness has to move," with a kill criterion of 10 percentage points. Then I never computed it. Writing a criterion and not applying it is worse than not having one: it gives you the feeling of rigor without the rigor. I then did the same thing with the autonomy ladder, which suggests the lesson didn't take the first time.</li>
@@ -886,7 +886,7 @@ test_comunicado_target_unit_ids_hidden_by_default  # the T07 fail-closed</code><
 
       <hr />
 
-      <h2>The pattern, generalized</h2>
+      <h2 data-sec="pattern">The pattern, generalized</h2>
 
       <p>If you have a repo with business rules that live only in two or three people's heads, and every repo older than a year does, then you already know what happens when an agent touches it. It will fail on the rule nobody wrote down, with impeccable code and green tests.</p>
 

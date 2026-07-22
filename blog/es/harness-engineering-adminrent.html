@@ -483,7 +483,7 @@
   </nav>
 
   <article class="article">
-    <!-- structure: experiment-report — el "proyecto" es un experimento sobre un SaaS privado; no hay repo público ni live demo, así que los quick-links apuntan a la Parte 1 y al portfolio. -->
+    <!-- structure: build -->
     <div class="article-meta">9 de julio, 2026 · 18 min de lectura · Parte 2 de 2</div>
     <h1 class="article-title">Harness engineering en un SaaS real: medí, escribí las reglas, volví a medir</h1>
     <p class="article-subtitle">Le di a un agente cinco commits reales de mi SaaS multi-tenant y no le dije nada sobre el dominio. Inventó una política de permisos, la equivocó, y escribió seis tests que la blindaban en verde.</p>
@@ -519,7 +519,7 @@ def get_unit_members(unit_id):
 
       <hr />
 
-      <h2>Qué es esto, en un párrafo</h2>
+      <h2 data-sec="architecture">Qué es esto, en un párrafo</h2>
 
       <p>Tomé <strong>AdminRent-backend</strong>, una API Flask multi-tenant para administrar condominios, en producción, con 458 tests, y corrí un experimento en tres actos. <strong>Acto 1:</strong> medir cómo resuelve un agente cinco tareas reales <em>sin</em> ninguna ayuda. <strong>Acto 2:</strong> escribir un <code>AGENTS.md</code> que ataque exactamente los fallos que el acto 1 encontró. <strong>Acto 3:</strong> re-correr las mismas tareas y mirar el delta. La conclusión, adelantada: el agente <em>ya es</em> un buen programador. Lo que le falta es contexto. Y dos veces, con el contexto puesto, escribió mejor política de seguridad que la que hay hoy en mi <code>main</code>.</p>
 
@@ -647,7 +647,7 @@ def get_unit_members(unit_id):
 
       <hr />
 
-      <h2>El experimento que controla la variable</h2>
+      <h2 data-sec="build">El experimento que controla la variable</h2>
 
       <p>Con los dos modos identificados, escribí un <code>AGENTS.md</code> de cien líneas. No respuestas a las tareas: <strong>principios</strong>. La tabla de quién-ve-qué. La nota de que <code>portero</code> es un rol lateral que no hereda nada y que hay que incluir a propósito. La postura fail-closed. La regla de no cambiar la forma del response para ocultar un campo.</p>
 
@@ -763,7 +763,7 @@ test_comunicado_target_unit_ids_hidden_by_default  # el fail-closed de T07</code
 
       <hr />
 
-      <h2>El meta-hallazgo: mi instrumento me mintió tres veces</h2>
+      <h2 data-sec="postmortem">El meta-hallazgo: mi instrumento me mintió tres veces</h2>
 
       <p>No pensaba escribir esta parte.</p>
 
@@ -877,7 +877,7 @@ test_comunicado_target_unit_ids_hidden_by_default  # el fail-closed de T07</code
 
       <p>Nada de esto invalida el hallazgo cualitativo. El delta de T02 y T07 es nítido y direccional, pero acota cuánto podés apoyarte en él. Un experimento que solo confirma lo que querías encontrar es una anécdota bien vestida.</p>
 
-      <h2>Qué haría diferente</h2>
+      <h2 data-sec="different">Qué haría diferente</h2>
 
       <ol>
         <li><strong>Definir el número antes de empezar, y calcularlo.</strong> Escribí en el plan que la tasa de éxito era "el número que el harness tiene que mover", con un criterio de muerte de 10 puntos porcentuales. Después nunca lo calculé. Escribir el criterio y no aplicarlo es peor que no tenerlo: te da la sensación de rigor sin el rigor. Después hice exactamente lo mismo con la escalera de autonomía, lo cual sugiere que la lección no me entró a la primera.</li>
@@ -887,7 +887,7 @@ test_comunicado_target_unit_ids_hidden_by_default  # el fail-closed de T07</code
 
       <hr />
 
-      <h2>El patrón, generalizado</h2>
+      <h2 data-sec="pattern">El patrón, generalizado</h2>
 
       <p>Si tenés un repo con reglas de negocio que solo viven en la cabeza de dos o tres personas, y todos los repos con más de un año lo tienen, entonces ya sabés qué va a pasar cuando un agente lo toque. Va a fallar en la regla que nadie escribió, con código impecable y tests en verde.</p>
 

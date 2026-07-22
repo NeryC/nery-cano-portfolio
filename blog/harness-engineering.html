@@ -321,7 +321,7 @@
     <a href="es/harness-engineering.html">Español ↗</a>
   </nav>
   <article class="article">
-    <!-- structure: pattern-essay — no project of its own and no postmortem; architecture figure and bug section omitted per BLOG_STRUCTURE §10. -->
+    <!-- structure: guide -->
     <div class="article-meta">June 26, 2026 · Part 1 of 2 · 20 min read</div>
     <h1 class="article-title">Harness Engineering: how to design repos where AI doesn't screw up</h1>
     <p class="article-subtitle">Guides, sensors, context, evals and autonomy limits: the harness that turns an AI agent from a chaotic intern into a reliable colleague. Spoiler: the problem is your repo, not the model.</p>
@@ -349,6 +349,18 @@
 
       <hr />
 
+      <h2 data-sec="glossary">Key terms, first</h2>
+      <p>Seven words carry this whole post. Define them once and the rest reads clean, no jargon explained with more jargon.</p>
+      <p><strong>Model.</strong> The raw LLM (Claude, GPT). Another company trained it, and you can't change it from your laptop.</p>
+      <p><strong>Agent.</strong> The model plus everything around it that lets it act: the prompt, the tools it can call, the context it's given, the limits on what it can touch.</p>
+      <p><strong>Harness.</strong> That "everything around it". The part you own and design. Building it is what this post is about.</p>
+      <p><strong>Guide.</strong> Anything that orients the agent <em>before</em> it acts: an <code>AGENTS.md</code>, a schema, a template. Also called feedforward.</p>
+      <p><strong>Sensor.</strong> Anything that checks the agent <em>after</em> it acts: a test, a linter, a code review. Also called feedback.</p>
+      <p><strong>Computational vs inferential.</strong> A control is computational when it's deterministic and free (a test never lies). It's inferential when another model judges with taste (slower, costs money, sometimes wrong).</p>
+      <p><strong>Eval.</strong> A repeatable test of the whole agent on a real task, so a change to the harness can be measured instead of guessed.</p>
+
+      <hr/>
+
       <h2>This isn't a blog trend</h2>
       <p>Before we go on, a reality check for the skeptics (I was one). In February 2026, a team at OpenAI described building and shipping an internal product with <strong>zero hand-written lines of code</strong>: on the order of a million lines, ~1,500 pull requests, with a team of three to seven engineers. Their stated conclusion? That their hardest challenges are no longer writing code, but <em>"designing environments, feedback loops, and control systems."</em></p>
 
@@ -358,7 +370,7 @@
 
       <hr/>
 
-      <h2>The core idea: Agent = Model + Harness</h2>
+      <h2 data-sec="definition">The core idea: Agent = Model + Harness</h2>
       <p>Here's the mental shift everything else follows from. A coding agent <strong>is not "the model."</strong> It's the model <em>plus everything around it</em>: the system prompt, the tools it can call, the context injected into it, the tests that run, the limits on what it can touch. That whole wrapper is called the <strong>harness</strong>.</p>
 
       <p>The formula, borrowed from LangChain, is simple: <strong>Agent = Model + Harness</strong>. And it has a liberating consequence. You don't control the model: another company trained it, it cost hundreds of millions, and you won't improve it from your laptop. But the harness is <strong>entirely yours</strong>. It's the only lever you can pull.</p>
@@ -384,6 +396,15 @@
         <div class="callout-label">In one sentence</div>
         <p>Harness engineering is designing the environment (documentation, tools, feedback and constraints) so that an agent does reliable work with minimal human supervision.</p>
       </div>
+
+      <hr/>
+
+      <h2 data-sec="problem">The problem: why the obvious fixes fail</h2>
+      <p>Faced with an agent that wrecks things, three fixes feel obvious. All three fail, and seeing why points straight at the harness.</p>
+      <p><strong>Prompt harder.</strong> More instructions, more "please", more capital letters. It fails because a prompt is a guide with no sensor: it raises the odds of good behavior but never catches the miss. The agent still can't tell whether it followed the rule at all.</p>
+      <p><strong>Wait for a better model.</strong> The next one will be smarter, so why engineer anything? It fails because the model is the layer you don't control, and even a flawless model can't know your unwritten rules: which field is private, which function already exists, which test is load-bearing.</p>
+      <p><strong>Review every diff by hand.</strong> Read all of it yourself. It fails at the first hint of scale: moving faster than hand-review was the whole point, and a human reading every line is exactly the bottleneck you were removing.</p>
+      <p>Each fix leans on the model (which you can't change) or on you (who can't scale). What's left is the environment between them. That is the harness, and it's the only lever that both scales and is yours to pull.</p>
 
       <hr/>
 
@@ -421,7 +442,7 @@
         <p>Yes, technically you could put an LLM in charge of reviewing every comma of every commit. You could also hire someone to read your typos out loud. One of those two ideas costs less. Neither is a good idea.</p>
       </div>
 
-      <h2>The loop: orient → act → catch → correct</h2>
+      <h2 data-sec="anatomy">The loop: orient → act → catch → correct</h2>
       <p>Guides and sensors aren't two loose lists: they form a <strong>control loop</strong>. The guide orients, the agent acts, the sensor measures. Then the useful part: the sensor's output goes back to the agent so it corrects itself, <em>before you see anything</em>.</p>
 
       <div class="figure reveal">
@@ -465,7 +486,7 @@
 
       <hr/>
 
-      <h2>How you build a harness</h2>
+      <h2 data-sec="detail">How you build a harness</h2>
       <p>Theory so far. Now the concrete part: what, exactly, goes in that outer ring? Five pieces. Each fills a different hole, and together they're the system.</p>
 
       <div class="figure reveal">
@@ -561,7 +582,7 @@
 
       <hr/>
 
-      <h2>What this looks like in a Python + TypeScript stack</h2>
+      <h2 data-sec="code">What this looks like in a Python + TypeScript stack</h2>
       <p>Enough theory. Here is each component mapped to real tools for the stack behind most of what I ship: a Flask API in Python, a Next.js and TypeScript frontend, Postgres on Supabase, deployed on Railway and Vercel, with GitHub Actions as the gate. Swap the names for yours; the shape holds.</p>
 
       <table>
@@ -671,7 +692,7 @@ never:     migrate prod data &#183; delete data &#183; push to main</code></pre>
         <li><strong>Believing the human is redundant.</strong> The harness doesn't eliminate your judgment; it concentrates it where it's worth most. You're still the one steering.</li>
       </ul>
 
-      <h2>The pattern, generalized</h2>
+      <h2 data-sec="pattern">The pattern, generalized</h2>
       <p>When does all of this apply? The moment you let an agent touch your repo with any autonomy, <strong>you're already doing harness engineering</strong>. The only question is whether you're doing it on purpose or by accident. You don't need to be aiming at "a million lines with no human code" for it to pay off. A hundred-line <code>AGENTS.md</code>, two sensors that catch your most frequent mistakes, and an autonomy table already change your relationship with the tool: from praying over every PR, to trusting the system around it.</p>
       <p>Because the line we opened with was a trap. The failure lives in the <strong>gap</strong> between you and the model: everything you knew and never wrote down. Harness engineering is filling that gap on purpose.</p>
 

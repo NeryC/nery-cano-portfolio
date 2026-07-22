@@ -460,7 +460,7 @@
     <a href="es/research-agent.html">Español ↗</a>
   </nav>
   <article class="article">
-    <!-- structure: pattern-note — the no-execute finalAnswer pattern for autonomous agents. -->
+    <!-- structure: build -->
     <div class="article-meta">May 26, 2026 · 10 min read</div>
     <h1 class="article-title">The Cleanest Pattern I&#39;ve Found for Autonomous Agents: A Terminal Tool With No execute</h1>
     <p class="article-subtitle">Why ToolLoopAgent + a no-execute finalAnswer tool replaced 80 lines of brittle while-loop code in my research agent.</p>
@@ -507,7 +507,7 @@ const finalText = parseFinalAnswer(messages);</code></pre>
 
 <hr />
 
-<h2>What it is, in one paragraph</h2>
+<h2 data-sec="architecture">What it is, in one paragraph</h2>
 
 <p>A Next.js 16 app that takes a research question, lets an LLM agent decide what to search for and what pages to read, and streams back a cited Markdown answer in roughly 25 seconds. The agent is defined as a <code>ToolLoopAgent</code> with three tools — <code>searchWeb</code>, <code>readPage</code>, and <code>finalAnswer</code> — and a single safety cap of <code>stepCountIs(8)</code>. Termination is structural: when the model calls <code>finalAnswer</code>, the loop stops, because that tool has no executor. The whole agent fits in roughly 700 lines of TypeScript including UI, tests, and rate limiting.</p>
 
@@ -637,7 +637,7 @@ const finalText = parseFinalAnswer(messages);</code></pre>
 
 <hr />
 
-<h2>The implementation: three tools and a ToolLoopAgent</h2>
+<h2 data-sec="build">The implementation: three tools and a ToolLoopAgent</h2>
 
 <p>The use case is intentionally simple: an LLM that takes a research question, searches the web, reads pages, and synthesizes a cited Markdown answer. Three tools:</p>
 
@@ -779,7 +779,7 @@ const { messages, sendMessage } = useChat({
 
 <hr />
 
-<h2>What I'd do differently</h2>
+<h2 data-sec="different">What I'd do differently</h2>
 
 <ol>
 <li><strong>Put the rate limiter in Upstash Redis from day one.</strong> The in-memory <code>Map</code> is fine for a single-instance demo, but it leaks the budget the moment Vercel spins up a second function instance. Each instance has its own bucket and the global limit becomes <code>5 × instanceCount</code>. Cheaper to start with Upstash than to migrate later under load.</li>
@@ -789,7 +789,7 @@ const { messages, sendMessage } = useChat({
 
 <hr />
 
-<h2>The pattern, generalized</h2>
+<h2 data-sec="pattern">The pattern, generalized</h2>
 
 <p>The no-execute terminal tool generalizes well beyond research agents. Anywhere you have an LLM that needs to <em>decide when it's done</em>, this is the cleanest signal.</p>
 
