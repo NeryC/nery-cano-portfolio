@@ -414,4 +414,4 @@ Whatever the shape, the post declares `guide` or `build`, carries `data-sec` mar
 
 ## 11 · Reference implementation
 
-The canonical example is **`talk-to-my-portfolio.html`** (May 17, 2026). When in doubt about a microdecision — exact caption phrasing, when to use a callout vs a blockquote, how to space code blocks — open that file and copy the pattern.
+When in doubt about a microdecision (exact caption phrasing, when to use a callout vs a blockquote, how to space code blocks), open a current post and copy the pattern. Use `talk-to-my-portfolio.html` as the **guide** reference and `multi-agent-code-reviewer-build.html` as the **build** reference; both carry the `data-sec` spine and every house component. (Until 2026-07-17 this section named `talk-to-my-portfolio.html` as a single build; it was split into a guide + `talk-to-my-portfolio-build.html`, so the reference is now a pair.)
