@@ -45,7 +45,7 @@
     a { color: var(--accent-light); text-decoration: none; }
     a:hover { color: var(--accent-glow); }
     .header-nav {
-      max-width: 880px;
+      max-width: 760px;
       margin: 0 auto;
       padding: 28px 24px 0;
       display: flex; justify-content: space-between; align-items: center;
@@ -58,7 +58,7 @@
     .header-nav a { color: var(--muted); }
     .header-nav a:hover { color: var(--accent-glow); }
     .container {
-      max-width: 880px;
+      max-width: 760px;
       margin: 0 auto;
       padding: 0 24px 80px;
     }
@@ -142,7 +142,7 @@
       letter-spacing: 1px;
     }
     .site-footer {
-      max-width: 880px;
+      max-width: 760px;
       margin: 60px auto 40px;
       padding: 24px;
       font-family: "JetBrains Mono", monospace;
@@ -204,6 +204,10 @@
     .series .article-card { border-bottom: 1px solid var(--border); }
     .series .article-card:last-child { border-bottom: none; }
     .article-list > .article-card { border-bottom: 1px solid var(--border); }
+    @media (min-width: 1240px) { .header-nav, .container, .site-footer { max-width: 920px; } }
+    @media (min-width: 1600px) { .header-nav, .container, .site-footer { max-width: 1000px; } }
+    @media (min-width: 2000px) { .header-nav, .container, .site-footer { max-width: 1090px; } }
+    @media (min-width: 2400px) { .header-nav, .container, .site-footer { max-width: 1200px; } }
   </style>
 </head>
 <body>

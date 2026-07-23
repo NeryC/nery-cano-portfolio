@@ -66,6 +66,7 @@ Every post embeds the same `<style>` block (~220 lines). Copy it verbatim from a
 - Typography: 19px Source Serif 4 body, 44px Inter ExtraBold H1, 26px H2, 21px H3
 - Reading column: `max-width: 760px`, centered, 24px gutters
 - **Wide layout + fluid type (≥1240px viewport).** Do NOT widen the column at a fixed font size: the reading column is already at ~91 characters per line at 19px, which is the ceiling. Instead, **scale the type with the viewport** so the column grows in proportion and the measure stays between 91 and 96 characters. Four steps: `20px/920px`, `21.5px/1000px`, `23px/1090px`, `25px/1200px` at `1240 / 1600 / 2000 / 2400px`. Everything inside `.article` is sized in `em` so it follows: metadata, captions, callouts, bug-rows, code, and the internals of grid figures (`.mcell`, `.comp`, `.sem`, `.axis`). **Nothing full-bleeds.** The banner, the figures, `<pre>` and `<table>` all align to the reading column. A block wider than the text it belongs to reads as a layout bug, not as hierarchy — one column, one left edge, top to bottom. Below 1240px nothing changes. Never center prose children with `margin-left:auto`: element-qualified rules like `h1.article-title{margin:...}` outrank `.article > *` and the layout desyncs.
+- **The index shares the article's width.** `blog/index.html` and `blog/es/index.html` use the same max-width progression as `.article` (`760 → 920 → 1000 → 1090 → 1200` at `base / 1240 / 1600 / 2000 / 2400px`), applied to `.header-nav`, `.container`, and `.site-footer`. The index list and an open post line up on the same left and right edge at every viewport; an index narrower (or wider) than the posts reads as two different sites.
 - Code blocks: `#1a1f2e` background, glow-cyan inline tokens with subtle border
 - Responsive: at `max-width: 600px`, H1 drops to 32px, body to 17px
 - Component classes for figures, callouts, bug-rows, tag pills, footer CTA
@@ -79,8 +80,9 @@ When adding NEW components, append to the existing style block — don't fragmen
 ```html
 <body>
   <nav class="header-nav">
-    <a href="../">← Portfolio</a>
-    <a href="./">All writing</a>
+    <a href="../">← Portfolio</a>            <!-- ES post: href="../../" (repo root, NOT blog/) -->
+    <a href="index.html">Blog</a>            <!-- the same-language index -->
+    <a href="es/{slug}.html">Español ↗</a>   <!-- ES post: href="../{slug}.html", label "English ↗" -->
   </nav>
 
   <article class="article">
@@ -136,7 +138,7 @@ When adding NEW components, append to the existing style block — don't fragmen
 </body>
 ```
 
-Always include `<nav class="header-nav">` at the top and `<footer class="site-footer">` at the bottom. Always include the Prism `<script>` tags right before `</body>` so code highlighting works.
+Always include `<nav class="header-nav">` at the top and `<footer class="site-footer">` at the bottom. **Every post carries the same three nav links:** Portfolio (repo root), Blog (the same-language index), and a language toggle to this post's counterpart — `es/{slug}.html` labelled "Español ↗" on an EN post, `../{slug}.html` labelled "English ↗" on an ES post. Mind the relative paths: an ES post lives in `blog/es/`, so Portfolio is `../../` (`../` there points at the EN blog, not the site root). Always include the Prism `<script>` tags right before `</body>` so code highlighting works.
 
 ---
 
